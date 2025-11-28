@@ -1,0 +1,1612 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Axis</name>
+    </assembly>
+    <members>
+        <member name="T:Axis.SocketUtil.TcpService`1">
+            <summary>
+            TCP连接服务器端,接受多客户的TCP连接
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.#ctor(System.Int32,System.Int32,System.String)">
+            <summary>
+            使用指定端口、最大客户连接数、IP地址构造实例
+            </summary>
+            <param name="port">监听的端口号</param>
+            <param name="maxsockets">最大客户连接量</param>
+            <param name="ip">IP地址</param>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.#ctor(System.Int32)">
+            <summary>
+            使用指定端口构造实例
+            </summary>
+            <param name="port">监听的端口</param>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.Start(System.Int32)">
+            <summary>
+            启动服务器程序,开始监听客户端请求
+            </summary>
+            <param name="backlog">挂起连接队列的最大长度。</param>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.Start">
+            <summary> 
+            启动服务器程序,开始监听客户端请求
+            </summary> 
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.Stop">
+            <summary>
+            关闭侦听器。
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.DisConnectAll">
+            <summary>
+            断开所有客户端连接
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.Close">
+            <summary>
+            关闭侦听器并断开所有客户端连接
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService`1.Keepalive(System.Int32,System.Int32,System.Int32)">
+            <summary>
+             得到tcp_keepalive结构值
+            </summary>
+            <param name="onoff">是否启用Keep-Alive</param>
+            <param name="keepalivetime">多长时间后开始第一次探测（单位：毫秒）</param>
+            <param name="keepaliveinterval">探测时间间隔（单位：毫秒）</param>
+            <returns></returns>
+        </member>
+        <member name="E:Axis.SocketUtil.TcpService`1.Connected">
+            <summary>
+            客户端连接事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.TcpService`1.DisConnect">
+            <summary>
+            客户端断开事件
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.TcpService`1.Active">
+            <summary>
+            是否处于活动状态，即自动接收客户端连接
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.TcpService`1.ListenPort">
+            <summary>
+            获取监听端口号
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.TcpService`1.ConnectCount">
+            <summary>
+            获取当前客户连接数
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.TcpService`1.Session">
+            <summary>
+            获取与客户连接的所有Socket
+            </summary>
+        </member>
+        <member name="T:Axis.SocketUtil.TcpService">
+            <summary>
+            TCP连接服务器端,接受多客户的TCP连接
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService.#ctor(System.Int32,System.Int32,System.String)">
+            <summary>
+            使用指定端口、最大客户连接数、IP地址构造实例
+            </summary>
+            <param name="port">监听的端口号</param>
+            <param name="maxsockets">最大客户连接量</param>
+            <param name="ip">IP地址</param>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpService.#ctor(System.Int32)">
+            <summary>
+            使用指定端口构造实例
+            </summary>
+            <param name="port">监听的端口</param>
+        </member>
+        <member name="M:Axis.COMMON.JsonSerialize.SerializeToStream``1(``0,System.IO.Stream)">
+            <summary>
+            序列化成Json格式,写入字节流
+            </summary>
+            <typeparam name="T">需要序列化的对象的类型</typeparam>  
+            <param name="object">需要序列化的对象</param>
+            <param name="ms">序列化后写入的字节流</param>
+        </member>
+        <member name="M:Axis.COMMON.JsonSerialize.SerializeToString``1(``0)">
+            <summary>
+            序列化成Json格式,字符串返回
+            </summary>
+            <typeparam name="T">需要序列化的对象的类型</typeparam>  
+            <param name="object">需要序列化的对象</param>
+            <returns>序列化后，Json格式的字符串</returns>
+        </member>
+        <member name="M:Axis.COMMON.JsonSerialize.DeserializeFromStream``1(System.IO.Stream)">
+            <summary>
+            Json格式反序列化
+            </summary>
+            <typeparam name="T">反序列化所生成对象的类型。</typeparam>  
+            <param name="ms">需要反序列化的字节流</param>
+            <returns>反序列化成的对象</returns>
+        </member>
+        <member name="M:Axis.COMMON.JsonSerialize.DeserializeFromString``1(System.String)">
+            <summary>
+            Json格式反序列化
+            </summary>
+            <typeparam name="T">反序列化所生成对象的类型。</typeparam>  
+            <param name="serializedstring">需要反序列化的字符串</param>
+            <returns>反序列化成的对象</returns>
+        </member>
+        <member name="T:Axis.Log">
+            <summary>
+            写日志
+            </summary>
+        </member>
+        <member name="M:Axis.Log.WriteLog(System.String)">
+            <summary>
+            写日志
+            </summary>
+            <param name="Data">日志</param>
+        </member>
+        <member name="M:Axis.Log.WriteLog(System.String,System.String,System.Int32)">
+            <summary>
+            写日志
+            </summary>
+            <param name="filedir">目录</param>
+            <param name="Data">日志</param>
+            <param name="level">级别</param>
+        </member>
+        <member name="M:Axis.Log.MustWriteLog(System.String,System.String)">
+            <summary>
+            必写日志
+            </summary>
+            <param name="filedir">目录</param>
+            <param name="Data">日志</param>
+        </member>
+        <member name="M:Axis.Log.ReadAllTxt(System.String,System.String@)">
+            <summary>
+            读文件
+            </summary>
+            <param name="filename">文件路径</param>
+            <param name="Data">读出内容</param>
+            <returns>是否成功</returns>
+        </member>
+        <member name="T:Axis.DB.ProviderFactory">
+            <summary>
+            DbProviderFactory工厂类
+            </summary>
+        </member>
+        <member name="M:Axis.DB.ProviderFactory.GetProviderInvariantName(Axis.DB.DbProviderType)">
+            <summary>
+            获取指定数据库类型对应的程序集名称
+            </summary>
+            <param name="providerType">数据库类型枚举</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.ProviderFactory.GetDbProviderFactory(Axis.DB.DbProviderType)">
+            <summary>
+            获取指定类型的数据库对应的DbProviderFactory
+            </summary>
+            <param name="providerType">数据库类型枚举</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.ProviderFactory.ImportDbProviderFactory(Axis.DB.DbProviderType)">
+            <summary>
+            加载指定数据库类型的DbProviderFactory
+            </summary>
+            <param name="providerType">数据库类型枚举</param>
+            <returns></returns>
+        </member>
+        <member name="T:Axis.DB.EntityReader">
+            <summary>
+            实体阅读器类，可以从DataTable中或者DbDataReader的实例中将数据转换成对应的实例
+            作者：施公
+            创建日期：2015-11-06
+            修改日期：2015-11-06
+            </summary>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetEntities``1(System.Data.DataTable)">
+            <summary>
+            将DataTable中的所有数据转换成List&gt;T&lt;集合
+            </summary>
+            <typeparam name="T">DataTable中每条数据可以转换的数据类型</typeparam>
+            <param name="dataTable">包含有可以转换成数据类型T的数据集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetEntities``1(System.Data.Common.DbDataReader)">
+            <summary>
+            将DbDataReader中的所有数据转换成List&gt;T&lt;集合
+            </summary>
+            <typeparam name="T">DbDataReader中每条数据可以转换的数据类型</typeparam>
+            <param name="dataTable">包含有可以转换成数据类型T的DbDataReader实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetSimpleEntities``1(System.Data.DataTable)">
+            <summary>
+            从DataTable中将每一行的第一列转换成T类型的数据
+            </summary>
+            <typeparam name="T">要转换的目标数据类型</typeparam>
+            <param name="dataTable">包含有可以转换成数据类型T的数据集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetValueFromObject(System.Object,System.Type)">
+            <summary>
+            将指定的 Object 的值转换为指定类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <param name="targetType">要转换的目标数据类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetComplexEntities``1(System.Data.DataTable)">
+            <summary>
+            从DataTable中读取复杂数据类型集合
+            </summary>
+            <typeparam name="T">要转换的目标数据类型</typeparam>
+            <param name="dataTable">包含有可以转换成数据类型T的数据集合</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetComplexEntities``1(System.Data.Common.DbDataReader)">
+            <summary>
+            从DbDataReader的实例中读取复杂的数据类型
+            </summary>
+            <typeparam name="T">要转换的目标类</typeparam>
+            <param name="reader">DbDataReader的实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetSimpleEntities``1(System.Data.Common.DbDataReader)">
+            <summary>
+            从DbDataReader的实例中读取简单数据类型（String,ValueType)
+            </summary>
+            <typeparam name="T">目标数据类型</typeparam>
+            <param name="reader">DbDataReader的实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetString(System.Object)">
+            <summary>
+            将Object转换成字符串类型
+            </summary>
+            <param name="value">object类型的实例</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetEnum(System.Object,System.Type)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <param name="targetType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetBoolean(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetByte(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetSByte(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetChar(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetGuid(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetInt16(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetUInt16(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetInt32(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetUInt32(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetInt64(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetUInt64(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetSingle(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetDouble(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetDecimal(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetDateTime(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetTimeSpan(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetBinary(System.Object)">
+            <summary>
+            将指定的 Object 的值转换为指定枚举类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetGenericValueFromObject(System.Object,System.Type)">
+            <summary>
+            将Object类型数据转换成对应的可空数值类型表示
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <param name="targetType">可空数值类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GetNonGenericValueFromObject(System.Object,System.Type)">
+            <summary>
+            将指定的 Object 的值转换为指定类型的值。
+            </summary>
+            <param name="value">实现 IConvertible 接口的 Object，或者为 null</param>
+            <param name="targetType">目标对象的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.EntityReader.GenerateTypePropertyMapping(System.Type)">
+            <summary>
+            获取该类型中属性与数据库字段的对应关系映射
+            </summary>
+            <param name="type"></param>
+        </member>
+        <member name="T:Axis.DB.ColumnNameAttribute">
+            <summary>
+            自定义属性，用于指示如何从DataTable或者DbDataReader中读取类的属性值
+            </summary>
+        </member>
+        <member name="M:Axis.DB.ColumnNameAttribute.#ctor(System.String)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="columnName">类属性对应的列名</param>
+        </member>
+        <member name="P:Axis.DB.ColumnNameAttribute.ColumnName">
+            <summary>
+            类属性对应的列名
+            </summary>
+        </member>
+        <member name="M:Axis.COMMON.NPOIWord.DataTableToWord2003(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Data.DataTable)">
+            <summary>
+            将DataTable数据导入到word中
+            </summary>
+            <param name="title">要导入的word的标题</param>
+            <param name="columndic">要导入的列名</param>
+            <param name="dt">要导入的数据</param>
+            <returns>内存流</returns>
+        </member>
+        <member name="M:Axis.COMMON.NPOIWord.TextToDataTable(System.Collections.Generic.Dictionary{System.String,System.String},System.IO.MemoryStream,System.Char)">
+            <summary>
+            将text数据导入到DataTable中,行用换行回车键分隔，列用|分隔
+            </summary>
+            <param name="columndic">要导入的列名</param>
+            <param name="memory">excel的内存流</param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="M:Axis.COMMON.NPOIWord.DataTableToText(System.Collections.Generic.Dictionary{System.String,System.String},System.Data.DataTable,System.Char)">
+            <summary>
+            将DataTable数据导入到text中,行用换行回车键分隔，列用|分隔
+            </summary>
+            <param name="columndic">要导入的列名</param>
+            <param name="dt">要导入的数据</param>
+            <returns>内存流</returns>
+        </member>
+        <member name="T:Axis.DB.DbProviderType">
+            <summary>
+            数据库类型枚举
+            </summary>
+        </member>
+        <member name="T:Axis.SocketUtil.TcpClient">
+            <summary>
+            TcpClient 工具类
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpClient.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.Boolean)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="ip">IP 地址</param>
+            <param name="port">端口</param>
+            <param name="tryTimes">重试次数</param>
+            <param name="receiveTimeout">接收超时</param>
+            <param name="longConnection">是否长连接</param>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpClient.Send(System.Byte[])">
+            <summary>
+            发送数据
+            </summary>
+            <param name="sendData">待发送的数据</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.TcpClient.SendAndReceive(System.Byte[])">
+            <summary>
+            发送数据并接收数据
+            </summary>
+            <param name="sendData">待发送的数据</param>
+            <returns></returns>
+        </member>
+        <member name="P:Axis.SocketUtil.TcpClient.LastException">
+            <summary>
+            获取最后的错误信息
+            </summary>
+        </member>
+        <member name="T:Axis.DB.DbUtility">
+            <summary>
+            通用数据库访问类，封装了对数据库的常见操作
+            作者：施公
+            创建日期：2015-11-06
+            修改日期：2015-11-06
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DbUtility.#ctor(System.String,Axis.DB.DbProviderType)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="connectionString">数据库连接字符串</param>
+            <param name="providerType">数据库类型枚举，参见<paramref name="providerType"/></param>
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>   
+            对数据库执行增删改操作，返回受影响的行数。   
+            </summary>   
+            <param name="sql">要执行的增删改的SQL语句</param>   
+            <param name="parameters">执行增删改语句所需要的参数</param>
+            <returns></returns>  
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>   
+            对数据库执行增删改操作，返回受影响的行数。   
+            </summary>   
+            <param name="sql">要执行的增删改的SQL语句</param>   
+            <param name="parameters">执行增删改语句所需要的参数</param>
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteReader(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>   
+            执行一个查询语句，返回一个关联的DataReader实例   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <returns></returns> 
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteReader(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>   
+            执行一个查询语句，返回一个关联的DataReader实例   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns> 
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteDataTable(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>   
+            执行一个查询语句，返回一个包含查询结果的DataTable   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteDataTable(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>   
+            执行一个查询语句，返回一个包含查询结果的DataTable   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>   
+            执行一个查询语句，返回查询结果的第一行第一列   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>   
+            <returns></returns>   
+        </member>
+        <member name="M:Axis.DB.DbUtility.ExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>   
+            执行一个查询语句，返回查询结果的第一行第一列   
+            </summary>   
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>   
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>   
+        </member>
+        <member name="M:Axis.DB.DbUtility.QueryForList``1(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询多个实体集合
+            </summary>
+            <typeparam name="T">返回的实体集合类型</typeparam>
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.QueryForList``1(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>
+             查询多个实体集合
+            </summary>
+            <typeparam name="T">返回的实体集合类型</typeparam>
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>   
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.QueryForObject``1(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询单个实体
+            </summary>
+            <typeparam name="T">返回的实体集合类型</typeparam>
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.QueryForObject``1(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>
+            查询单个实体
+            </summary>
+            <typeparam name="T">返回的实体集合类型</typeparam>
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>   
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.DB.DbUtility.CreateDbCommand(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Data.CommandType)">
+            <summary>
+            创建一个DbCommand对象
+            </summary>
+            <param name="sql">要执行的查询语句</param>   
+            <param name="parameters">执行SQL查询语句所需要的参数</param>
+            <param name="commandType">执行的SQL语句的类型</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsTelephone(System.String)">
+            <summary>
+            验证电话号码
+            </summary>
+            <param name="telephone"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsHandset(System.String)">
+            <summary>
+            验证手机号码 HGG 2015-09-09 放开控制
+            </summary>
+            <param name="handset"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsIDcard(System.String)">
+            <summary>
+            验证身份证号
+            </summary>
+            <param name="idcard"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsNumber(System.String)">
+             <summary>
+            验证输入为数字
+             </summary>
+             <param name="number"></param>
+             <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsPostalcode(System.String)">
+            <summary>
+            验证邮编
+            </summary>
+            <param name="postalcode"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsEmail(System.String)">
+            <summary>
+            验证邮箱
+            </summary>
+            <param name="email"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsAllDateTime(System.String)">
+            <summary>
+            是否为日期+时间OR日期型字符串
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsDateTime(System.String)">
+            <summary>
+            是否为日期+时间型字符串yyyy-MM-dd HH:mm:ss
+            </summary>
+            <param name="source"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsDate(System.String)">
+            <summary>
+            是否为日期型字符串yyyy-MM-dd
+            </summary>
+            <param name="StrSource">日期字符串(2008-05-08)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.COMMON.Verification.IsTime(System.String)">
+            <summary>
+            是否为时间型字符串
+            </summary>
+            <param name="source">时间字符串(15:00:00)</param>
+            <returns></returns>
+        </member>
+        <!-- 对于成员“M:Axis.COMMON.Verification.IsVariousDateTime(System.String)”忽略有格式错误的 XML 注释 -->
+        <member name="T:Axis.COMMON.DataContractSerialize">
+            <summary>
+            XML，JSONP，JSON序列化与反序列化
+            </summary>
+        </member>
+        <member name="M:Axis.COMMON.DataContractSerialize.DataContractSerializeToString``1(System.String,``0)">
+            <summary>
+            反序列化
+            </summary>
+            <param name="callBack">jsonp回调还是名</param>
+            <param name="obj">要序列化的对象</param>
+            <returns>字符串</returns>
+        </member>
+        <member name="T:Axis.DB.DbParameters">
+            <summary>
+            DbParameter集
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DbParameters.Clear">
+            <summary>
+            清空
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DbParameters.GetParams">
+            <summary>
+            获取DbParameter数组
+            </summary>
+            <returns>DbParameter数组</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.GetParamList">
+            <summary>
+            获取DbParameter列表
+            </summary>
+            <returns>DbParameter列表</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.EmptyToNull(System.String)">
+            <summary>
+            空转成Null
+            </summary>
+            <param name="value"></param>
+            <returns>空转成Null</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.GetParams(System.Collections.Generic.IList{System.Data.Common.DbParameter},System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            合并DbParameter列表后，获取DbParameter数组
+            </summary>
+            <param name="parametersBefore">DbParameter列表</param>
+            <param name="parametersAfter">DbParameter列表</param>
+            <returns>DbParameter数组</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.AddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            添加参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="mark">操作符 = LIKE </param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.AddParamEx(System.Text.StringBuilder@,System.String,System.Object,System.String,System.String)">
+            <summary>
+            添加参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="mark">操作符 = LIKE </param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.FirstAddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String)">
+            <summary>
+            添加第一个参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="mark">操作符 = LIKE </param>
+            <param name="attributename">属性名</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.UpdateAddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String)">
+            <summary>
+            添加修改的参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.UpdateAddParamEx(System.Text.StringBuilder@,System.String,System.Object,System.String)">
+            <summary>
+            添加修改的参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.InsertMustAddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String)">
+            <summary>
+            添加新增的参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.InsertMustAddParamEx(System.Text.StringBuilder@,System.String,System.Object,System.String)">
+            <summary>
+            添加新增的参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.InsertAddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String)">
+            <summary>
+            添加新增的参数
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.WhereAddParam(System.Text.StringBuilder@,System.String,System.Object,System.Data.DbType,System.Int32,System.String,System.String,System.String)">
+            <summary>
+            添加查询条件
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="mark">操作符 = LIKE </param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.WhereAddParamEx(System.Text.StringBuilder@,System.String,System.Object,System.String,System.String)">
+            <summary>
+            添加查询条件
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="columnname">列名</param>
+            <param name="attributevalue">列值</param>
+            <param name="dbtype">数据类型</param>
+            <param name="size">数据长度</param>
+            <param name="mark">操作符 = LIKE </param>
+            <param name="attributename">属性名</param>
+            <param name="join">连接符 AND OR</param>
+        </member>
+        <member name="M:Axis.DB.DbParameters.CreateDbParameter(System.String,System.Object)">
+            <summary>
+            新建输入DbParameter
+            </summary>
+            <param name="name">参数名</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.CreateDbParameter(System.String,System.Data.ParameterDirection,System.Object)">
+            <summary>
+            新建参数
+            </summary>
+            <param name="name">参数名</param>
+            <param name="parameterDirection">输入输出属性</param>
+            <param name="value">参数值</param>
+            <returns>参数</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.ParamFirstJoinTrim(System.Text.StringBuilder@,System.String[])">
+            <summary>
+            去除第一个连接符
+            </summary>
+            <param name="strSql">添加SQL语句</param>
+            <param name="join">连接符 , AND OR</param>
+            <returns>有否去除</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.ColumnNameToString(System.Data.DataTable,System.String,System.String)">
+            <summary>
+            获取首行对应列的值
+            </summary>
+            <param name="dt">数据表</param>
+            <param name="columnname">行名</param>
+            <param name="fromat">格式化</param>
+            <returns>字符串值</returns>
+        </member>
+        <member name="M:Axis.DB.DbParameters.ColumnIndexToString(System.Data.DataRow,System.Int32,System.String)">
+            <summary>
+            获取对应列的值
+            </summary>
+            <param name="dr">数据行</param>
+            <param name="columnindex">行索引</param>
+            <param name="fromat">返回格式化</param>
+            <returns>字符串值</returns>
+        </member>
+        <member name="M:Axis.COMMON.NPOIExcel.DataTableToExcel2003(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Data.DataTable)">
+            <summary>
+            将DataTable数据导入到excel中
+            </summary>
+            <param name="title">要导入的excel的sheet的名称</param>
+            <param name="columndic">要导入的列名</param>
+            <param name="dt">要导入的数据</param>
+            <returns>内存流</returns>
+        </member>
+        <member name="M:Axis.COMMON.NPOIExcel.ExcelToDataTable(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.IO.MemoryStream,System.String)">
+            <summary>
+            将excel数据导入到DataTable中
+            </summary>
+            <param name="title">要导入的excel的sheet的名称，默认第一个</param>
+            <param name="columndic">要导入的列名</param>
+            <param name="memory">excel的内存流</param>
+            <param name="dt">要导入的文件名，支持2003，2007</param>
+            <returns>DataTable</returns>
+        </member>
+        <member name="T:Axis.COMMON.DataCache">
+            <summary>
+            缓存相关的操作类
+            </summary>
+        </member>
+        <member name="M:Axis.COMMON.DataCache.GetCache(System.String)">
+            <summary>
+            获取当前应用程序指定CacheKey的Cache值
+            </summary>
+            <param name="CacheKey">键</param>
+            <returns>值</returns>
+        </member>
+        <member name="M:Axis.COMMON.DataCache.SetCache(System.String,System.Object)">
+            <summary>
+            设置当前应用程序指定CacheKey的Cache值
+            </summary>
+            <param name="CacheKey">键</param>
+            <param name="objObject">值</param>
+        </member>
+        <member name="M:Axis.COMMON.DataCache.SetCache(System.String,System.Object,System.DateTime,System.TimeSpan)">
+            <summary>
+            设置当前应用程序指定CacheKey的Cache值
+            </summary>
+            <param name="CacheKey">键</param>
+            <param name="objObject">值</param>
+        </member>
+        <member name="M:Axis.COMMON.DataCache.RemoveCache(System.String)">
+            <summary>
+            移除当前应用程序指定CacheKey的Cache值
+            </summary>
+            <param name="CacheKey">键</param>
+        </member>
+        <member name="T:Axis.SocketUtil.DataTransmit">
+            <summary>
+            辅助传输对象
+            </summary>
+        </member>
+        <member name="T:Axis.SocketUtil.IDataTransmit">
+            <summary>
+            传输对象接口
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.IDataTransmit.Send(System.Byte[])">
+            <summary>
+            发送二进制数据
+            </summary>
+            <param name="bin">二进制数据</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.IDataTransmit.Send(System.String)">
+            <summary>
+            发送文本
+            </summary>
+            <param name="text">文本内容</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.IDataTransmit.Start">
+            <summary>
+            开始接收数据
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.IDataTransmit.Stop">
+            <summary>
+            停止并断开连接
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.IDataTransmit.Connected">
+            <summary>
+            是否已连接
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.IDataTransmit.ConnectFail">
+            <summary>
+            连接失败事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.IDataTransmit.ConnectSucceed">
+            <summary>
+            连接成功事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.IDataTransmit.DisConnected">
+            <summary>
+            断开连接事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.IDataTransmit.ReceiveData">
+            <summary>
+            接收到数据事件
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.IDataTransmit.RemoteEndPoint">
+            <summary>
+            获取远程终结点
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.IDataTransmit.TcpSocket">
+            <summary>
+            Socket对象.
+            </summary>
+        </member>
+        <member name="F:Axis.SocketUtil.DataTransmit.BagSize">
+            <summary>
+            缓存大小
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.#ctor">
+            <summary>
+            默认构造函数
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.#ctor(System.String,System.Int32)">
+            <summary>
+            使用指定的IP地址和端口构造实例
+            </summary>
+            <param name="ip">IP地址</param>
+            <param name="port">端口</param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.#ctor(System.Net.EndPoint)">
+            <summary>
+            客户端调用此构造函数
+            </summary>
+            <param name="ipEndPoint">在连接的服务器端网络地址</param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.#ctor(System.Net.Sockets.Socket)">
+            <summary>
+            服务器端调用
+            </summary>
+            <param name="client">服务器监听连接得到的Socket对象</param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.Stop">
+            <summary>
+            停止传输，断开连接
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.Start">
+            <summary>
+            开始接收数据
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.receiveCallback(System.IAsyncResult)">
+            <summary>
+            接收数据回调函数
+            </summary>
+            <param name="ar"></param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.Send(System.String)">
+            <summary>
+            发送文本
+            </summary>
+            <param name="text">文本内容</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.Send(System.Byte[])">
+            <summary>
+            发送二进制数据
+            </summary>
+            <param name="data">二进制数据</param>
+            <returns></returns>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.OnConnectSucceed">
+            <summary>
+            触发连接成功事件
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.OnConnectFail(System.Exception)">
+            <summary>
+            触发连接失败事件
+            </summary>
+            <param name="err"></param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.OnDisConnected(System.Exception)">
+            <summary>
+            触发连接断开事件
+            </summary>
+            <param name="err"></param>
+        </member>
+        <member name="M:Axis.SocketUtil.DataTransmit.OnReceiveData(System.Object)">
+            <summary>
+            触发接收数据事件
+            </summary>
+            <param name="bin"></param>
+        </member>
+        <member name="E:Axis.SocketUtil.DataTransmit.ConnectSucceed">
+            <summary>
+            连接成功事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.DataTransmit.ConnectFail">
+            <summary>
+            连接失败事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.DataTransmit.DisConnected">
+            <summary>
+            断开连接事件
+            </summary>
+        </member>
+        <member name="E:Axis.SocketUtil.DataTransmit.ReceiveData">
+            <summary>
+            接收到数据事件
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.DataTransmit.TcpSocket">
+            <summary>
+            获取或设置 Socket 对象
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.DataTransmit.RemoteEndPoint">
+            <summary>
+            获取远程终结点
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.DataTransmit.Connected">
+            <summary>
+            Socket是否已连接
+            </summary>
+        </member>
+        <member name="P:Axis.SocketUtil.DataTransmit.ErrorCode">
+            <summary>
+            Socket错误代码
+            </summary>
+        </member>
+        <member name="M:Axis.COMMON.XmlSerialize.SerializeToStream``1(``0,System.IO.Stream)">
+            <summary>
+            序列化成Xml格式,写入字节流
+            </summary>
+            <typeparam name="T">需要序列化的对象的类型</typeparam>  
+            <param name="object">需要序列化的对象</param>
+            <param name="ms">序列化后写入的字节流</param>
+        </member>
+        <member name="M:Axis.COMMON.XmlSerialize.SerializeToString``1(``0)">
+            <summary>
+            序列化成Json格式,字符串返回
+            </summary>
+            <typeparam name="T">需要序列化的对象的类型</typeparam>  
+            <param name="object">需要序列化的对象</param>
+            <returns>序列化后，Json格式的字符串</returns>
+        </member>
+        <member name="M:Axis.COMMON.XmlSerialize.DeserializeFromStream``1(System.IO.Stream)">
+            <summary>
+            Xml格式反序列化
+            </summary>
+            <typeparam name="T">反序列化所生成对象的类型。</typeparam>  
+            <param name="ms">需要反序列化的字节流</param>
+            <returns>反序列化成的对象</returns>
+        </member>
+        <member name="M:Axis.COMMON.XmlSerialize.DeserializeFromString``1(System.String)">
+            <summary>
+            Xml格式反序列化
+            </summary>
+            <typeparam name="T">反序列化所生成对象的类型。</typeparam>  
+            <param name="serializedstring">需要反序列化的字符串</param>
+            <returns>反序列化成的对象</returns>
+        </member>
+        <member name="T:Axis.COMMON.INIFile">
+            <summary>
+            INI文件读写类。
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.#ctor">
+            <summary>
+            事务方式连接打开数据库
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.Open">
+            <summary>
+            打开数据库连接
+            </summary>
+            <returns>打开成功true，失败false</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.Open(System.Data.CommandType)">
+            <summary>
+            打开数据库连接
+            </summary>
+            <param name="CommandType">执行类型</param>
+            <returns>打开成功true，失败false</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.SetCommandType(System.Data.CommandType)">
+            <summary>
+            设置执行类型
+            </summary>
+            <param name="CommandType">执行类型</param>
+        </member>
+        <member name="M:Axis.DB.DBHelper.GetCommandType">
+            <summary>
+            查看执行类型
+            </summary>
+            <returns>执行类型</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.Close">
+            <summary>
+            关闭数据库连接
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.Dispose">
+            <summary>
+            关闭数据库连接，并且释放空间
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.BeginTransaction">
+            <summary>
+            开始事务
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.CommitTransaction">
+            <summary>
+            提交事务
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.RollbackTransaction">
+            <summary>
+            回滚事务
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.ExecuteReader(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            数据读取器查询数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据读取器</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.ExecuteDataSet(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.ExecuteDataTable(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.ExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.ExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回结果集中的第一行第一列
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>结果集中的第一行第一列</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.PrepareCommand(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            SQL语句
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranBegin">
+            <summary>
+            打开数据库,开始事务
+            </summary>
+            <returns>是否成功</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranCommit">
+            <summary>
+            提交事务，关闭数据库
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranRollback">
+            <summary>
+            回滚事务，关闭数据库
+            </summary>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回结果集中的第一行第一列
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>结果集中的第一行第一列</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranExecuteDataSet(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranExecuteDataTable(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.TranExecuteDataTable(System.Int32,System.Int32,System.Int32@,System.Boolean,System.String,System.Data.Common.DbParameter[])">
+            <summary>
+            用读取器查询数据，返回指定数据表，总行数
+            </summary>
+            <param name="m">一页几条</param>
+            <param name="n">第几页</param>
+            <param name="j">共几条</param>
+            <param name="bl">是否返回全部，true部分，false全部</param>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>指定数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回结果集中的第一行第一列
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <param name="providerType">连接串</param>
+            <returns>结果集中的第一行第一列</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteDataSet(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteDataTable(System.Int32,System.Int32,System.Int32@,System.Boolean,System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            用读取器查询数据，返回指定数据表，总行数
+            </summary>
+            <param name="m">一页几条</param>
+            <param name="n">第几页</param>
+            <param name="j">共几条</param>
+            <param name="bl">是否返回全部，true部分，false全部</param>
+            <param name="sql">SQL语句</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>指定数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteScalar(System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回结果集中的第一行第一列
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>结果集中的第一行第一列</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteNonQuery(System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteNonQuery(System.String,System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="connectionString">数据连接串</param>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteDataSet(System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteDataSet(System.String,System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="connectionString">数据连接串</param>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StaticExecuteDataTable(System.Int32,System.Int32,System.Int32@,System.Boolean,System.String,Axis.DB.DbProviderType,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            用读取器查询数据，返回指定数据表，总行数
+            </summary>
+            <param name="m">一页几条</param>
+            <param name="n">第几页</param>
+            <param name="j">共几条</param>
+            <param name="bl">是否返回全部，true部分，false全部</param>
+            <param name="sql">SQL语句</param>
+            <param name="providerType">数据引擎</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>指定数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StoreExecuteScalar(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回结果集中的第一行第一列
+            </summary>
+            <param name="sqlstore">存储过程名称</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>结果集中的第一行第一列</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StoreExecuteNonQuery(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            执行SQL语句，返回影响的记录数
+            </summary>
+            <param name="sqlstore">存储过程名称</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>影响的记录数</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StoreExecuteDataSet(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sqlstore">存储过程名称</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据集</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StoreExecuteDataTable(System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            查询数据，返回所用数据
+            </summary>
+            <param name="sqlstore">存储过程名称</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>数据表</returns>
+        </member>
+        <member name="M:Axis.DB.DBHelper.StoreExecuteDataTable(System.Int32,System.Int32,System.Int32@,System.Boolean,System.String,System.Collections.Generic.IList{System.Data.Common.DbParameter})">
+            <summary>
+            用读取器查询数据，返回指定数据表，总行数
+            </summary>
+            <param name="m">一页几条</param>
+            <param name="n">第几页</param>
+            <param name="j">共几条</param>
+            <param name="bl">是否返回全部，true部分，false全部</param>
+            <param name="sqlstore">存储过程名称</param>
+            <param name="parms">SQL语句参数</param>
+            <returns>指定数据表</returns>
+        </member>
+        <member name="T:Axis.SocketUtil.TestUtil">
+            <summary>
+            测试工具类
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.TestUtil.GetHexOutput(System.Byte[])">
+            <summary>
+            把指定的二进制值显示为适合记入日志的文本串
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Axis.SocketUtil.NetEventHandler">
+            <summary>
+            网络通讯事件模型委托
+            </summary>
+            <param name="sender"></param>
+            <param name="e">TcpClient</param>
+        </member>
+        <member name="T:Axis.SocketUtil.NetEventArgs">
+            <summary>
+            网络事件参数
+            </summary>
+        </member>
+        <member name="M:Axis.SocketUtil.NetEventArgs.#ctor(System.Object)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="EventArg"></param>
+        </member>
+        <member name="M:Axis.SocketUtil.NetEventArgs.ToString">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Axis.SocketUtil.NetEventArgs.EventArg">
+            <summary>
+            事件参数
+            </summary>
+        </member>
+        <member name="M:Axis.CONFIG.ConfigHelper.GetSettings(System.String)">
+            <summary>
+            读取配置
+            </summary>
+            <param name="key">键</param>
+            <returns>值</returns>
+        </member>
+        <member name="M:Axis.CONFIG.ConfigHelper.GetSettings(System.String,System.String,System.String)">
+            <summary>
+            读取配置
+            </summary>
+            <param name="group">域</param>
+            <param name="key">键</param>
+            <param name="defaultValue">默认值</param>
+            <returns>值</returns>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.ConfigCacheTimeOut">
+            <summary>
+            配置超时
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.DataCacheTimeOut">
+            <summary>
+            缓存超时
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.DAL">
+            <summary>
+            数据源
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.logLevel">
+            <summary>
+            日志等级
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.IsCreateDB">
+            <summary>
+            是否建库
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.MySql">
+            <summary>
+            MySql连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.Oracle">
+            <summary>
+            Oracle连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.SqlServer">
+            <summary>
+            SqlServer连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.ODBC">
+            <summary>
+            ODBC连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.OleDb">
+            <summary>
+            OleDb连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.SqlServerCe">
+            <summary>
+            SqlServerCe连接串
+            </summary>
+        </member>
+        <member name="P:Axis.CONFIG.ConfigHelper.SQLite">
+            <summary>
+            SQLite连接串
+            </summary>
+        </member>
+    </members>
+</doc>
