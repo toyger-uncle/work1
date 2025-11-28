@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+    <script src="js/RecodeFirstInLastOutQuery.js" type="text/javascript"></script>
+</head>
+<body>
+    <div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true"
+        style="width: 100%; height: 130px; padding: 5px 0 0;">
+        <table>
+            <tr>
+                <th>
+                    时间从:
+                </th>
+                <td>
+                    <input id="BeginTime1" class="easyui-datetimebox" data-options="showSeconds:true"
+                        style="width: 150px" />
+                </td>
+                <th>
+                    到:
+                </th>
+                <td>
+                    <input id="EndTime1" class="easyui-datetimebox" data-options="showSeconds:true" style="width: 150px" />
+                </td>
+                <th>
+                    部门:
+                </th>
+                <td>
+                    <select id="departName1" class="easyui-combobox" data-options="prompt:'请选择部门'" style="width: 106px;">
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    用户:
+                </th>
+                <td>
+                    <input id="userName1" class="easyui-validatebox textbox" style="width: 100px;" />
+                </td>
+                <th>
+                    首次进入:
+                </th>
+                <td>
+                    <input id='in1' class="easyui-switchbutton" checked="checked" />
+                </td>
+                <th>
+                    最后外出:
+                </th>
+                <td>
+                    <input id='out1' class="easyui-switchbutton" checked="checked" />
+                </td>
+            </tr>
+        </table>
+        <table class='button' cellspacing="5px">
+            <tr>
+                <td>
+                    <a id='search' href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'"
+                        onclick='iniSearch()'>查询</a>
+                </td>
+                <td>
+                    <a id='clear' href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-clear'"
+                        onclick='ResetInput()'>重置</a>
+                </td>
+                <td style="display: none;">
+                    <a href="javascript:void(0)" class="easyui-linkbutton" id="fileImport" data-options="iconCls:'icon-import'">
+                        导入</a>
+                </td>
+                <td>
+                    <a href="javascript:void(0)" class="easyui-linkbutton" id="fileExport" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'">
+                        导出</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="width: 100%;"> 
+        <table id="dg">
+        </table>
+    </div>
+    <div id="winFile" class="easyui-window" title="导出" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16',minimizable:false,maximizable:false"
+        style="width: 600px; height: 190px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <div id='winExport' style="float: left;">
+                    排序依赖：<select id="yilai" class="easyui-combobox" style="width: 80px; height: 25px">
+                        <option value="depart_name">部门</option>
+                        <option value="user_name">用户</option>
+                        <option value="event_cardid">卡号</option>
+                        <option value="caller_name">访客名</option>
+                        <option value="door_id">门号</option>
+                        <option value="door_name">门名</option>
+                        <option value="event_reason">动作</option>
+                        <option value="net_flag">网络状态</option>
+                        <option value="event_date">时间</option>
+                    </select>
+                    排序类型：<select id="paixu" class="easyui-combobox" style="width: 60px; height: 25px">
+                        <option value="asc">正序</option>
+                        <option value="desc">倒序</option>
+                    </select>
+                    格式：<select id="com" class="easyui-combobox" style="width: 60px; height: 25px">
+                        <option value="text">text</option>
+                        <option value="word">word</option>
+                        <option value="excel">excel</option>
+                    </select>
+                    <div style='display: inline;' id='spaceDiv'>
+                        间隔符：<select id="space" class="easyui-combobox" style="width: 60px; height: 25px">
+                            <option value="|">|</option>
+                            <option value=" ">空格</option>
+                        </select>
+                    </div>
+                    <input type="checkbox" id="all" checked="checked" />全选
+                    <input type="checkbox" id="notAll" uncheck="uncheck" />反选
+                </div>
+                <div id="commonPart">
+                    <input id='import' type="file" style="width: 250px;" name="import" />
+                </div>
+                <div id="do" style="clear: both;">
+                    <table>
+                        <tr>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp1" checked="checked" name='databox' onclick='clkdada();' />部门
+                            </td>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp2" checked="checked" name='databox' onclick='clkdada();' />用户
+                            </td>
+                            <td style="width: 70px">
+                                <input type="checkbox" id="temp3" checked="checked" name='databox' onclick='clkdada();' />卡号
+                            </td>
+                            <td style="width: 70px">
+                                <input type="checkbox" id="temp4" checked="checked" name='databox' onclick='clkdada();' />访客名
+                            </td>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp5" checked="checked" name='databox' onclick='clkdada();' />门号
+                            </td>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp6" checked="checked" name='databox' onclick='clkdada();' />门名
+                            </td>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp7" checked="checked" name='databox' onclick='clkdada();' />动作
+                            </td>
+                            <td style="width: 80px">
+                                <input type="checkbox" id="temp8" checked="checked" name='databox' onclick='clkdada();' />网络状态
+                            </td>
+                            <td style="width: 60px">
+                                <input type="checkbox" id="temp9" checked="checked" name='databox' onclick='clkdada();' />时间
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="fileCancel" onclick="$('#winFile').window('close');" style="width: 80px">取消</a>
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                    id="fileConfirm" style="width: 80px">确定</a>
+            </div>
+        </div>
+    </div>
+    <div id="mm" class="easyui-menu" data-options="onClick:XCommon.IniMenuHandler" style="width: 120px;">
+        <div data-options="iconCls:'icon-search'">
+            查询</div>
+        <div data-options="iconCls:'icon-clear'">
+            重置</div>
+        <div class="menu-sep">
+        </div>
+        <div data-options="iconCls:'icon-undo'">
+            退出</div>
+    </div>
+</body>
+</html>

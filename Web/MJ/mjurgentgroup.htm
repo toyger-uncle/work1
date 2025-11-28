@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var Ldatagrid;
+    var Rdatagrid;
+    var Ndatagrid;
+    var Ljsondata = { "total": 0, "rows": [] };
+    var Rjsondata = { "total": 0, "rows": [] };
+    var Njsondata = { "total": 0, "rows": [] };
+    var flag;
+    $(function () {
+        Ldatagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'group_name',
+                title: '紧急群组名',
+                //                sortable: true,
+                width: 80
+                //            editor: { type: 'text', options: { required: true} }
+            }]],
+            toolbar: [{
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    $('#win').window('open');
+                    var rows = Ldatagrid.datagrid('getSelected');
+                    $('#text').val(rows.group_name);
+                    $('#kai').combobox("setValue", rows.open_file);
+                    $('#guan').combobox("setValue", rows.close_file);
+                }
+
+            }],
+            onSelect: function (rowIndex, rowData) {
+                loadright();
+                Nloadright();
+            },
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                $('#text').val(rowData.group_name);
+                $('#kai').combobox("setValue", rowData.open_file);
+                $('#guan').combobox("setValue", rowData.close_file);
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        Rdatagrid = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "已分配",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'door_name',
+                title: '门名',
+                //                sortable: true,
+                width: 80
+                //            editor: { type: 'text', options: { required: true} }
+            }]],
+            onDblClickRow: function (rowIndex, row) {
+                var rowdata = Ldatagrid.datagrid('getSelected');
+                var ids = rowdata.id;
+                var rows = Rdatagrid.datagrid('getSelections');
+                $.messager.confirm("提示", "确定要取消该紧急群组中的门？", function (data) {
+                    if (data) {
+                        
+                    var doorid = row.door_id;
+                    Ajax(true, mj["RemoveMjUrgentDoor"], { LoginID: LocalID, door_id: doorid, group_id: ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        Nloadright();
+                        loadright();
+                        $.messager.alert("提示", "取消成功", "info");
+                    });
+                    }
+                });
+            }
+        });
+        Ndatagrid = $("#dg2").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "未分配",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'door_name',
+                title: '门名',
+                width: 80
+            }]],
+            onDblClickRow: function (rowIndex, row) {
+                var rowdata = Ldatagrid.datagrid('getSelected');
+                var ids = rowdata.id;
+                if (rowdata == "") {
+                    $.messager.alert("提示", "未选中项", "error");
+                    return;
+                }
+                $.messager.confirm("提示", "确定要对该紧急群组分配门？", function (data) {
+                    if (data) {
+                        
+                    var doorid = row.door_id;
+                    Ajax(true, mj["NewMjUrgentDoor"], { LoginID: LocalID, door_id: doorid, group_id: ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        Nloadright();
+                        loadright();
+                $.messager.alert("提示", "分配成功", "info");
+                    });
+                    }
+                });
+            }
+        });
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#moveOut").click(function () {
+            var rowdata = Ldatagrid.datagrid('getSelected');
+            var ids = rowdata.id;
+            var rows = Ndatagrid.datagrid('getSelections');
+            if (rows == "") {
+                $.messager.alert("提示", "未选中项", "error");
+                return;
+            }
+            $.messager.confirm("提示", "确定要对该紧急群组分配门？", function (data) {
+                if (data) {
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i];
+                        var doorid = row.door_id;
+                        Ajax(true, mj["NewMjUrgentDoor"], { LoginID: LocalID, door_id: doorid, group_id: ids }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            Nloadright();
+                            loadright();
+                        });
+                    }
+                    $.messager.alert("提示", "分配成功", "info");
+                }
+            });
+        });
+
+        $("#moveIn").click(function () {
+
+            if (rows == "") {
+                $.messager.alert("提示", "未选中项", "error");
+                return;
+            }
+            var rowdata = Ldatagrid.datagrid('getSelected');
+            var ids = rowdata.id;
+            var rows = Rdatagrid.datagrid('getSelections');
+            $.messager.confirm("提示", "确定要取消该紧急群组中的门？", function (data) {
+                if (data) {
+                    for (var i = 0; i < rows.length; i++) {
+                        var row = rows[i];
+                        var doorid = row.door_id;
+                        Ajax(true, mj["RemoveMjUrgentDoor"], { LoginID: LocalID, door_id: doorid, group_id: ids }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            Nloadright();
+                            loadright();
+                        });
+                    }
+                    $.messager.alert("提示", "取消成功", "info");
+                }
+            });
+        });
+        $("#save").click(function () {
+            var rows = Ldatagrid.datagrid('getSelected');
+            var kai = $('#kai').combobox("getValue");
+            var guan = $('#guan').combobox("getValue");
+            var name = $('#text').val();
+            if (kai == "") {
+                alert("开报警声不能为空！");
+                return;
+            }
+            if (guan == "") {
+                alert("关报警声不能为空！");
+                return;
+            }
+            if (name == "") {
+                alert("群组名不能为空！");
+                return;
+            }
+            if (name.length > 10) {
+                alert("群组名长度不能超过10！");
+                return;
+            }
+            var id = rows.id;
+            Ajax(true, mj["UpdateMjUrgentGroup"], { LoginID: LocalID, id: id, group_name: name, open_file: kai, close_file: guan }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                loaddata();
+                $.messager.alert("提示", "修改成功", "info");
+                $('#win').window('close');
+            });
+        });
+
+
+    });
+function loaddata() {
+    Ldatagrid.datagrid('unselectAll');
+    Ajax(true, mj["GetMjUrgentGroupList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        Ljsondata.rows = data.Data;
+        Ldatagrid.datagrid('loadData', Ljsondata);
+    });
+}
+function loadright() {
+    var datarow = Ldatagrid.datagrid('getSelected');
+    Rdatagrid.datagrid('unselectAll');
+    Ajax(true, mj["GetMjUrgentDoorList"], { LoginID: LocalID, group_id: datarow.id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Rjsondata.total = data.Data.length;
+            Rjsondata.rows = data.Data;
+            Rdatagrid.datagrid('loadData', Rjsondata);
+        });
+    }
+    function Nloadright() {
+        var datarow = Ldatagrid.datagrid('getSelected');
+        Ndatagrid.datagrid('unselectAll');
+        Ajax(true, mj["GetMjNullUrgentDoorList"], { LoginID: LocalID, group_id: datarow.id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Njsondata.total = data.Data.length;
+            Njsondata.rows = data.Data;
+            Ndatagrid.datagrid('loadData', Njsondata);
+        });
+    }
+    
+</script>
+
+    </head>
+<body>
+<!--<div class="easyui-panel" title="门状态" data-options="collapsible:true" style="width:100%;height:500px; padding:2px;">-->
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'west',collapsible:false"  style="width:33%; ">
+		 <table id="dg"></table>
+		</div>
+		<div data-options="region:'center'"  style="text-align:right;padding:2px 0 0; width:34%;">
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;text-align:right;"  id="moveIn">撤销 》</a>
+        <table id="dg1"style="width:100%; "></table>
+		</div>
+        <div data-options="region:'east'"  style="text-align:left;padding:2px 0 0; width:33%;">
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="moveOut" >《 分配</a>
+        <table id="dg2"style="width:100%; "></table>
+		</div>
+	</div>
+ <!--</div>-->
+ <div id="win" class="easyui-window" title="修改紧急群组" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:220px;height:220px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'north'" style="padding:10px;">
+        <table cellpadding="5">
+			<tr>
+				<td>群组名：</td>
+				<td><input id="text" class="easyui-validatebox textbox" style="width:80px;height:20px;"" /></td>
+			
+                </tr>
+            <tr>
+            <td>开报警声：</td>
+				<td> <select id="kai" class="easyui-combobox" style="width:80px">
+        <option value="0">无</option>  
+        <option value="1">声音1</option>  
+        <option value="2">声音2</option>  
+        <option value="3">声音3</option>  </select></td>
+			</tr>
+            <tr>
+            <td>关报警声：</td>
+				<td><select id="guan" class="easyui-combobox" style="width:80px">
+        <option value="0">无</option>  
+        <option value="1">声音1</option>  
+        <option value="2">声音2</option>  
+        <option value="3">声音3</option></select></td>
+			</tr>
+			
+            
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

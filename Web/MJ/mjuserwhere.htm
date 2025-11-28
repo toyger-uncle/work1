@@ -1,0 +1,362 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        Ajax(true, global.mj["GetMJWhereGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#quyu').combobox({
+                data: data.Data,
+                valueField: 'address_group_id',
+                textField: 'address_group'
+                //                onChange: function (newValue, oldValue) {
+                //                    loaddata(newValue);
+                //                }
+            });
+        });
+        Ajax(true, global.sys["GetDepartList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#bumen').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'department'
+                //                onChange: function (newValue, oldValue) {
+                //                    loaddata(newValue);
+                //                }
+            });
+        });
+        $('#com').combobox({
+            onChange: function (newValue, oldValue) {
+                if (newValue == "text") {
+                    $('#to').show();
+                }
+                else { $('#to').hide(); }
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            singleSelect: true,
+            columns: [[{
+                field: 'group_name',
+                title: '区域',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'depart_name',
+                title: '部门',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'userid_num',
+                title: '工号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'user_name',
+                title: '姓名',
+                width: 80,
+                sortable: true
+            }, {
+
+                field: 'in_date',
+                title: '进入时间',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'out_date',
+                title: '外出时间',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'door_name',
+                title: '门名',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'flag',
+                title: '状态',
+                width: 80,
+                sortable: true,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return "进";
+                    }
+                    if (value == "15") {
+                        return "出";
+                    }
+                }
+            }
+            ]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata($('#bumen').combobox('getValue'), $('#quyu').combobox('getValue'), $(":radio:checked").val(), $("#t1").val(), $("#t2").val());
+            }
+        });
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        loaddata($('#bumen').combobox('getValue'), $('#quyu').combobox('getValue'), $(":radio:checked").val());
+        $('#win1').window('close');
+        $("#search").click(function () {
+            PageNum = 1;
+            var p = datagrid.datagrid('getPager');
+            p.pagination('select', 1);
+        });
+        $("#shengcheng").click(function () {
+            $('#win1').window('open');
+        });
+
+        $("#save").click(function () {
+            var you = "";
+            if ($("#id").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "group_name";
+            }
+            if ($("#bm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "depart_name";
+            }
+            if ($("#gh").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "userid_num";
+            }
+            if ($("#xm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "user_name";
+            }
+            if ($("#indate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "in_date";
+            }
+            if ($("#outdate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "out_date";
+            }
+            if ($("#mm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "door_name";
+            }
+            if ($("#zt").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "flag";
+            }
+            if (you == "") {
+                alert("未选择目录项！");
+                return;
+            }
+            var fgf = $('#fgf').combobox('getValue');
+            var bm = $('#bumen').combobox('getValue');
+            var qy = $('#quyu').combobox('getValue');
+            var kinds = $('#com').combobox('getValue');
+            var yilai = $('#yilai').combobox('getValue');
+            var paixu = $('#paixu').combobox('getValue');
+            if (kinds == "") {
+                alert("未选择格式！");
+                return;
+            }
+            if (kinds == "text") {
+                var url = RTURL + global.export["ExportMjUserWherePageFile"] + "?LoginID=" + LocalID + "&depart_id=" + bm + "&area_id=" + qy + "&kind=" + $(":radio:checked").val() + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+            else {
+                var url = RTURL + global.export["ExportMjUserWherePageFile"] + "?LoginID=" + LocalID + "&depart_id=" + bm + "&area_id=" + qy + "&kind=" + $(":radio:checked").val() + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+        });
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+    });
+    function clkdada() {
+        var databox = $("#do").find("input:checkbox");
+        var j = 0;
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                j++;
+            }
+        }
+        if (j <= 2) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].checked) {
+                    databox[i].disabled = true;
+                }
+            }
+        }
+        else if (j > 7) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+    }
+function loaddata(bumen,quyu,kind,t1,t2) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, global.mj["GetMjUserWherePageList"], { LoginID: LocalID, area_id: quyu, depart_id: bumen, kind: kind, time1: t1, time2: t2, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.total = data.Ex;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+        if (jsondata.total == 0) {
+            PageNum = 1;
+        }
+        var p = datagrid.datagrid('getPager');
+        $(p).pagination({
+            beforePageText: '第', //页数文本框前显示的汉字 
+            afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+            displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+            onSelectPage: function (pageNumber, pageSize) {
+                PageSize = pageSize;
+                PageNum = pageNumber;
+                if (PageNum < 1) {
+                    PageNum = 1;
+                }
+                if ($(":radio:checked").val() == "6") {
+                    loaddata($('#bumen').combobox('getValue'), $('#quyu').combobox('getValue'), $(":radio:checked").val(), $("#t1").val(), $("#t2").val());
+                }
+                else { loaddata($('#bumen').combobox('getValue'), $('#quyu').combobox('getValue'), $(":radio:checked").val()); }
+            }
+        });
+    });
+}
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="区域人员" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; ">
+<div style="width:100%; height:550px;">
+<div>   
+部门:<select id="bumen" class="easyui-combobox"  style="width:80px;height:20px"></select>
+区域:<select id="quyu" class="easyui-combobox"  style="width:80px;height:20px"></select> 
+<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng" >导出</a>
+</div>
+<div style="padding:2px; ">
+<input id="in" name="all" checked="checked" value="0" type="radio"/>进入
+<input id="out" name="all" value="1" type="radio"/>外出
+<input id="todayin" name="all"  value="2" type="radio"/>今日进入
+<input id="todayout" name="all" value="3" type="radio"/>今日外出
+<input id="daka" name="all"  value="4" type="radio"/>今日打卡
+<input id="nodake" name="all" value="5" type="radio"/>今日未打卡
+<input id="chaoshi" name="all" value="6" type="radio"/>进入超时
+<input id="t1" class="easyui-validatebox textbox" style="width:20px" value="0"  />至
+<input id="t2" class="easyui-validatebox textbox" style="width:20px" value="0" />小时
+</div>
+	<table id="dg"style="padding: 5px;"data-options="pagination:true"> </table>  
+</div>
+     </div>
+     <div id="win1" class="easyui-window" title="导出" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:200px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+    <div style="padding:5px;">
+    排序依赖：<select id="yilai" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="group_name">区域</option>
+                <option value="depart_name">部门</option>
+                <option value="userid_num">工号</option>
+                <option value="user_name">姓名</option>
+                <option value="in_date">进入时间</option>
+                <option value="out_date">外出时间</option>
+                <option value="door_name">门名</option>
+                <option value="flag">状态</option></select>
+    排序类型：<select id="paixu" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="asc">正序</option>
+                <option value="desc">倒序</option></select>
+            格式：<select id="com" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="text">text</option>
+                <option value="word">word</option>
+                <option value="excel">excel</option></select>
+			<input type="checkbox" id="all" checked="checked" />全部</div>
+        <div id="do" style="padding:5px;">
+        <div id="to" style="padding:5px;">
+                分隔符：<select id="fgf" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="|">竖杠</option>
+                <option value=" ">空格</option></select></div>
+			<input type="checkbox" id="id"checked="checked"name='databox' onclick='clkdada();' />区域
+            <input type="checkbox" id="bm"checked="checked" name='databox' onclick='clkdada();' />部门
+			<!--<input type="checkbox" id="gh" checked="checked" name='databox'onclick='clkdada();'/>工号-->
+            <input type="checkbox" id="xm" checked="checked"name='databox'onclick='clkdada();' />姓名
+			<input type="checkbox" id="indate"checked="checked" name='databox'onclick='clkdada();' />进入时间
+            <input type="checkbox" id="outdate" checked="checked" name='databox'onclick='clkdada();' />外出时间
+			<input type="checkbox" id="mm" checked="checked"name='databox' onclick='clkdada();'/>门名
+            <input type="checkbox" id="zt" checked="checked" name='databox'onclick='clkdada();' />状态
+            </div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">取消</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">确定</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

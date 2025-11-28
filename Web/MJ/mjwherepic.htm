@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var doordivHTML = "";
+    var chang;
+    var rool;
+    var status = 0;
+    var dataURL;
+    var CTLDIV = null;
+    $(function () {
+        Ajax(true, global.mj["GetMJWhereGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#qy').combobox({
+                data: data.Data,
+                valueField: 'address_group_id',
+                textField: 'address_group',
+                onLoadSuccess: function () {
+                    var data = $('#qy').combobox('getData');
+                    $("#qy").combobox('select', data[0].address_group_id);
+                },
+                onChange: function (newValue, oldValue) {
+                    loaddata(newValue);
+                    xianshi(newValue);
+                    ChickClient();
+                }
+            });
+        });
+        $('#show').hide();
+        $('#shezhi').show();
+        $('#shangchuan').hide();
+        $('#file_upload').hide();
+
+        $("#shezhi").click(function () {
+            $('#show').show();
+            $('#shezhi').hide();
+            $('#shangchuan').show();
+            $('#file_upload').show();
+            var idd = $('#qy').combobox('getValue');
+            status = 1;
+            loaddata(idd);
+        });
+        $("#show").click(function () {
+            $('#show').hide();
+            $('#shezhi').show();
+            $('#shangchuan').hide();
+            $('#file_upload').hide();
+            var idd = $('#qy').combobox('getValue');
+            status = 0;
+            loaddata(idd);
+        });
+        $("#shangchuan").click(function () {
+            var ids = $("#qy").combobox("getValue");
+            var $file = $("#file_upload");
+            var fileObj = $file[0];
+            if (ids == "" || ids == null) {
+                alert("请选择区域！");
+                return;
+            }
+            if (fileObj && fileObj.files && fileObj.files[0]) {
+                dataURL = fileObj.files[0];
+            }
+            ajaxFileUpload(global.mj["UpMJWhereGroupPic"], { LoginID: LocalID, address_group_id: ids }, "file_upload", function (data, status) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $.messager.alert("提示", "上传成功", "info");
+                setTimeout(function () { shuaxin(ids) }, 1000);
+                //                xianshi(ids);
+
+            });
+        });
+
+        //        $("#men1").draggable({
+        //            onStopDrag: function (e) {
+        //                var clientWidth = document.body.clientWidth;
+        //                var clientHeight = document.body.clientHeight;
+        //                var kuan = Math.round(e.clientX * 10000 / clientWidth);
+        //                var gao = Math.round(e.clientY * 10000 / clientHeight);
+        //                var row = $('#dg').datagrid('getSelected');
+        //                var id = row.id;
+        //                Ajax(true, global.mj["UpdateMJControlDoorXY"], { LoginID: LocalID, id: id, pointx: kuan, pointy: gao }, function (data) {
+        //                    if (!data.Success) {
+        //                        alert(data.Message);
+        //                        return;
+        //                    }
+        //                });
+        //            }
+        //        });
+
+    });
+    function kaiguan(e) {
+        var id = e.id;
+        Ajax(true, global.mj["GetMJControlDoor"], { LoginID: LocalID, id: id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var zt = data.Data.door_status;
+            if (zt == 0) {
+                Ajax(true, global.mj["RemoteDoor"], { LoginID: LocalID, door_id: id, openOrClose: "1", time: "0" }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    var ab = data.Data;
+                    if (ab == true) {
+                        $.messager.alert("提示", "开门成功", "info");
+                    }
+                    else { $.messager.alert("提示", "开门失败", "error"); }
+                });
+            }
+            if (zt == 1) {
+
+                $.messager.alert("提示", "该门已处于打开状态", "error"); ;
+            }
+        });
+    }
+
+    function jilu() {
+        for (var i = 0; i < chang.length; i++) {
+            $("#" + chang[i].id).draggable({
+                onStopDrag: function (e) {
+                    var clientWidth = document.body.clientWidth;
+                    var clientHeight = document.body.clientHeight;
+                    var kuan = Math.round(e.clientX * 10000 / clientWidth);
+                    var gao = Math.round(e.clientY * 10000 / clientHeight);
+                    var ids = e.target.id;
+                    Ajax(true, global.mj["UpdateMJControlDoorXY"], { LoginID: LocalID, id: ids, pointx: kuan, pointy: gao }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                    });
+                }
+            });
+        }
+    }
+    function shuaxin(id) {
+        window.location.reload();
+        $('#qy').combobox("setValue", id);
+    }
+    function ChickClient() {
+        var Max = document.getElementById("Max");
+        var MaxHTML = "MAX:" + document.body.clientWidth + "*" + document.body.clientHeight;
+        if (Max.innerHTML != MaxHTML) {
+            Max.innerHTML = MaxHTML;
+        }
+    }
+
+    function mousePosition(ev) {
+        if (ev.pageX || ev.pageY) {
+            return { x: ev.pageX, y: ev.pageY };
+        }
+        return {
+            x: ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+            y: ev.clientY + document.body.scrollTop - document.body.clientTop
+        };
+    } 
+    function GetXY(ev) {
+        var Pos = document.getElementById("Pos");
+        if (document.all) { ev = window.event; }
+        var mousePos = mousePosition(ev);
+        if (window.event) { ev.returnValue = false; }
+        Pos.innerHTML = "POS:" + mousePos.x + "*" + mousePos.y;
+        if (CTLDIV != null) {
+            var x = mousePos.x - POSXY.x;
+            var y = mousePos.y - POSXY.y;
+            var left = (XY.x + x);
+            var top = (XY.y + y);
+            if (left < 0 || top < 0) {
+                return;
+            }
+            var clientWidth = document.body.clientWidth;
+            var clientHeight = document.body.clientHeight;
+            if (left > (clientWidth - 22) || top > (clientHeight - 22)) {
+                return;
+            }
+            CTLDIV.style.left = left + "px";
+            CTLDIV.style.top = top + "px";
+        }
+    }
+function loaddata(id) {
+    var divHTML = "";
+    var clientWidth = document.body.clientWidth;
+    var clientHeight = document.body.clientHeight;
+    var k = clientWidth / 10;
+    Ajax(true, global.mj["GetMJControlDoorList"], { LoginID: LocalID, address_group_id: id }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        chang = data.Data;
+        if (chang != undefined) {
+            for (var i = 0; i < chang.length; i++) {
+                var x = chang[i].pointx;
+                var y = chang[i].pointy;
+                var px = Math.round(x * clientWidth / 10000);
+                var py = Math.round(y * clientHeight / 10000);
+                divHTML += "<div id='" + chang[i].id + "' draggable='true' disable='false' style='top:";
+                if (x == "" || y == "") { divHTML += "0px; left:0px;width:20px; height:20px;z-index:129;display: inline;position:absolute;className:easyui-draggable; background-image:"; }
+                else { divHTML += (py - 40) + "px; left:" + (px - 10) + "px;width:20px; height:20px;z-index:129;display: inline;position:absolute; className:easyui-draggable; background-image:"; }
+                if (chang[i].door_status == "1") {
+                    divHTML += "url(../../Images/dooropenmin.gif);";
+                }
+                else {
+                    divHTML += "url(../../Images/doorclosemin.gif);";
+                }
+                divHTML += "cursor:move;' title='" + chang[i].door_name + "'";
+                if (status == "1") {
+                    divHTML += " ";
+                }
+                else {
+                    divHTML += "onclick='kaiguan(this);'";
+                }
+                divHTML += "></div>";
+            }
+            if (divHTML != doordivHTML) {
+                doordivHTML = divHTML;
+                var doordiv = document.getElementById("doordiv");
+                doordiv.innerHTML = doordivHTML;
+                if (status == "1") {
+                    jilu();
+                }
+            }
+        }
+    });
+}
+function xianshi(newValue) {
+    Ajax(true, global.mj["GetMJWhereGroup"], { LoginID: LocalID, address_group_id: newValue }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        var beijing = data.Data.pic_name;
+        if (beijing == null || beijing == "") {
+            document.getElementById("tu").src = "../../Images/pzcard_pzbz.gif";
+        }
+        else { document.getElementById("tu").src = "../../Picture/" + beijing + ""; }
+    });
+}
+</script>
+
+    </head>
+<body id="ibody" onmousemove="GetXY(event);">
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false" title=""style="padding:0px;z-index: 9; position: relative;height:30px ">
+区域：<select id="qy" class="easyui-combobox"  style="width:100px;"></select>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="show" style="width:80px">展示地图</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="shezhi" style="width:80px">设置地图</a>
+<input id="file_upload" type="file" style="width:100px;" name="file_upload"/>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="shangchuan" style="width:80px">上传地图</a>
+	</div>
+    <div id="biao" data-options="region:'west',collapsible:false" title=""style="padding:0px;width:100%; z-index: 9; position: relative;">
+    <img id="tu" width="100%" height="100%" style="z-index: 11; position: absolute;"/>
+    <div id="doordiv" style="z-index: 99;width:100%;height:100%; position: relative;" >
+    </div>
+     <div id="ID" style="top:0px; left:0px;z-index:119; position:absolute;">ID:001</div>
+     <div id="Max" style="top:0px; left:60px;z-index:119; position:absolute;"></div>
+     <div id="Pos" style="top:0px; left:180px;z-index:119; position:absolute;"></div>
+	</div> 
+	</div>
+
+
+</body>
+</html>

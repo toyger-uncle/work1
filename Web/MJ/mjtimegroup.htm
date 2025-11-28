@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        Ajax(true, mj["GetMjMngTimeList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#one').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'name'
+            });
+            $('#two').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'name'
+            });
+            $('#three').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'name'
+            });
+            $('#four').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'name'
+            });
+            $('#five').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'name'
+            });
+        });
+        var editRow = undefined;
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                width: 80
+            }, {
+                field: 'name',
+                title: '时区名',
+                width: 80
+            }, {
+                field: 'first_time',
+                title: '第一时间段',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return '非法';
+                    }
+                    else { return row.first_name; }
+                }
+            }, {
+                field: 'second_time',
+                title: '第二时间段',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return '非法';
+                    }
+                    else { return row.second_name; }
+                }
+            }, {
+                field: 'three_time',
+                title: '第三时间段',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return '非法';
+                    }
+                    else { return row.three_name; }
+                }
+            }, {
+                field: 'four_time',
+                title: '第四时间段',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return '非法';
+                    }
+                    else { return row.four_name; }
+                }
+            }, {
+                field: 'five_time',
+                title: '第五时间段',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "00") {
+                        return '非法';
+                    }
+                    else { return row.five_name; }
+                }
+
+            }]],
+            toolbar: [{
+
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    else {
+                        $('#win1').window('open');
+                        id = rows.id;
+                        $("#name").val(rows.name);
+                        $("#one").combobox("setValue", rows.first_time);
+                        $("#two").combobox("setValue", rows.second_time);
+                        $("#three").combobox("setValue", rows.three_time);
+                        $("#four").combobox("setValue", rows.four_time);
+                        $("#five").combobox("setValue", rows.five_time);
+                        editRow = 1;
+                    }
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                else {
+                    $('#win1').window('open');
+                    id = rows.id;
+                    $("#name").val(rows.name);
+                    $("#one").combobox("setValue", rows.first_time);
+                    $("#two").combobox("setValue", rows.second_time);
+                    $("#three").combobox("setValue", rows.three_time);
+                    $("#four").combobox("setValue", rows.four_time);
+                    $("#five").combobox("setValue", rows.five_time);
+                    editRow = 1;
+                }
+            }
+        });
+        loaddata();
+        $('#win1').window('close');
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+
+        $("#save").click(function () {
+            if (editRow == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                var name = $("#name").val();
+                var ft = $("#one").combobox("getValue");
+                var st = $("#two").combobox("getValue");
+                var tt = $("#three").combobox("getValue");
+                var ft4 = $("#four").combobox("getValue");
+                var ft5 = $("#five").combobox("getValue");
+                if (name == "") {
+                    $.messager.alert("提示", "时区名不能为空", "error");
+                    return;
+                }
+                if (name.length > 10) {
+                    $.messager.alert("提示", "时区名长度不能超过10", "error");
+                    return;
+                }
+                if (ft == "") {
+                    $.messager.alert("提示", "第一时段不能为空", "error");
+                    return;
+                }
+                if (st == "") {
+                    $.messager.alert("提示", "第二时段不能为空", "error");
+                    return;
+                }
+                if (tt == "") {
+                    $.messager.alert("提示", "第三时段不能为空", "error");
+                    return;
+                }
+                if (ft4 == "") {
+                    $.messager.alert("提示", "第四时段不能为空", "error");
+                    return;
+                }
+                if (ft5 == "") {
+                    $.messager.alert("提示", "第五时段不能为空", "error");
+                    return;
+                }
+                Ajax(true, mj["UpdateMjTimeGroup"], { LoginID: LocalID, id: ids, name: name, first_time: ft, second_time: st, three_time: tt, four_time: ft4, five_time: ft5 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    loaddata();
+                    $('#win1').window('close');
+                });
+                editRow = undefined;
+            }
+        });
+    });
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, mj["GetMjTimeGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="时区" data-options="collapsible:true,maximized:true" style="width:100%;height:580px; padding:2px;">
+<div class="easyui-layout" data-options="fit:true"style="">
+         <div data-options="region:'west'" style=" width: 100%">
+        <table id="dg"></table>
+        </div>
+        </div>
+    </div>
+    <div id="win1" class="easyui-window" title="时区维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:280px;padding:2px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'north'" style="padding:2px;">
+        <table cellpadding="5">
+			<tr>
+				<td>时区名：</td>
+				<td><input id="name" class="easyui-validatebox textbox" data-options="required:true, validType: 'length[1,10]', prompt: '长度不能超过10'" style="width:100px;"/></td>
+			
+                </tr>
+            <tr>
+            <td>第一时段：</td>
+				<td> <select id="one" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			</tr>
+            <tr>
+            <td>第二时段：</td>
+				<td><select id="two" class="easyui-combobox"  style="width:100px;"> </select></td>
+			</tr>
+			<tr>
+            <td>第三时段： </td>
+				<td> <select id="three" class="easyui-combobox"  style="width:100px;">  </select></td>
+			</tr>
+            <tr>
+            <td>第四时段：</td>
+				<td><select id="four" class="easyui-combobox"  style="width:100px;"> </select></td>
+			</tr>
+            <tr>
+            <td>第五时段： </td>
+				<td><select id="five" class="easyui-combobox"  style="width:100px;">  </select></td>
+			</tr>
+		</table>
+	</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+</div>
+</div>
+</body>
+</html>

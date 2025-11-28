@@ -1,0 +1,179 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+        <style  type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 0px;
+}
+</style>
+    <style  type="text/css" media="print">
+    .noprint
+    {
+        display:none }
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var datatable;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        var zw;
+        var bm;
+        var fa;
+        var cf;
+        Ajax(true, global.lg["GetCompanyName"], {}, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            document.getElementById('wc').innerHTML = data.Data;
+
+        });
+        tree = $("#tt").tree({
+            animate: true,
+            onSelect: function (node) {
+                if (node.attributes.kind == "U") {
+                    Ajax(true, global.sys["GetUserFile"], { LoginID: LocalID, id: node.id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        document.getElementById('img2').src = "../../Photo/" + data.Data.photo;
+                        document.getElementById('name').innerHTML = data.Data.user_name;
+                        zw = data.Data.class_kind;
+                        if (data.Data.department == null)
+                        { document.getElementById('bm').innerHTML = ""; }
+                        else {
+                            document.getElementById('bm').innerHTML = data.Data.department;
+                        }
+                        bm = data.Data.depart_id;
+                        cf = "../../Qr/" + data.Data.qrcode;
+                        document.getElementById('bh').innerHTML = data.Data.userid_num;
+                        Ajax(true, global.sys["GetHeadship"], { LoginID: LocalID, id: zw }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data.headship == null) { document.getElementById('zw').innerHTML = ""; }
+                            else {
+                                document.getElementById('zw').innerHTML = data.Data.headship;
+                            }
+                        });
+                        Ajax(true, global.sys["GetDepart"], { LoginID: LocalID, id: bm }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            fa = data.Data.farther_depart;
+                            Ajax(true, global.sys["GetDepart"], { LoginID: LocalID, id: fa }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data.department == null) { document.getElementById('dw').innerHTML = ""; }
+                                //                            if (data.Data.department.length < 13) {
+                                else { document.getElementById('dw').innerHTML = data.Data.department; }
+
+                            });
+                        });
+                    });
+                }
+                else {
+                    document.getElementById('img2').src = "";
+                    document.getElementById('dw').innerHTML = "";
+                    document.getElementById('name').innerHTML = "";
+                    document.getElementById('zw').innerHTML = "";
+                    document.getElementById('bm').innerHTML = "";
+                    document.getElementById('bh').innerHTML = "";
+                }
+            }
+        });
+        loaddata();
+        $("#dayin").click(function () {
+            return;
+            document.getElementById('ee').focus();
+            window.print();
+        });
+        $("#A1").click(function () {
+            window.location.href = "erweima.htm?id=../../Qr/" + cf;
+        });
+        $("#fanhui").click(function () {
+
+            window.location.href = "erweima.htm?id=../../Qr/" + cf;
+
+        });
+    });
+    function loaddata() {
+        Ajax(true, global.sys["GetAllDepartUserCardTree"], { LoginID: LocalID, iconUls: 'icon-man', iconCls: 'icon-tool', iconUlsex: 'icon-man-R', state: 'closed' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = JSON2.parse(data.Data);
+            tree.tree('loadData', jsondata.rows);
+//            if (id != null) {
+//                var nodeE = $('#tt').tree('find', id);
+//                $('#tt').tree('check', nodeE.target);
+//            }
+        });
+    }
+//    function loadright(id) {
+//        var nodes = tree.tree('getChecked');
+//        Ajax(true, global.sys["GetUserFile"], { LoginID: LocalID, id: id }, function (data) {
+//            if (!data.Success) {
+//                alert(data.Message);
+//                return;
+//            }
+//            document.getElementById('img2').src = data.Data.photo;
+//            document.getElementById('name').innerHTML = data.Data.user_name;
+//            document.getElementById('bh').innerHTML = data.Data.userid_num;
+//            document.getElementById('bm').innerHTML = data.Data.department;
+//            document.getElementById('dw').innerHTML = data.Data.userid_num;
+//            document.getElementById('bh').innerHTML = data.Data.userid_num;
+//        });
+//       
+//    }
+</script>
+</head>
+<body>
+		<div id="ee" style=" width:270px;height:435px;float:left; border:0px solid #000;">
+        <div><img id="img1" src="../../Images/logo.png" style="width:90px;height:40px; text-align: center;padding-top:0px;padding-top:15px;padding-left:15px; padding-bottom:15px;"></div>
+        <div style="text-align: center;"><img id="img2" style="width:120px;height:150px; text-align: center;border:0px solid #000000;"></div>
+         <div style="padding:15px 20px 5px 20px;">
+            <div style=" font-size: 18px;border:0px solid #000000; border-bottom:1px solid #000000; color:#1c2a50;font-family: 微软雅黑;">姓名：<div style="display:inline;font-weight:bold;" id="name"></div></div>
+            <div style="padding-top:5px;font-size: 18px; border:0px solid #000000; border-bottom:1px solid #000000;color:#1c2a50; font-family: 微软雅黑;">职务：<div style="display:inline;font-weight:bold;" id="zw"></div></div>
+            <div  style="padding-top:5px;font-size: 18px;border:0px solid #000000; border-bottom:1px solid #000000;color:#1c2a50;font-family: 微软雅黑;">部门：<div style="display:inline;font-weight:bold;" id="bm"></div></div>
+            <div  style="padding-top:5px;font-size: 18px;border:0px solid #000000; border-bottom:1px solid #000000;color:#1c2a50;font-family: 微软雅黑;">单位：<div style="display:inline;font-weight:bold;" id="dw"></div></div>
+
+            <div  style="padding-top:5px;font-size: 18px;border:0px solid #000000; border-bottom:1px solid #000000;color:#1c2a50;font-family: 微软雅黑;">编号：<div style="display:inline;font-weight:bold;" id="bh"></div></div>
+            </div>
+            <div id ="wc" style="background-color: #1c2a50; color: #FFFFFF; font-weight:bold;font-size: 20px; text-align: center;padding-top:10px;padding-bottom:15px;font-family: 微软雅黑;"></div>
+             <div  class="noprint"style="text-align: center;"><a class="noprint"onclick=""  href="xiangqingdayinX.htm"style="width:80px; text-align: center;font-size: 20px;" id="dayin" target="_black">打印</a>
+               </div>
+		</div>
+      <div class="noprint"data-options="" title=""style="width:250px;float:right; overflow-x: hidden; overflow-y: auto;">
+               <!--<div class="noprint">
+        <input type="text" id="findnode"/><input type="button" id="btn" value="搜索"/>
+               </div>-->
+<div class="" title="人员树" style="width:250px;height:100%;">
+		    <ul class="" id="tt" style="font-size: x-large"></ul></div>
+		</div>
+     
+</body>
+</html>

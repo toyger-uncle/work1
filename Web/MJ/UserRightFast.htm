@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="js/UserRightFast.js" type="text/javascript"></script>
+</head>
+<body class="easyui-layout">
+    <div data-options="region:'north',iconCls:'icon-ok',split:true" title="设置" style="height: 30%;">
+        <center>
+            <a id='barAdd' href="#" class="easyui-linkbutton" iconcls="icon-add" plain="true"
+                onclick='toolAddClick()'>提交</a> &nbsp;&nbsp;&nbsp; <a id='clear' href="#" class="easyui-linkbutton"
+                    iconcls="icon-clear" plain="true" onclick='toolResetClick()'>重置</a>
+            <br />
+            <table cellpadding="1px" cellspacing="5px">
+                <tr>
+                    <th align="right" style="width: 60px;">
+                        群组名:
+                    </th>
+                    <td align="left">
+                        <input id='tool_area' class='easyui-combobox' style='width: 100px' />
+                    </td>
+                </tr>
+                <tr>
+                    <th align="right" style="width: 80px;">
+                        门层次管制:
+                    </th>
+                    <td align="left">
+                        <input id='apb' class='easyui-combobox' data-options="valueField: 'id',
+		textField: 'text',
+		data:[{ 'id': 0, 'text': '不执行' }, { 'id': 1, 'text': '执行'}]" style='width: 100px' />
+                    </td>
+                </tr>
+            </table>
+        </center>
+    </div>
+    <div data-options="region:'west',split:true" title="部门-人" style="width: 50%;">
+        <ul id='tDep'>
+        </ul>
+    </div>
+    <div data-options="region:'center',split:true" title="区域-门">
+        <ul id='tYX'>
+        </ul>
+    </div>
+    <div id="mm" class="easyui-menu" data-options="onClick:XCommon.IniMenuHandler" style="width: 120px;">
+        <div data-options="iconCls:'icon-add'">
+            增加</div>
+        <div data-options="iconCls:'icon-clear'">
+            重置</div>
+        <div class="menu-sep">
+        </div>
+        <div data-options="iconCls:'icon-undo'">
+            退出</div>
+    </div>
+</body>
+</html>
