@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid1;
+    var jsondata1 = { "total": 0, "rows": [] };
+    var sortName1 = "cw_id";
+    var sortOrder1 = "asc";
+    var PageSize1 = 10;
+    var PageNum1 = 1;
+    $(function () {
+//        var curr_time1 = new Date();
+//        var strDate1 = curr_time1.getFullYear() + "-";
+//        strDate1 += curr_time1.getMonth() + 1 + "-";
+//        strDate1 += curr_time1.getDate() - 1;
+//        $("#dt11").datebox("setValue", strDate1);
+        Ajax(true, global.yd["GetPKCwInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'cw_id': '', 'cw_name': '全部' };
+            data.Data.push(temp);
+            $('#cw').combobox({
+                data: data.Data,
+                valueField: 'cw_id',
+                textField: 'cw_name'
+            });
+        });
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'pic_id': '', 'pic_name': '全部' };
+            data.Data.push(temp);
+            $('#cd1').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name'
+            });
+        });
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            sortName: sortName1,
+            sortOrder: sortOrder1,
+            singleSelect: true,
+            columns: [[{
+                field: 'region_name',
+                title: '区域',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'stop_v',
+                title: '使用率(%)',
+                width: 80,
+                sortable: true
+            }
+            ]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName1 = sort;
+                sortOrder1 = order;
+                loaddata1(($("#dt11").datebox("getValue") + " 00:00:00"), ($("#dt21").datebox("getValue") + " 23:59:59"), $('#cd1').combobox('getValue'), $('#cw').combobox('getValue'));
+            }
+        });
+        loaddata1(($("#dt11").datebox("getValue") + " 00:00:00"), ($("#dt21").datebox("getValue") + " 23:59:59"), $('#cd1').combobox('getValue'), $('#cw').combobox('getValue'));
+        $("#all1").change(function () {
+            if ($("#all1").prop("checked")) {
+                var d = $("#do1").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do1").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        $("#shengcheng1").click(function () {
+            $('#win11').window('open');
+        });
+        $("#close1").click(function () {
+            $('#win11').window('close');
+        });
+        $("#search1").click(function () {
+            PageNum1 = 1;
+            var p1 = datagrid1.datagrid('getPager');
+            p1.pagination('select', 1);
+        });
+        $("#save1").click(function () {
+            var you = "";
+            if ($("#id1").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "region_name";
+            }
+            if ($("#bm1").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "stop_v";
+            }
+            if (you == "") {
+                alert("未选择目录项！");
+                return;
+            }
+            var cw = $('#cw').combobox('getValue');
+            var cd = $('#cd1').combobox('getValue');
+            var fgf = $('#fgf1').combobox('getValue');
+            var kinds = $('#com1').combobox('getValue');
+            var yilai = $('#yilai1').combobox('getValue');
+            var paixu = $('#paixu1').combobox('getValue');
+            var BeginTime = $("#dt11").datebox("getValue") + " 00:00:00";
+            var EndTime = $("#dt21").datebox("getValue") + " 23:59:59";
+            if (kinds == "") {
+                alert("未选择格式！");
+                return;
+            }
+            if (kinds == "text") {
+                var url = RTURL + global.export["ExportPkRegionparkMxCwUsedRatePageFile"] + "?LoginID=" + LocalID + "&region_id=" + qy + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+            else {
+                var url = RTURL + global.export["ExportPkRegionparkMxCwUsedRatePageFile"] + "?LoginID=" + LocalID + "&region_id=" + qy + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+        });
+    });
+    function loaddata1(BeginTime, EndTime, cd, cw) {
+        Ajax(true, global.yd["GetPkCwRecordCwFlowPageList"], { LoginID: LocalID, pic_id: cd, cw_id: cw, kind: "0", BeginTime: BeginTime, EndTime: EndTime, sortName: sortName1, sortOrder: (sortOrder1 == "asc" ? false : true), pageSize: PageSize1, pageNum: PageNum1 }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.total = data.Ex;
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+            if (jsondata1.total == 0) {
+                PageNum1 = 1;
+            }
+            var p1 = datagrid1.datagrid('getPager');
+            $(p1).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata1.total / PageSize1) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize1 * (PageNum1 - 1) + (jsondata1.total == 0 ? 0 : 1)) + ' - ' + (PageSize1 * (PageNum1 - 1) + data.Data.length) + ' 条记录   共 ' + jsondata1.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize1 = pageSize;
+                    PageNum1 = pageNumber;
+                    if (PageNum1 < 1) {
+                        PageNum1 = 1;
+                    }
+                    loaddata1(($("#dt11").datebox("getValue") + " 00:00:00"), ($("#dt21").datebox("getValue") + " 23:59:59"), $('#cd1').combobox('getValue'), $('#cw').combobox('getValue'));
+                }
+            });
+        });
+    }
+    function clkdada1() {
+        var databox1 = $("#do1").find("input:checkbox");
+        var j = 0;
+        for (var i = 0; i < databox1.length; i++) {
+            if (databox1[i].checked) {
+                j++;
+            }
+        }
+        if (j <= 2) {
+            for (var i = 0; i < databox1.length; i++) {
+                if (databox1[i].checked) {
+                    databox1[i].disabled = true;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox1[i].disabled) {
+                    databox1[i].disabled = false;
+                }
+            }
+        }
+    }
+    </script>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',collapsible:false,border:false" style="padding:2px;" >
+<div style="padding:2px;">
+        场地：<select id="cd1" class="easyui-combobox"  style="width:100px;height:20px">  </select> 
+车位：<select id="cw" class="easyui-combobox"  style="width:100px;height:20px">  </select>
+时间从<input class="easyui-datebox" id="dt11"data-options="prompt:'请选择开始时间',required:true " style="width:150px"/> 
+到<input class="easyui-datebox" id="dt21"data-options="required:true" style="width:150px"/>
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="search1"data-options="iconCls:'icon-search'" >查询</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng1"style="width:60px;" >导出</a></div>
+</div>
+<div data-options="region:'west',collapsible:false,border:false"  >
+	<table id="dg1" data-options="pagination:true"></table>
+</div>
+     </div>
+</body>
+</html>

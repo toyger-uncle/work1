@@ -1,0 +1,470 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var doordivHTML = "";
+    var chang;
+    var rool;
+    var bh;
+    var a;
+    var status = 0;
+    var dataURL;
+    var CTLDIV = null;
+    $(function () {
+        $('#cx').combobox({
+            data: scene.jiaodu,
+            valueField: 'value',
+            textField: 'text'
+        });
+        Ajax(true, global.yd["GetPKRegionInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#qy').combobox({
+                data: data.Data,
+                valueField: 'region_id',
+                textField: 'region_name'
+            });
+        });
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cd1').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name'
+            });
+        });
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cd').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name',
+                onLoadSuccess: function () {
+                    var data = $('#cd').combobox('getData');
+                    if (data.length > 0) {
+                        $("#cd").combobox('select', data[0].pic_id);
+                    }
+                },
+                onChange: function (newValue, oldValue) {
+                    loaddata(newValue);
+                    xianshi(newValue);
+                    ChickClient();
+                }
+            });
+        });
+        $('#win1').window('close');
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+
+        $("#save").click(function () {
+            var id = $("#cwid").val();
+            var name = $("#name").val();
+            var cd = $("#cd1").combobox("getValue");
+            var qy = $("#qy").combobox("getValue");
+            var cx = $("#cx").combobox("getValue");
+            var yl = $("#yl").combobox("getValue");
+            var bl = $("#bl").numberbox("getValue");
+            var hzb = $("#hzb").val();
+            var zzb = $("#zzb").val();
+            if (name == "") {
+                $.messager.alert("提示", "车位名不能为空！", "error");
+                $("#name").select();
+                return;
+            }
+            if (id == "") {
+                $.messager.alert("提示", "车位号不能为空！", "error");
+                $("#cwid").select();
+                return;
+            }
+            if (name.length > 10) {
+                $.messager.alert("提示", "采集器名长度不能超过10！", "error");
+                $("#name").select();
+                return;
+            }
+            if (cd == "") {
+                $.messager.alert("提示", "场地不能为空！", "error");
+                $("#cd").select();
+                return;
+            }
+            if (qy == "") {
+                $.messager.alert("提示", "区域不能为空！", "error");
+                $("#qy").select();
+                return;
+            }
+            if (a == 0) {
+                Ajax(true, global.yd["NewPKCwInfo"], { LoginID: LocalID, cw_id: id, region_id: qy, pic_id: cd, cw_name: name, degree: cx, zoom: bl, yl: yl, pointx: hzb, pointy: zzb }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    shuaxin();
+                });
+            }
+            if (a == 1) {
+                var curr_time = new Date();
+                var bt = curr_time.getFullYear() + "-";
+                if (curr_time.getMonth() + 1 < 10) {
+                    bt += "0" + (curr_time.getMonth() + 1).toString() + "-";
+                }
+                else { bt += (curr_time.getMonth() + 1).toString() + "-"; }
+                if (curr_time.getDate() < 10) {
+                    bt += "0" + (curr_time.getDate()).toString();
+                }
+                else {
+                    bt += (curr_time.getDate()).toString();
+                }
+                bt += " " + curr_time.getHours() + ":";
+                bt += curr_time.getMinutes() + ":";
+                bt += curr_time.getSeconds();
+                Ajax(true, global.yd["UpdatePKCwInfo"], { LoginID: LocalID, cw_id: id, region_id: qy, pic_id: cd, cw_name: name, degree: cx, zoom: bl, yl: yl, pointx: hzb, pointy: zzb, oldcw_id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    shuaxin();
+                });
+            }
+        });
+        $("#shangchuan").click(function () {
+            var ids = $("#cd").combobox("getValue");
+            var $file = $("#file_upload");
+            var fileObj = $file[0];
+            if (ids == "" || ids == null) {
+                alert("请选择场地！");
+                return;
+            }
+            if (fileObj && fileObj.files && fileObj.files[0]) {
+                dataURL = fileObj.files[0];
+            }
+            ajaxFileUpload(global.yd["UpPKPicInfoPic"], { LoginID: LocalID, pic_id: ids }, "file_upload", function (data, status) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $.messager.alert("提示", "上传成功", "info");
+                setTimeout(function () { shuaxin(ids) }, 1000);
+            });
+        });
+
+    });
+    function jilu() {
+        for (var i = 0; i < chang.length; i++) {
+            $("#" + chang[i].cw_id).draggable({
+                onStopDrag: function (e) {
+                    var clientWidth = document.body.clientWidth;
+                    var clientHeight = document.body.clientHeight;
+                    var kuan = Math.round(e.clientX * 10000 / clientWidth);
+                    var gao = Math.round(e.clientY * 10000 / clientHeight);
+                    var ids = e.target.id;
+                    Ajax(true, global.yd["UpdatePKCwInfo"], { LoginID: LocalID, cw_id: ids, pointx: kuan, pointy: gao,oldcw_id:ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                    });
+                }
+            });
+        }
+    }
+    function shuaxin(id) {
+        window.location.reload();
+        $('#cd').combobox("setValue", id);
+    }
+
+    function ChickClient() {
+        var Max = document.getElementById("Max");
+        var MaxHTML = "MAX:" + document.body.clientWidth + "*" + document.body.clientHeight;
+        if (Max.innerHTML != MaxHTML) {
+            Max.innerHTML = MaxHTML;
+        }
+    }
+    function loaddata(id) {
+        var divHTML = "";
+        var clientWidth = document.body.clientWidth;
+        var clientHeight = document.body.clientHeight;
+        var k = clientWidth / 10;
+        Ajax(true, global.yd["GetPKCwInfoList"], { LoginID: LocalID, pic_id: id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            chang = data.Data;
+            if (chang != undefined) {
+                for (var i = 0; i < chang.length; i++) {
+                    var x = chang[i].pointx;
+                    var y = chang[i].pointy;
+                    var zoom = chang[i].zoom;
+                    var degree = chang[i].degree;
+                    var px = Math.round(x * clientWidth / 10000);
+                    var py = Math.round(y * clientHeight / 10000);
+                    divHTML += "<div draggable='true' disable='false' style='top:";
+                    if (x == "0" && y == "0") {
+                        divHTML += "0px; left:0";
+                        if (degree < 45 || (degree > 135 && degree < 225) || degree > 315) {
+                            divHTML += "px;width:" + Math.ceil(parseInt(zoom) * clientHeight * 2 / 1000) + "px; height:" +
+                            Math.ceil(parseInt(zoom) * clientHeight / 1000) + "px;z-index:129;display: inline;position:absolute;className:easyui-draggable; ";
+                        }
+                        else {
+                            divHTML += "px;width:" + Math.ceil(parseInt(zoom) * clientHeight / 1000) + "px; height:" +
+                            Math.ceil(parseInt(zoom) * clientHeight * 2 / 1000) + "px;z-index:129;display: inline;position:absolute;className:easyui-draggable; ";
+                        }
+                    }
+                    else {
+                        if (degree < 45 || (degree > 135 && degree < 225) || degree > 315) {
+                            divHTML += (py - 30 - Math.ceil(parseInt(zoom) * clientHeight / 1000)/2) + "px; left:" + (px - Math.ceil(parseInt(zoom) * clientHeight * 2 / 1000) / 2);
+                            divHTML += "px;width:" + Math.ceil(parseInt(zoom) * clientHeight * 2 / 1000) + "px; height:" +
+                            Math.ceil(parseInt(zoom) * clientHeight / 1000) + "px;z-index:129;display: inline;position:absolute;className:easyui-draggable; ";
+                        }
+                        else {
+                            divHTML += (py - 30 - Math.ceil(parseInt(zoom) * clientHeight / 1000)/2) + "px; left:" + (px - Math.ceil(parseInt(zoom) * clientHeight / 1000) / 2);
+                            divHTML += "px;width:" + Math.ceil(parseInt(zoom) * clientHeight / 1000) + "px; height:" +
+                            Math.ceil(parseInt(zoom) * clientHeight * 2 / 1000) + "px;z-index:129;display: inline;position:absolute;className:easyui-draggable; ";
+                        }
+                     }
+                    divHTML += "cursor:pointer;' title='" + chang[i].cw_name + "'";
+                    divHTML += "oncontextmenu='CwMenu(this,event);'";
+                    divHTML += "><img id='" + chang[i].cw_id + "' src='../../Images/" + degree + "-" + chang[i].car_exist + ".gif' style='width:100%; height:100%;'/></div>";
+                }
+                if (divHTML != doordivHTML) {
+                    doordivHTML = divHTML;
+                    var doordiv = document.getElementById("doordiv");
+                    doordiv.innerHTML = doordivHTML;
+                    jilu();
+                }
+            }
+        });
+    }
+    function xianshi(newValue) {
+        Ajax(true, global.yd["GetPKPicInfo"], { LoginID: LocalID, pic_id: newValue }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var beijing = data.Data.pic_file;
+            if (beijing == null || beijing == "") {
+                document.getElementById("tu").src = "../../Images/pzcard_pzbz.gif";
+            }
+            else { document.getElementById("tu").src = "../../Pic/" + beijing + ""; }
+        });
+    }
+    function CwMenu(obj, ev) {
+        var tblHtml = "<div style= 'width:100%;'>";
+        tblHtml += "<div data-options='iconCls:'icon-search'' onclick='UpCw(\"" + obj.id + "\",0);' style= 'font-size: medium;'>查看车位信息</div>";
+        tblHtml += "<div data-options='iconCls:'icon-edit'' onclick='NewCw();' style= 'font-size: medium;'>新增车位信息</div>";
+        tblHtml += "<div data-options='iconCls:'icon-edit'' onclick='UpCw(\"" + obj.id + "\",1);' style= 'font-size: medium;'>修改车位信息</div>";
+        tblHtml += "<div data-options='iconCls:'icon-remove'' onclick='DeCw(\"" + obj.id + "\")' style= 'font-size: medium;'>删除车位</div></div>";
+        if (document.all) { ev = window.event; }
+        var mousePos = mousePosition(ev);
+        var divObj = document.getElementById("mm");
+        divObj.innerHTML = tblHtml;
+        divObj.style.left = (mousePos.x - 5) + "px";
+        divObj.style.top = (mousePos.y - 5) + "px";
+        divObj.style.height = 80 + "px";
+        divObj.style.display = "block";
+        XCommon.IniMM();
+    }
+    function mousePosition(ev) {
+        if (ev.pageX || ev.pageY) {
+            return { x: ev.pageX, y: ev.pageY };
+        }
+        return {
+            x: ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+            y: ev.clientY + document.body.scrollTop - document.body.clientTop
+        };
+    }
+    function UpCw(id, w) {
+        Ajax(true, global.yd["GetPKCwInfo"], { LoginID: LocalID, cw_id: id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cwid').val(data.Data.cw_id);
+            $("#name").val(data.Data.cw_name);
+            $("#bl").numberbox("setValue", data.Data.zoom);
+            $("#cd1").combobox("setValue", data.Data.pic_id);
+            $("#qy").combobox("setValue", data.Data.region_id);
+            $("#cx").combobox("setValue", data.Data.degree);
+            $("#yl").combobox("setValue", data.Data.yl);
+            $("#hzb").val(data.Data.pointx);
+            $("#zzb").val(data.Data.pointy);
+            $('#win1').window('open');
+            if (w == 0) {
+                $('#cz').hide();
+            }
+            if (w == 1) {
+                $('#cz').show();
+                bh = data.Data.cw_id;
+                a = 1;
+            }
+        });
+    }
+    function DeCw(id) {
+        $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+            if (data) {
+                Ajax(true, global.yd["RemovePKCwInfo"], { LoginID: LocalID, cw_id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    shuaxin();
+                    $.messager.alert("提示", "删除成功", "info");
+                });
+            }
+        });
+    }
+    function NewCw() {
+        $('#cz').show();
+        $('#win1').window('open');
+        Ajax(true, global.yd["GetPKCwInfoMaxID"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cwid').val(data.Data);
+            $("#name").val("");
+            $("#bl").numberbox("setValue", "100");
+            $("#hzb").val("0");
+            $("#zzb").val("0");
+            $("#cd1").combobox("setValue", "");
+            $("#qy").combobox("setValue", "");
+            $("#cx").combobox("setValue", "0");
+            $("#yl").combobox("setValue", "0");
+            $("#cwid").select();
+        });
+        a = 0;
+    }
+    function yanzheng(d) {
+        Ajax(true, global.yd["ExistPKCwInfoID"], { LoginID: LocalID, cw_id: d.value }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                $("#cwid").select();
+                return;
+            }
+        });
+    }
+    function GetXY(ev) {
+        var Pos = document.getElementById("Pos");
+        if (document.all) { ev = window.event; }
+        var mousePos = mousePosition(ev);
+        if (window.event) { ev.returnValue = false; }
+        Pos.innerHTML = "POS:" + mousePos.x + "*" + mousePos.y;
+        if (CTLDIV != null) {
+            var x = mousePos.x - POSXY.x;
+            var y = mousePos.y - POSXY.y;
+            var left = (XY.x + x);
+            var top = (XY.y + y);
+            if (left < 0 || top < 0) {
+                return;
+            }
+            var clientWidth = document.body.clientWidth;
+            var clientHeight = document.body.clientHeight;
+            if (left > (clientWidth - 22) || top > (clientHeight - 22)) {
+                return;
+            }
+            CTLDIV.style.left = left + "px";
+            CTLDIV.style.top = top + "px";
+        }
+    }
+</script>
+
+    </head>
+<body id="ibody" onmousemove="GetXY(event);">
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false" title=""style="padding:0px;z-index: 9; position: relative;height:30px ">
+场地：<select id="cd" class="easyui-combobox"  style="width:100px;"></select>
+<input id="file_upload" type="file" style="width:100px;" name="file_upload"/>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="shangchuan" style="width:80px">上传地图</a>
+	</div>
+    <div id="biao" data-options="region:'west',collapsible:false" title=""style="padding:0px;width:100%; z-index: 9; position: relative;">
+    <img id="tu" width="100%" height="100%" style="z-index: 11; position: absolute;"/>
+    <div id="doordiv" style="z-index: 99;width:100%;height:100%; position: relative;" >
+    </div>
+     <div id="ID" style="top:0px; left:0px;z-index:119; position:absolute;">ID:001</div>
+     <div id="Max" style="top:0px; left:60px;z-index:119; position:absolute;"></div>
+     <div id="Pos" style="top:0px; left:180px;z-index:119; position:absolute;"></div>
+	</div> 
+	</div>
+
+
+    <div id="mm" class="easyui-menu" data-options="" style="width: 120px;">
+    </div>
+    <div id="win1" class="easyui-window" title="车位维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:350px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:2px;">
+			  <table cellpadding="3">
+			<tr>
+				<td>车位号：</td>
+				<td><input id="cwid" class="easyui-validatebox textbox" data-options="validType:'length[1,12]'" style="width:120px;height:20px;"maxlength="12" onblur="yanzheng(this);"/></td>
+			</tr>
+			<tr>
+			<td>车位名：</td>
+				<td><input id="name" name="name" class="easyui-validatebox textbox" data-options="required:true, validType: 'length[1,10]', prompt: '请输入车位名'" style="width:120px;height:20px"/></td>
+            </tr>
+             <tr>
+				<td>场地：</td>
+				<td><select id="cd1" class="easyui-combobox"  style="width:120px;height:20px">  </select> </td>
+			</tr>
+             <tr>
+				<td>区域：</td>
+				<td><select id="qy" class="easyui-combobox"  style="width:120px;height:20px">  </select> </td>
+			</tr>
+             <tr>
+				<td>朝向：</td>
+				<td><select id="cx" class="easyui-combobox"  style="width:120px;height:20px"></select> </td>
+			</tr>
+			<tr>
+				<td>比例:</td>
+				<td><input id="bl" class="easyui-numberbox" value="100" data-options="min:0,max:100"style="width:120px;height:20px" /></td>
+			</tr>
+             <tr>
+				<td>预留：</td>
+				<td><select id="yl" class="easyui-combobox"  style="width:120px;height:20px">
+                    <option value="0">否</option> 
+                    <option value="1">是</option>  </select> </td>
+			</tr>
+             <tr>
+				<td>横坐标：</td>
+				<td><input id="hzb" class="easyui-validatebox textbox" data-options=""style="width:120px;height:20px" /></td>
+			</tr>
+			<tr>
+				<td>纵坐标:</td>
+				<td><input id="zzb" class="easyui-validatebox textbox"  data-options=""style="width:120px;height:20px" /></td>
+			</tr>
+		</table>
+		</div>
+		<div id ="cz" data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,289 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + "-";
+        strDate += curr_time.getMonth() + 1 + "-";
+        strDate += curr_time.getDate() - 1;
+        $("#dt1").datebox("setValue", strDate);
+        $('#com').combobox({
+            onChange: function (newValue, oldValue) {
+                if (newValue == "text") {
+                    $('#to').show();
+                }
+                else { $('#to').hide(); }
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                width: 20,
+                sortable: true
+            }, {
+                field: 'card_id',
+                title: '卡号',
+                width: 40,
+                sortable: true
+            }, {
+                field: 'card_snr',
+                title: '卡序列号',
+                width: 40,
+                sortable: true
+            }, {
+                field: 'user_name',
+                title: '用户名',
+                width: 40,
+                sortable: true
+            }, {
+                field: 'demo',
+                title: '备注',
+                width: 120,
+                sortable: true
+            }, {
+                field: 'create_time',
+                title: '发生时间',
+                width: 80,
+                sortable: true
+            }
+            ]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata($("#name").val(), $("#card").val(), $("#dt1").datebox("getValue"), $("#dt2").datebox("getValue"));
+            }
+        });
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        loaddata($("#name").val(), $("#card").val(), $("#dt1").datebox("getValue"), $("#dt2").datebox("getValue"));
+        $('#win1').window('close');
+        $("#search").click(function () {
+            PageNum = 1;
+            var p = datagrid.datagrid('getPager');
+            p.pagination('select', 1);
+        });
+        $("#shengcheng").click(function () {
+            $('#win1').window('open');
+        });
+
+        $("#save").click(function () {
+            var you = "";
+            if ($("#id").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "card_id";
+            }
+            if ($("#bm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "card_snr";
+            }
+            if ($("#xm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "user_name";
+            }
+            if ($("#indate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "demo";
+            }
+            if ($("#outdate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "create_time";
+            }
+            if (you == "") {
+                alert("未选择目录项！");
+                return;
+            }
+            var name = $("#name").val();
+            var card = $("#card").val();
+            var BeginTime = $("#dt1").datebox("getValue");
+            var EndTime = $("#dt2").datebox("getValue");
+            var fgf = $('#fgf').combobox('getValue');
+            var kinds = $('#com').combobox('getValue');
+            var yilai = $('#yilai').combobox('getValue');
+            var paixu = $('#paixu').combobox('getValue');
+            if (kinds == "") {
+                alert("未选择格式！");
+                return;
+            }
+            if (kinds == "text") {
+                var url = RTURL + global.export["ExportXqMadecardLogPageFile"] + "?LoginID=" + LocalID + "&card_snr=" + card + "&user_name=" + name + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+            else {
+                var url = RTURL + global.export["ExportXqMadecardLogPageFile"] + "?LoginID=" + LocalID + "&card_snr=" + card + "&user_name=" + name + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+        });
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+    });
+    function clkdada() {
+        var databox = $("#do").find("input:checkbox");
+        var j = 0;
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                j++;
+            }
+        }
+        if (j <= 2) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].checked) {
+                    databox[i].disabled = true;
+                }
+            }
+        }
+        else if (j > 7) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+    }
+    function loaddata(name, card, BeginTime, EndTime) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.xq["GetXQMadeCardLogPageList"], { LoginID: LocalID, card_snr: card, user_name: name, BeginTime: BeginTime, EndTime: EndTime, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata($("#name").val(), $("#card").val(), $("#dt1").datebox("getValue"), $("#dt2").datebox("getValue")); 
+                }
+            });
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="小区做卡记录" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; ">
+<div style="width:100%; height:550px;">
+<div>   
+用户名：<input id="name" class="easyui-validatebox textbox" data-options="validType:'length[1,12]'" style="width:80px;height:20px"/>
+卡序列号：<input id="card" class="easyui-validatebox textbox" data-options="validType:'length[1,8]'" style="width:80px;height:20px"/>
+时间从<input class="easyui-datebox" id="dt1"data-options="prompt:'请选择开始时间',required:true " style="width:150px"/> 
+到<input class="easyui-datebox" id="dt2"data-options="required:true"value="${notices.release_time}" style="width:150px"/> 
+<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng" >导出</a>
+</div>
+	<table id="dg"style="padding: 5px;"data-options="pagination:true"> </table>  
+</div>
+     </div>
+     <div id="win1" class="easyui-window" title="导出" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:200px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+    <div style="padding:5px;">
+    排序依赖：<select id="yilai" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="card_id">卡号</option>
+                <option value="card_snr">卡序列号</option>
+                <option value="user_name">用户</option>
+                <option value="demo">备注</option>
+                <option value="create_time">时间</option></select>
+    排序类型：<select id="paixu" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="asc">正序</option>
+                <option value="desc">倒序</option></select>
+            格式：<select id="com" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="text">text</option>
+                <option value="word">word</option>
+                <option value="excel">excel</option></select>
+			<input type="checkbox" id="all" checked="checked" />全部</div>
+        <div id="do" style="padding:5px;">
+        <div id="to" style="padding:5px;">
+                分隔符：<select id="fgf" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="|">竖杠</option>
+                <option value=" ">空格</option></select></div>
+			<input type="checkbox" id="id"checked="checked"name='databox' onclick='clkdada();' />卡号
+            <input type="checkbox" id="bm"checked="checked" name='databox' onclick='clkdada();' />卡序列号
+            <input type="checkbox" id="xm" checked="checked"name='databox'onclick='clkdada();' />用户
+			<input type="checkbox" id="indate"checked="checked" name='databox'onclick='clkdada();' />备注
+            <input type="checkbox" id="outdate" checked="checked" name='databox'onclick='clkdada();' />时间
+            </div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">取消</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">确定</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+$(function () {
+    Ajax(true, global.rl["GetRlMachList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#rlj').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'mach_name'
+        });
+    });
+    $("#search").click(function () {
+        var id = $("#id").val();
+        var user_name = $("#user_name").val();
+        var rlj = $("#rlj").combobox('getValue');
+        Ajax(true, global.rl.InputDataRL, { LoginID: LocalID, mach_id: rlj, user_name: user_name, user_id: id }, function (data) {
+            if (!data.Success) {
+                $.messager.alert('提示', data.Message, 'error');
+                
+                return;
+            };
+
+        });
+    });
+    $("#A1").click(function () {
+        var id = $("#id").val();
+        var user_name = $("#user_name").val();
+        var rlj = $("#rlj").combobox('getValue');
+        Ajax(true, global.rl.OutputDataRL, { LoginID: LocalID, mach_id: rlj, user_id: id }, function (data) {
+            if (!data.Success) {
+                $.messager.alert('提示', data.Message, 'error');
+                return;
+            };
+
+        });
+    });
+});
+</script>
+
+    </head>
+<body>
+<div>
+人员号：<input id="id" class="easyui-validatebox textbox" data-options="" style="width:100px;height:20px"/>
+人名：<input id="ren" class="easyui-validatebox textbox" data-options="" style="width:100px;height:20px"/>
+录入机：<select id="rlj" class="easyui-combobox"  style="width:100px;"> </select>
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'" >1</a>
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="A1" data-options="iconCls:'icon-search'">2</a></div>
+</body>
+</html>

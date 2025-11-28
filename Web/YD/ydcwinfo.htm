@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        $('#cx').combobox({
+            data: scene.jiaodu,
+            valueField: 'value',
+            textField: 'text'
+        });
+        Ajax(true, global.yd["GetPKRegionInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#qy').combobox({
+                data: data.Data,
+                valueField: 'region_id',
+                textField: 'region_name'
+            });
+        });
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cd').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name'
+            });
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "cw_id",
+            fitColumns: true,
+            striped: true,
+            title: "车位维护",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'cw_id',
+                title: '车位号',
+                width: 80
+
+            }, {
+                field: 'cw_name',
+                title: '车位名',
+                width: 80
+
+            }, {
+                field: 'region_name',
+                title: '区域名',
+                width: 80
+            }, {
+                field: 'pic_name',
+                title: '场地名',
+                width: 80
+            }, {
+                field: 'degree',
+                title: '朝向',
+                width: 80,
+                formatter: function (value, row) {
+                    return value+"°";
+                }
+            }, {
+                field: 'zoom',
+                title: '比例',
+                width: 80
+            }, {
+                field: 'yl',
+                title: '是否预留',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 0) {
+                        return "否";
+                    }
+                    if (value == 1) {
+                        return "是";
+                    }
+                }
+            }
+            ]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var ids;
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].cw_id;
+                                Ajax(true, global.yd["RemovePKCwInfo"], { LoginID: LocalID, cw_id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                    $.messager.alert("提示", "删除成功", "info");
+                                });
+                            }
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win1').window('open');
+                    $("#cwid").val(rows.cw_id);
+                    $("#name").val(rows.cw_name);
+                    $("#cd").combobox("setValue", rows.pic_id);
+                    $("#qy").combobox("setValue", rows.region_id);
+                    $("#cx").combobox("setValue", rows.degree);
+                    $("#yl").combobox("setValue", rows.yl);
+                    $("#bl").numberbox("setValue", rows.zoom);
+                    a = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win1').window('open');
+                    Ajax(true, global.yd["GetPKCwInfoMaxID"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#cwid').val(data.Data);
+
+                    });
+                    $("#name").val("");
+                    $("#bl").numberbox("setValue", "100");
+                    $("#cd").combobox("setValue", "");
+                    $("#qy").combobox("setValue", "");
+                    $("#cx").combobox("setValue", "0");
+                    $("#yl").combobox("setValue", "0");
+                    $("#cwid").select();
+                    a = 0;
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win1').window('open');
+                $("#cwid").val(rowData.cw_id);
+                $("#name").val(rowData.cw_name);
+                $("#cd").combobox("setValue", rowData.pic_id);
+                $("#qy").combobox("setValue", rowData.region_id);
+                $("#cx").combobox("setValue", rowData.degree);
+                $("#yl").combobox("setValue", rowData.yl);
+                $("#bl").numberbox("setValue", rowData.zoom);
+                a = 1;
+            }
+        });
+        loaddata();
+        $('#win1').window('close');
+
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+        $("#save").click(function () {
+            var id = $("#cwid").val();
+            var name = $("#name").val();
+            var cd = $("#cd").combobox("getValue");
+            var qy =$("#qy").combobox("getValue");
+            var cx =$("#cx").combobox("getValue");
+            var yl =$("#yl").combobox("getValue");
+            var bl = $("#bl").numberbox("getValue");
+            if (name == "") {
+                $.messager.alert("提示", "车位名不能为空！", "error");
+                $("#name").select();
+                return;
+            }
+            if (id == "") {
+                $.messager.alert("提示", "车位号不能为空！", "error");
+                $("#cwid").select();
+                return;
+            }
+            if (name.length > 10) {
+                $.messager.alert("提示", "采集器名长度不能超过10！", "error");
+                $("#name").select();
+                return;
+            }
+            if (cd == "") {
+                $.messager.alert("提示", "场地不能为空！", "error");
+                $("#cd").select();
+                return;
+            }
+            if (qy == "") {
+                $.messager.alert("提示", "区域不能为空！", "error");
+                $("#qy").select();
+                return;
+            }
+            if (a == 0) {
+                Ajax(true, global.yd["NewPKCwInfo"], { LoginID: LocalID, cw_id: id, region_id: qy, pic_id: cd, cw_name: name, degree: cx, zoom: bl, yl: yl }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata();
+                });
+            }
+            if (a == 1) {
+                var rowData = datagrid.datagrid('getSelected');
+                var idd = rowData.cw_id;
+                var curr_time = new Date();
+                var bt = curr_time.getFullYear() + "-";
+                if (curr_time.getMonth() + 1 < 10) {
+                    bt += "0" + (curr_time.getMonth() + 1).toString() + "-";
+                }
+                else { bt += (curr_time.getMonth() + 1).toString() + "-"; }
+                if (curr_time.getDate() < 10) {
+                    bt += "0" + (curr_time.getDate()).toString();
+                }
+                else {
+                    bt += (curr_time.getDate()).toString();
+                }
+                bt += " " + curr_time.getHours() + ":";
+                bt += curr_time.getMinutes() + ":";
+                bt += curr_time.getSeconds();
+                Ajax(true, global.yd["UpdatePKCwInfo"], { LoginID: LocalID, cw_id: id, region_id: qy, pic_id: cd, cw_name: name, degree: cx, zoom: bl, yl: yl, oldcw_id: idd }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata();
+                });
+            }
+        });
+
+    });
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.yd["GetPKCwInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+
+        });
+    }
+    function yanzheng(d) {
+        Ajax(true, global.yd["ExistPKCwInfoID"], { LoginID: LocalID, cw_id: d.value }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                $("#cwid").select();
+                return;
+            }
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+   <div style="padding:2px; "> <!--控制组名：<select id="text" class="easyui-combobox"  style="width:80px;height:20px">
+                            <option value="">全部</option>  </select>--></div>
+<div style="width:100%; height:400px;overflow:auto; ">
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div>
+</div>
+<div id="win1" class="easyui-window" title="车位维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:320px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>车位号：</td>
+				<td><input id="cwid" class="easyui-validatebox textbox" data-options="validType:'length[1,12]'" style="width:120px;height:20px;"maxlength="12" onblur="yanzheng(this);"/></td>
+			</tr>
+			<tr>
+			<td>车位名：</td>
+				<td><input id="name" name="name" class="easyui-validatebox textbox" data-options="required:true, validType: 'length[1,10]', prompt: '请输入车位名'" style="width:120px;height:20px"/></td>
+            </tr>
+             <tr>
+				<td>场地：</td>
+				<td><select id="cd" class="easyui-combobox"  style="width:120px;height:20px">  </select> </td>
+			</tr>
+             <tr>
+				<td>区域：</td>
+				<td><select id="qy" class="easyui-combobox"  style="width:120px;height:20px">  </select> </td>
+			</tr>
+             <tr>
+				<td>朝向：</td>
+				<td><select id="cx" class="easyui-combobox"  style="width:120px;height:20px"></select> </td>
+			</tr>
+			<tr>
+				<td>比例:</td>
+				<td><input id="bl" class="easyui-numberbox" value="100" data-options="min:0,max:100"style="width:120px;height:20px" /></td>
+			</tr>
+             <tr>
+				<td>预留：</td>
+				<td><select id="yl" class="easyui-combobox"  style="width:120px;height:20px">
+                    <option value="0">否</option> 
+                    <option value="1">是</option>  </select> </td>
+			</tr>
+           
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,443 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var rool;
+    $(function () {
+        $('#kind1').combobox({
+            data: scene.zwjkind,
+            valueField: "value",
+            textField: "text",
+            onChange: function (newValue, oldValue) {
+                loaddata(newValue);
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'ck',
+                checkbox: true,
+                width: 20
+            }, {
+                field: 'id',
+                title: '机号',
+                width: 80
+
+            }, {
+                field: 'mach_name',
+                title: '指纹机名',
+                width: 80
+            }, {
+                field: 'mach_type',
+                title: '类型',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 01) {
+                        return '定制版';
+                    }
+                    if (value == 02) {
+                        return '通用版';
+                    }
+                }
+            }, {
+                field: 'work_flag',
+                title: '实时状态',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 0) {
+                        return '<font color="red">' + scene.workflag[value] + '</font>';
+                    }
+                    else if (value == 1) {
+                        return '<font color="green">' + scene.workflag[value] + '</font>';
+                    }
+                    else {
+                        return scene.workflag[value];
+                    }
+                }
+            }, {
+                field: 'last_time',
+                title: '最后通讯时间',
+                width: 80
+            }
+            ]],
+            onSelect: function (rowIndex, rowData) {
+                var row = datagrid.datagrid("getSelections");
+                if (row.length > 1) {
+                    var x = 0;
+                    for (var i = 0; i < row.length; i++) {
+                        if (row[i].mach_type == 01) {
+                            x = x + 1;
+                            break;
+                        }
+                    }
+                    if (x > 0) {
+                        $("#ceshi").hide();
+                        $("#duqu").hide();
+                        $("#do").hide();
+                    }
+                    else {
+                        $("#ceshi").hide();
+                        $("#duqu").hide();
+                        $("#do").show();
+                    }
+                }
+                if (row.length < 1) {
+                    $("#ceshi").hide();
+                    $("#duqu").hide();
+                    $("#do").hide();
+                }
+                if (row.length == 1) {
+                    $("#ceshi").show();
+                    $("#duqu").show();
+                    $("#do").show();
+                }
+            },
+            onUnselect: function (rowIndex, rowData) {
+                var row = datagrid.datagrid("getSelections");
+                if (row.length > 1) {
+                    var x = 0;
+                    for (var i = 0; i < row.length; i++) {
+                        if (row[i].mach_type == 01) {
+                            x = x + 1;
+                            break;
+                        }
+                    }
+                    if (x > 0) {
+                        $("#ceshi").hide();
+                        $("#duqu").hide();
+                        $("#do").hide();
+                    }
+                    else {
+                        $("#ceshi").hide();
+                        $("#duqu").hide();
+                        $("#do").show();
+                    }
+                }
+                if (row.length < 1) {
+                    $("#ceshi").hide();
+                    $("#duqu").hide();
+                    $("#do").hide();
+                }
+                if (row.length == 1) {
+                    $("#ceshi").show();
+                    $("#duqu").show();
+                    $("#do").show();
+                }
+            }
+        });
+        loaddata();
+        $("#ceshi").hide();
+        $("#duqu").hide();
+        $("#do").hide();
+        $("#chuanshu").click(function () {
+            var rows = datagrid.datagrid('getSelections');
+            var id;
+            var work_flag;
+            var changdu = rows.length;
+            var cg = 0;
+            var sb = 0;
+            var bh = "";
+            var pd = new Array(rows.length);
+            for (var i = 0; i < rows.length; i++) {
+                id = rows[i].id;
+                work_flag = rows[i].work_flag;
+                pd[i] = 0;
+                if (work_flag == 0) {
+                    alert("控制器" + id + "未连接！");
+                }
+                else {
+                    (function (i) {
+                        if ($("#yh").prop("checked")) {
+                            Ajax(true, global.zw["DownUser"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data == false) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        sb = jia(sb);
+                                        bh = diejia(bh, rows[i].id);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                                if (data.Data == true) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        cg = jia(cg);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                            });
+                        }
+                        if ($("#jl").prop("checked")) {
+                            Ajax(true, global.zw["UpRecord"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data == false) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        sb = jia(sb);
+                                        bh = diejia(bh, rows[i].id);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                                if (data.Data == true) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        cg = jia(cg);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                            });
+                        }
+                        if ($("#sz").prop("checked")) {
+                            Ajax(true, global.zw["SetTime"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data == false) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        sb = jia(sb);
+                                        bh = diejia(bh, rows[i].id);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                                if (data.Data == true) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        cg = jia(cg);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                            });
+                        }
+                        if ($("#zp").prop("checked")) {
+                            Ajax(true, global.zw["UpPhoto"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data == false) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        sb = jia(sb);
+                                        bh = diejia(bh, rows[i].id);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                                if (data.Data == true) {
+                                    if (pd[i] == 0) {
+                                        pd[i] = 1;
+                                        cg = jia(cg);
+                                        pand(changdu, sb, cg, bh);
+                                    }
+                                }
+                            });
+                        }
+                    })(i);
+                }
+            }
+        });
+        $("#ceshi").click(function () {
+            var rows = datagrid.datagrid('getSelected');
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id = rows.id;
+            Ajax(true, global.zw["TestConnectZW"], { LoginID: LocalID, mach_id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+            });
+        });
+        $("#zengliang").click(function () {
+            var rows = datagrid.datagrid('getSelections');
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id;
+            for (var i = 0; i < rows.length; i++) {
+                id = rows[i].id;
+                (function (id) {
+                    a = "";
+                    Ajax(true, global.zw["DownZW"], { LoginID: LocalID, mach_id: id, isAll: a }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                    });
+                })(id);
+            }
+        });
+        $("#quanbu").click(function () {
+            var rows = datagrid.datagrid('getSelections');
+            if (rows == "") {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id;
+            for (var i = 0; i < rows.length; i++) {
+                id = rows[i].id;
+                (function (id) {
+                    a = 1;
+                    $.messager.confirm("提示", "确定要全部重新下载吗，该操作时间较长", function (data) {
+                        if (data) {
+                            Ajax(true, global.zw["DownZW"], { LoginID: LocalID, mach_id: id, isAll: a }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                            });
+                        }
+                    });
+                })(id);
+            }
+        });
+        $("#duqu").click(function () {
+            var rows = datagrid.datagrid('getSelected');
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id = rows.id;
+            Ajax(true, global.zw["ReadZW"], { LoginID: LocalID, mach_id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+            });
+        });
+    });
+    function jia(zm) {
+        zm = zm + 1;
+        return zm;
+    }
+    function diejia(zm, id) {
+        if (zm == "") {
+            zm += id;
+        }
+        else {
+            zm += "," + id;
+        }
+        return zm;
+    }
+
+    function pand(a, b, c, d) {
+        if ((b + c) == a) {
+            if (d.length > 0) {
+                alert("控制器" + d + "未连接！");
+            }
+        }
+    }
+    function loaddata(kind) {
+        var rows = datagrid.datagrid('getSelections');
+        clearTimeout(rool);
+        Ajax(true, global.zw["GetZwMachList"], { LoginID: LocalID, mach_type: kind }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            rool = setTimeout(function () { loaddata(); }, 3000);
+            var id;
+            for (var i = 0; i < rows.length; i++) {
+                id = rows.id;
+                datagrid.datagrid('selectRecord', id);
+            }
+//            if (rows.length >= 1) {
+//                var x = 0;
+//                for (var i = 0; i < rows.length; i++) {
+//                    if (rows[i].mach_type == 01) {
+//                        x = x + 1;
+//                    }
+//                    break;
+//                }
+//                if (x > 0) {
+//                    $("#ceshi").hide();
+//                    $("#duqu").hide();
+//                    $("#do").hide();
+//                }
+//                else {
+//                    $("#ceshi").hide();
+//                    $("#duqu").hide();
+//                    $("#do").show();
+//                }
+//            }
+//            if (rows.length < 1) {
+//                $("#ceshi").hide();
+//                $("#duqu").hide();
+//                $("#do").hide();
+//            }
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="指纹机通讯" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true"style="">
+<div data-options="region:'north',collapsible:false,border:false" style="" >
+<div>
+类型：<select id="kind1" class="easyui-combobox"  style="width:100px;height:20px;">  </select>
+使用状况:<select id="kind" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="0">全部</option>
+        <option value="1">使用</option>
+        <option value="2">停用</option> </select>
+        <a class="easyui-linkbutton"  href="javascript:void(0)" id="ceshi" style="width:80px; ">测试连接</a>
+        <a class="easyui-linkbutton"  href="javascript:void(0)" id="zengliang" style="width:80px;">增量下载</a>
+        <a class="easyui-linkbutton"  href="javascript:void(0)" id="quanbu" style="width:80px; ">全部下载</a>
+        <a class="easyui-linkbutton"  href="javascript:void(0)" id="duqu" style="width:80px; ">读取数据</a>
+        </div>
+<div id ="do"> 
+<input type="checkbox" id="yh"    />用户
+<input type="checkbox" id="sz"   />时钟
+<input type="checkbox" id="jl"  />记录
+<input type="checkbox" id="zp"  />照片
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="chuanshu" >传输数据</a></div>
+</div>
+ <div data-options="region:'center',collapsible:false,border:false" style="padding:2px;" >
+		<table id="dg"style="padding: 5px;"> </table>  
+        </div>
+</div>
+     </div>
+</body>
+</html>

@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var doordivHTML = "";
+    var rool;
+    var bh;
+    var a=0;
+    var dataURL;
+    var Zuo = 0;
+    var CTLDIV = null;
+    var POSXY = null;
+    var XY = {
+        x: 0,
+        y: 0
+    };
+    var GHXY = {
+        f: true,
+        x: 0,
+        y: 0
+    };
+    var mu = 0;
+    var ID;
+    var rooltime = 20000;
+    $(function () {
+        myCanvas.width = document.body.clientWidth - 30;
+        myCanvas.height = document.body.clientHeight-60;
+        Ajax(true, global.yd["GetPKQueryEngineList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cx').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'mach_name',
+                onLoadSuccess: function () {
+                    var data = $('#cx').combobox('getData');
+                    if (data.length > 0) {
+                        $("#cx").combobox('select', data[0].id);
+                    }
+                },
+                onChange: function (newValue, oldValue) {
+                    Zuo = 0;
+                    GHXY.f = true;
+                    GHXY.x = 0;
+                    GHXY.y = 0
+                    context.clearRect(0, 0, myCanvas.width, myCanvas.height);  
+                    xianshi(newValue);
+                    ChickClient();
+                }
+            });
+        });
+        Ajax(true, global.yd["GetPKCwInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cw').combobox({
+                data: data.Data,
+                valueField: 'cw_id',
+                textField: 'cw_name',
+                onLoadSuccess: function () {
+                    var data = $('#cw').combobox('getData');
+                    if (data.length > 0) {
+                        $("#cw").combobox('select', data[0].cw_id);
+                    }
+                },
+                onChange: function (newValue, oldValue) {
+                    Zuo = 0;
+                    GHXY.f = true;
+                    GHXY.x = 0;
+                    GHXY.y = 0
+                    context.clearRect(0, 0, myCanvas.width, myCanvas.height);
+                    xianlu(newValue);
+                    ChickClient();
+                }
+            });
+        });
+    });
+    function UpXY(ev) {
+        if (Zuo == 0 || mu == 1) {
+            return;
+        }
+        if (document.all) { ev = window.event; }
+        var mousePos = mousePosition(ev);
+        var left = mousePos.x;
+        var top = mousePos.y;
+        var clientWidth = document.body.clientWidth;
+        var clientHeight = document.body.clientHeight;
+        var pointx = Math.ceil(left *10000  /clientWidth ) - 1;
+        var pointy = Math.ceil(top * 10000 /clientHeight ) - 1;
+        var cwid = $("#cw").combobox("getValue");
+        var machid = $("#cx").combobox("getValue");
+        Ajax(true, global.yd["NewPKMachCwXy"], { LoginID: LocalID, cw_id: cwid, mach_id: machid, pointx: pointx, pointy: pointy }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            if (!GHXY.f) {
+                drawPath(GHXY.x, GHXY.y, left, top);
+            }
+            GHXY.f = false;
+            GHXY.x = left;
+            GHXY.y = top;
+        });
+    }
+    function xianshi(newValue) {
+        Ajax(true, global.yd["GetPKQueryEngine"], { LoginID: LocalID, id: newValue }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Ajax(true, global.yd["GetPKPicInfo"], { LoginID: LocalID, pic_id: data.Data.pic_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var beijing = data.Data.pic_file;
+                if (beijing == null || beijing == "") {
+                    document.getElementById("tu").src = "../../Images/pzcard_pzbz.gif";
+                }
+                else { document.getElementById("tu").src = "../../Pic/" + beijing + ""; }
+            });
+        });
+    }
+
+    function xianlu(newValue) {
+        var cx = $("#cx").combobox("getValue");
+        var left;
+        var top;
+        var clientWidth = document.body.clientWidth;
+        var clientHeight = document.body.clientHeight;
+        Ajax(true, global.yd["GetPKMachCwXyList"], { LoginID: LocalID, cw_id: newValue, mach_id: cx }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var a = 0;
+            context.clearRect(0, 0, myCanvas.width, myCanvas.height);
+            for (var i = 0; i < data.Data.length; i++) {
+                left = Math.ceil(data.Data[i].pointx * clientWidth / 10000);
+                top = Math.ceil(data.Data[i].pointy * clientHeight / 10000);
+                if (!GHXY.f) {
+                    drawPath(GHXY.x, GHXY.y, left, top);
+                }
+                GHXY.f = false;
+                GHXY.x = left;
+                GHXY.y = top;
+                a = i;
+            }
+            if (!GHXY.f) {
+                drawPaths(GHXY.x, GHXY.y, 15, 20);
+            }
+        });
+    }
+
+    function ChickClient() {
+        var Max = document.getElementById("Max");
+        var MaxHTML = "MAX:" + document.body.clientWidth + "*" + document.body.clientHeight;
+        if (Max.innerHTML != MaxHTML) {
+            Max.innerHTML = MaxHTML;
+        }
+    }
+    function PicMenu(obj) {
+        if (Zuo == 1) {
+            $("#add").hide();
+            $("#remove").show();
+        }
+        else {
+            $("#add").show();
+            $("#remove").hide();
+        }
+        if (document.all) { obj = window.event; }
+        var mousePos = mousePosition(obj);
+        var divObj = document.getElementById("mm");
+        divObj.style.left = (mousePos.x - 5) + "px";
+        divObj.style.top = (mousePos.y - 5) + "px";
+        divObj.style.height = 80 + "px";
+        divObj.style.display = "block";
+        XCommon.IniMM();
+    }
+    function ClearPath() {
+        var cwid = $("#cw").combobox("getValue");
+        var machid = $("#cx").combobox("getValue");
+        Ajax(true, global.yd["RemovePKMachCwXy"], { LoginID: LocalID, cw_id: cwid, mach_id: machid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Zuo = 0;
+            GHXY.f = true;
+            GHXY.x = 0;
+            GHXY.y = 0
+            context.clearRect(0, 0, myCanvas.width, myCanvas.height);  
+        });
+    }
+    function SetPath() {
+        var cx = $("#cx").combobox("getValue");
+        var cw = $("#cw").combobox("getValue");
+        Ajax(true, global.yd["GetPKMachCwXyList"], { LoginID: LocalID, cw_id: cw, mach_id: cx }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            if (data.length > 0) {
+                var a = data.length;
+                left = Math.ceil(data.Data[(a - 1)].pointx * clientWidth / 10000);
+                top = Math.ceil(data.Data[(a - 1)].pointy * clientHeight / 10000);
+                context.clearRect(left, top, 40, 40);
+                Zuo = 1;
+                GHXY.f = true;
+                GHXY.x = left;
+                GHXY.y = top;
+            }
+            else {
+                Zuo = 1;
+                GHXY.f = true;
+                GHXY.x = 0;
+                GHXY.y = 0;
+            }
+        });
+    }
+    function EndPath() {
+        Zuo = 0;
+        GHXY.f = true;
+        GHXY.x = 0;
+        GHXY.y = 0
+        var cwid = $("#cw").combobox("getValue");
+        context.clearRect(0, 0, myCanvas.width, myCanvas.height);
+        xianlu(cwid);
+    }
+    function mousePosition(ev) {
+        if (ev.pageX || ev.pageY) {
+            return { x: ev.pageX, y: ev.pageY };
+        }
+        return {
+            x: ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+            y: ev.clientY + document.body.scrollTop - document.body.clientTop
+        };
+    }
+    function drawPath(x, y, n, r) {
+        var i, ang;
+        ang = Math.PI * 2 / n //旋转的角度
+        context.save(); //保存状态
+        context.fillStyle = 'hsl(120,50%,50%)'; //填充红色，半透明
+        context.strokeStyle = 'hsl(120,50%,50%)'; //填充绿色
+        context.lineWidth = 5; //设置线宽
+        context.beginPath();
+        context.moveTo(x, y); //将画笔移到x0,y0处
+        context.lineTo(n, r); //从x0,y0到x1,y1画一条线
+        context.fill(); //填充
+        context.stroke(); //画线
+        context.closePath();
+        context.restore(); //返回原始状态
+    }
+    function GetXY(ev) {
+        var Pos = document.getElementById("Pos");
+        if (document.all) { ev = window.event; }
+        var mousePos = mousePosition(ev);
+        if (window.event) { ev.returnValue = false; }
+        Pos.innerHTML = "POS:" + mousePos.x + "*" + mousePos.y;
+        if (CTLDIV != null) {
+            var x = mousePos.x - POSXY.x;
+            var y = mousePos.y - POSXY.y;
+            var left = (XY.x + x);
+            var top = (XY.y + y);
+            if (left < 0 || top < 0) {
+                return;
+            }
+            var clientWidth = document.body.clientWidth;
+            var clientHeight = document.body.clientHeight;
+            if (left > (clientWidth - 22) || top > (clientHeight - 22)) {
+                return;
+            }
+            CTLDIV.style.left = left + "px";
+            CTLDIV.style.top = top + "px";
+        }
+    }
+    function drawPaths(x, y, n, r) {
+        var i, ang;
+        ang = Math.PI * (-20) / n //旋转的角度
+        context.save(); //保存状态
+        context.fillStyle = 'hsl(120,50%,50%)'; //填充红色，半透明
+        context.strokeStyle = 'hsl(120,50%,50%)'; //填充绿色
+        context.lineWidth = 1; //设置线宽
+        context.translate(x, y); //原点移到x,y处，即要画的多边形中心
+        context.moveTo(0, -r); //据中心r距离处画点
+        context.beginPath();
+        for (i = 0; i < n; i++) {
+            context.rotate(ang)//旋转
+            context.lineTo(0, -r); //据中心r距离处连线
+        }
+        context.closePath();
+        context.stroke();
+        context.fill();
+        context.restore(); //返回原始状态
+    }
+</script>
+
+    </head>
+<body id="ibody" onmousemove="GetXY(event);" onmouseup="UpXY(event);" oncontextmenu="PicMenu(event);" >
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false" title=""style="padding:0px;z-index: 9; position: relative;height:30px ">
+查询点：<select id="cx" class="easyui-combobox"  style="width:120px;height:20px">  </select> 
+车位：<select id="cw" class="easyui-combobox"  style="width:120px;height:20px">  </select> 
+	</div>
+    <div id="biao" data-options="region:'west',collapsible:false" title=""style="padding:0px;width:100%; z-index: 9; position: relative;">
+        <img id="tu" width="100%" height="100%" style="z-index: 11; position: absolute;"/>
+        <div id="doordiv" style="z-index: 99;width:100%;height:100%; position: relative;" >
+         <canvas id = "myCanvas">Canvas画线技巧</canvas>
+        </div>
+     <div id="ID" style="top:0px; left:0px;z-index:119; position:absolute;">ID:001</div>
+     <div id="Max" style="top:0px; left:60px;z-index:119; position:absolute;"></div>
+     <div id="Pos" style="top:0px; left:180px;z-index:119; position:absolute;"></div>
+	</div> 
+	</div>
+    <div id="mm" class="easyui-menu" data-options="" style="width: 120px;">
+        <div id="add" data-options="iconCls:'icon-add'"onclick='SetPath();'>
+            规划路径</div>
+        <div data-options="iconCls:'icon-remove'"onclick='ClearPath();'>
+            清除线路</div>
+        <div id="remove" data-options="iconCls:'icon-undo'"onclick='EndPath();'>
+            设为终点</div>
+    </div>
+       
+       
+   <script>
+       var myCanvas = document.getElementById("myCanvas");
+       var context = myCanvas.getContext("2d");
+   </script>
+</body>
+</html>

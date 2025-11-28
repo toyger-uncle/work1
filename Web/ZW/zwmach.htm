@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+
+    </head>
+<body>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid1;
+    var a1;
+    var jsondata1 = { "total": 0, "rows": [] };
+    $(function () {
+        Ajax(true, global.zw["GetZwMachGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#group').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'group_name'
+            });
+        });
+        Ajax(true, global.kq["GetKQWindowList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'id': '', 'win_name': '无' };
+            data.Data.push(temp);
+            $('#kaoqin').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'win_name'
+            });
+        });
+        Ajax(true, mj["GetMJControlMachList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#kzq').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'control_name'
+            });
+            $('#qy').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'control_name'
+            });
+        });
+        $('#zwjkind').combobox({
+            data: scene.zwjkind,
+            valueField: "value",
+            textField: "text"
+        });
+        $('#kind').combobox({
+            data: scene.zwjkind,
+            valueField: "value",
+            textField: "text"
+        });
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+
+            columns: [[{
+                field: 'id',
+                title: '机号',
+                width: 80
+
+            }, {
+                field: 'mach_name',
+                title: '指纹机名',
+                width: 80
+            }, {
+                field: 'mach_type',
+                title: '类型',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 01) {
+                        return '定制版';
+                    }
+                    if (value == 02) {
+                        return '通用版';
+                    }
+
+                }
+            }, {
+                field: 'control_name',
+                title: '控制器名',
+                width: 80
+            }, {
+                field: 'ip',
+                title: 'IP',
+                width: 80
+            }, {
+                field: 'port',
+                title: '端口',
+                width: 80
+            }
+            ]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid1.datagrid('getSelections');
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var ids;
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, zw["RemoveZwMach"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata1();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid1.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win1').window('open');
+                    $("#ccc").show();
+                    $('#zwjid').val(rows.id);
+                    $("#zwjname").val(rows.mach_name);
+                    $("#ip").val(rows.ip);
+                    $("#dk").val(rows.port);
+                    $("#dt").combobox("setValue", rows.comm_address);
+                    $("#group").combobox("setValue", rows.group_id);
+                    $("#use").combobox("setValue", rows.us_flag);
+                    $("#zwjkind").combobox("setValue", rows.mach_type);
+                    $("#kzq").combobox("setValue", rows.control_id);
+                    $("#kaoqin").combobox("setValue", rows.mach_id);
+                    a1 = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win1').window('open');
+
+                    Ajax(true, zw["GetZwMachMaxID"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#zwjid').val(data.Data);
+                    });
+                    $("#zwjname").val("");
+                    $("#ccc").hide();
+                    $("#zwjkind").combobox("setValue", "");
+                    $("#group").combobox("setValue", "");
+                    $("#kzq").combobox("setValue", "");
+                    $("#dt").combobox("setValue", 1);
+                    $("#kaoqin").combobox("setValue", "");
+                    a1 = 0;
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win1').window('open');
+                $("#ccc").show();
+                $('#zwjid').val(rowData.id);
+                $("#zwjname").val(rowData.mach_name);
+                $("#ip").val(rowData.ip);
+                $("#dk").val(rowData.port);
+                $("#dt").combobox("setValue", rowData.comm_address);
+                $("#use").combobox("setValue", rowData.us_flag);
+                $("#group").combobox("setValue", rowData.group_id);
+                $("#zwjkind").combobox("setValue", rowData.mach_type);
+                $("#kzq").combobox("setValue", rowData.control_id);
+                $("#kaoqin").combobox("setValue", rowData.mach_id);
+                a1 = 1;
+            }
+        });
+        loaddata1();
+        $('#zwjkind').combobox({
+            onChange: function (newValue, oldValue) {
+                if (newValue == 01) {
+                    $("#ip").textbox({ disabled: true });
+                    $("#dk").textbox({ disabled: true });
+                }
+                if (newValue == 02) {
+                    $("#ip").textbox({ disabled: false });
+                    $("#dk").textbox({ disabled: false });
+                }
+
+            }
+        });
+        $("#close1").click(function () {
+            $('#win1').window('close');
+        });
+        $("#search").click(function () {
+            loaddata1($("#text").val(), $("#kind").combobox('getValue'),$("#qy").combobox('getValue'));
+            //            
+        });
+        $("#save1").click(function () {
+            if (a1 == 0) {
+                var id = $('#zwjid').val();
+                var name = $("#zwjname").val();
+                var ip = $("#ip").val();
+                var dk = $("#dk").val();
+                var kind = $("#zwjkind").combobox('getValue');
+                var group = $("#group").combobox('getValue');
+                var dt = $("#dt").combobox('getValue');
+                var kzq = $("#kzq").combobox('getValue');
+                var use = $("#use").combobox('getValue');
+                var kaoqin = $("#kaoqin").combobox('getValue');
+                if (id == "") {
+                    $.messager.alert("提示", "机号不能为空！", "error");
+                    $("#id").select();
+                    return;
+                }
+//                if (zwjid && /^[0-9]+.?[0-9]*$/.test(zwjid)) {
+
+//                } else {
+//                    $.messager.alert("提示", "指纹机号格式不正确！", "error");
+//                    $("#zwjid").select();
+//                    return;
+//                }
+                if (ip && /\d+\.\d+\.\d+\.\d+/.test(ip)) {
+
+                } else {
+                    $.messager.alert("提示", "ip格式不正确！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (dt == "") {
+                    $.messager.alert("提示", "读头不能为空！", "error");
+                    $("#dt").select();
+                    return;
+                }
+                if (name == "") {
+                    $.messager.alert("提示", "指纹机名不能为空！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (name.length > 10) {
+                    $.messager.alert("提示", "指纹机名长度不能超过10 ！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (ip == "") {
+                    $.messager.alert("提示", "ip不能为空！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (dk == "") {
+                    $.messager.alert("提示", "端口不能为空！", "error");
+                    $("#dk").select();
+                    return;
+                }
+                if (kind == "") {
+                    $.messager.alert("提示", "类型不能为空！", "error");
+                    $("#kind").select();
+                    return;
+                }
+                if (kzq == "") {
+                    $.messager.alert("提示", "控制器不能为空！", "error");
+                    $("#kzq").select();
+                    return;
+                }
+                Ajax(true, zw["NewZwMach"], { LoginID: LocalID, id: id, mach_name: name, ip: ip, mach_type: kind, port: dk, control_id: kzq, comm_address: dt, group_id: group, mach_id: kaoqin }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata1();
+                });
+            }
+            if (a1 == 1) {
+                var rows = datagrid1.datagrid('getSelected');
+                var oldid = rows.id;
+                var id = $('#zwjid').val();
+                var name = $("#zwjname").val();
+                var ip = $("#ip").val();
+                var dk = $("#dk").val();
+                var kind = $("#zwjkind").combobox('getValue');
+                var group = $("#group").combobox('getValue');
+                var dt = $("#dt").combobox('getValue');
+                var kzq = $("#kzq").combobox('getValue');
+                var use = $("#use").combobox('getValue');
+                var kaoqin = $("#kaoqin").combobox('getValue');
+                if (id == "") {
+                    $.messager.alert("提示", "机号不能为空！", "error");
+                    $("#id").select();
+                    return;
+                } 
+                if (dt == "") {
+                    $.messager.alert("提示", "读头不能为空！", "error");
+                    $("#dt").select();
+                    return;
+                }
+                if (name == "") {
+                    $.messager.alert("提示", "指纹机名不能为空！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (name.length > 10) {
+                    $.messager.alert("提示", "指纹机名长度不能超过10 ！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (ip == "") {
+                    $.messager.alert("提示", "ip不能为空！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (dk == "") {
+                    $.messager.alert("提示", "端口不能为空！", "error");
+                    $("#dk").select();
+                    return;
+                }
+                if (kind == "") {
+                    $.messager.alert("提示", "类型不能为空！", "error");
+                    $("#kind").select();
+                    return;
+                }
+                if (kzq == "") {
+                    $.messager.alert("提示", "控制器不能为空！", "error");
+                    $("#kzq").select();
+                    return;
+                }
+                Ajax(true, zw["UpdateZwMach"], { LoginID: LocalID, id: id, oldid: oldid, mach_name: name, ip: ip, mach_type: kind, port: dk, control_id: kzq, us_flag: use, comm_address: dt, group_id: group, mach_id: kaoqin }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata1();
+                });
+            }
+        });
+    });
+    function loaddata1(name,kind,kzq) {
+        datagrid1.datagrid('unselectAll');
+        Ajax(true, zw["GetZwMachList"], { LoginID: LocalID, mach_name: name,mach_type:kind, control_id: kzq }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+
+        });
+    }
+</script>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;padding:2px;">
+    类型：<select id="kind" class="easyui-combobox"  style="width:100px;height:20px;">  </select>
+    控制器：<select id="qy" class="easyui-combobox"  style="width:100px;height:20px;">  </select>
+    指纹机名：<input id="text" class="easyui-validatebox textbox" data-options=""style="width:100px;height:20px;" />
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+    <div style="width:100%; height:400px;padding-top:2px;overflow:auto; ">
+		<table id="dg1"style=""> </table>  
+</div>
+</div>
+
+</body>
+</html>

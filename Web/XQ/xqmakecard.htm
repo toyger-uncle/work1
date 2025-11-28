@@ -1,0 +1,969 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var cardsnr = "";
+    var TKPlaintext = "";
+    var rooltime = 1000;
+    var cot = 0;
+    var maxcot = 12000;
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var Ljsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    var rool;
+    var num = 0;
+    var cardid;
+    var columnsone = [[
+        { field: 'card_id', title: '卡号', width: 80 },
+        { field: 'card_kind', title: '卡类型', width: 80,
+            formatter: function (value, row) {
+                if (value == "03") {
+                    return '用户卡';
+                }
+                if (value == "07") {
+                    return '补用户卡';
+                }
+                if (value == "08") {
+                    return '应急卡';
+                }
+                if (value == "02") {
+                    return '补应急卡';
+                }
+                if (value == "12") {
+                    return '时间卡';
+                }
+            } 
+        },
+        { field: 'user_name', title: '用户名', width: 80 },
+        { field: 'depart_name', title: '部门', width: 80 },
+        { field: 'issu_num', title: '补卡次数', width: 60 },
+        { field: 'card_snr', title: '卡序列号', width: 60 }]];
+        $(function () {
+            while (true) {
+                var ActiveX;
+                var ret;
+                try {
+                    ActiveX = $("#ActiveX")[0];
+                    ret = ActiveX.GetVersion();
+                }
+                catch (e) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("初始化失败，请安装做卡插件，重试！");
+                    return;
+                    continue;
+                }
+                if (ret != "1.0") {
+                    $("#info").css("color", "Red");
+                    $("#info").html("做卡插件版本不匹配，请重新安装对应版本，重试！" + "(当前" + ret + "软件需要1.0)");
+                    return;
+                    continue;
+                }
+                ret = ActiveX.OpenCom();
+                if (ret != 0) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("初始化失败，请插好读卡器，重试！");
+                    return;
+                    continue;
+                }
+                break;
+            }
+
+            var curr_time1 = new Date();
+            var strDate1 = curr_time1.getFullYear() + 3 + "-";
+            strDate1 += curr_time1.getMonth() + 1 + "-";
+            strDate1 += curr_time1.getDate();
+            var curr_time = new Date();
+            var strDate = curr_time.getFullYear() + "-";
+            strDate += curr_time.getMonth() + 1 + "-";
+            strDate += curr_time.getDate();
+            $('#bt').datebox('setValue', strDate);
+            $('#et').datebox('setValue', strDate1);
+            tree = $("#tree").tree({
+                checkbox: true
+            });
+            $('#select').combobox({
+                onChange: function (newValue, oldValue) {
+                    if (newValue == "07" || newValue == "02") {
+                        $("#buka").show();
+                    }
+                    else {
+                        $("#buka").hide();
+                    }
+                }
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                pagination: true, //显示分页  
+                pageSize: PageSize, //分页大小  
+                pageList: [10, 20, 50, 100], //每页的个数  
+                //fit: true, //自动补全  
+                fitColumns: true,
+                striped: true,
+                iconCls: "icon-search", //图标  
+                title: "选择用户",
+                collapsible: true,
+                remotesort: false,
+                singleSelect: true,
+                //rownumbers:true,
+                sortName: sortName,
+                sortOrder: sortOrder,
+                columns: [[{
+                    field: 'id',
+                    title: '编号',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'user_name',
+                    title: '用户',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'depart_name',
+                    title: '部门',
+                    sortable: true,
+                    width: 80
+                }, {
+                    field: 'kind_name',
+                    title: '类型',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'userid_num',
+                    title: '工号',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'role_name',
+                    title: '角色',
+                    sortable: true,
+                    width: 80
+                }, {
+                    field: 'room_name',
+                    title: '房间',
+                    sortable: true,
+                    width: 80
+                }]],
+                onSelect: function (rowIndex, rowData) {
+                    if (rowData == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $("#depart").val(rowData.depart_name);
+                    $("#text").val(rowData.user_name);
+                    var newValue = $('#select').combobox("getValue");
+                    if (newValue == "07") {
+                        Ajax(true, global.ms["GetCardUsingPageList"], { LoginID: LocalID, user_file_id: rowData.id, card_kind: "03", work_status: "us" }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            $('#bk').combogrid({
+                                panelWidth: 500,
+                                data: data.Data,
+                                idField: 'card_id',
+                                valueField: 'card_id',
+                                textField: 'card_snr',
+                                columns: columnsone
+                            });
+                        });
+                    }
+                    if (newValue == "02") {
+                        Ajax(true, global.ms["GetCardUsingPageList"], { LoginID: LocalID, user_file_id: rowData.id, card_kind: "08", work_status: "us" }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            $('#bk').combogrid({
+                                panelWidth: 500,
+                                data: data.Data,
+                                idField: 'card_id',
+                                valueField: 'card_id',
+                                textField: 'card_snr',
+                                columns: columnsone
+                            });
+                        });
+                    }
+                },
+                onSortColumn: function (sort, order) {
+                    sortName = sort;
+                    sortOrder = order;
+                    loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+                }
+            });
+            $("#info").html("获取消费密钥……");
+            Ajax(true, global.sys["GetSysCiphertext"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                TKPlaintext = data.Data;
+                $("#info").html("获取消费密钥成功");
+                readcard();
+            });
+            loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+            Lloaddata();
+            $("#buka").hide();
+            $("#sjka").hide();
+            $("#search").click(function () {
+                loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+            });
+            $("#make").click(function () {
+                clearTimeout(rool);
+                var bl = true;
+                var newValue = $('#select').combobox("getValue");
+                if (newValue == "03") {
+                    bl = make03();
+                }
+                else if (newValue == "07") {
+                    bl = make07();
+                }
+                else if (newValue == "08") {
+                    bl = make08();
+                }
+                else if (newValue == "02") {
+                    bl = make02();
+                }
+                else if (newValue == "12") {
+                    bl = make12();
+                }
+                if (bl) {
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                }
+                num = 0;
+            });
+            $("#recy").click(function () {
+                if (cardsnr == "") {
+                    $.messager.alert("提示", "请放好卡", "error", function () { });
+                    return;
+                }
+                clearTimeout(rool);
+                var cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + TKPlaintext
+                    + "\",\"blockdatas\":[{\"Key\":29,\"Value\":\"00000000000000000000000000000000\"},{\"Key\":4,\"Value\":\"00000000000000000000000000000000\"}]}";
+                cardinfo = ActiveX.RFMifare_AllWriteCard(cardinfo);
+                var cardinfojson = JSON2.parse(cardinfo);
+                if (!cardinfojson.Success) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("退卡失败，卡号：" + cardsnr + "，原因：错误信息：" + cardinfojson.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                else {
+                    Ajax(true, global.ms["RecycleCardUsing"], { LoginID: LocalID, card_id: cardid }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        }
+                        $("#info").css("color", "Green");
+                        $("#info").html("退卡成功，卡号：" + cardsnr);
+                        ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                    });
+
+                }
+            });
+        });
+    function loaddata(depart, kind, room, username, useridnum) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.sys["GetUserFilePageListOfTK"], { LoginID: LocalID, user_name: username, kind_name: kind, depart_name: depart, room_name: room, userid_num: useridnum,
+            sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+        }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+                }
+            });
+        });
+    }
+    function Lloaddata() {
+        Ajax(true, global.xq["GetAllAreaDoorTree"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Ljsondata.total = data.Data.length;
+            Ljsondata.rows = JSON2.parse(data.Data);
+            tree.tree('loadData', Ljsondata.rows);
+        });
+    }
+    function make03() {
+        var depSelected = $('#tree').tree("getChecked", "checked");
+        if (depSelected.length == 0) {
+            $.messager.alert("提示", "<p class='infoReport'>门未选择</p>", "error");
+            return;
+        }
+        var deps = "";
+        var doors = "";
+        var keys = "";
+        for (var i in depSelected) {
+            if (depSelected[i].attributes.kind == "D") {
+                deps += depSelected[i].id;
+                doors += depSelected[i].text + "，";
+                num = num + 1;
+                if (keys == "") {
+                    keys = "{\"Key\":" + depSelected[i].id + ",\"Value\":\"" + depSelected[i].id + "\"}";
+                }
+                else {
+                    keys += ",{\"Key\":" + depSelected[i].id + ",\"Value\":\"" + depSelected[i].id + "\"}";
+                }
+            }
+        }
+        keys = "[" + keys + "]";
+        var nn = num;
+        if (nn >7) {
+            $.messager.alert("提示", "<p class='infoReport'>门选择的数量超过7个</p>", "error");
+            return;
+        }
+        var cdid;
+        var bt = $('#bt').datebox('getValue') + " 00:00:00";
+        var et = $('#et').datebox('getValue') + " 23:59:59";
+        var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+        var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + "2359";
+        var card = $("#card").val();
+        var cardno = $("#cardno").val();
+        var demo="";
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var username = rowData.user_name;
+         Ajax(true, global.ms["GetCardID"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            cdid = data.Data;
+            demo = "卡类型：用户卡；" + "卡号：" + card + "；" + "有效门：" + doors + "；" + "有效时间：" + bt + "~" + et;
+            var TKMadeCard = { "lonSecNo": 7, "strCdsnr": card, "card_key": TKPlaintext };
+            var XFMSCardInfo = { "user_kind": "00", "card_kind": "03", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+            var xfcardinfo = ActiveX.RFMifare_XFWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo));
+            var xfcardinfojson = JSON2.parse(xfcardinfo);
+            if (!xfcardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + xfcardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                var shu="0";
+                var cardinfo = ActiveX.RFMifare_XQWriteUserCard(JSON2.stringify(TKMadeCard), keys,shu);
+                var cardinfojson = JSON2.parse(cardinfo);
+                if (!cardinfojson.Success) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                else {
+                    Ajax(true, global.ms["NewCardUsing"], { LoginID: LocalID, card_id: cdid, card_snr: card,num_incard:cardno, user_file_id: userid, card_kind: '03', issu_num: '0' }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        }
+                        else {
+                            Ajax(true, global.xq["NewXQMadeCardLog"], { LoginID: LocalID, card_id: cdid, card_snr: card, user_name: username, demo: demo }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    rool = setTimeout(function () { readcard() }, rooltime);
+                                    return;
+                                }
+                                $("#info").css("color", "Green");
+                                $("#info").html("制卡成功，卡号：" + cardsnr + "," + demo);
+                                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            });
+                        } 
+                    });
+                }
+            }
+        });
+    }
+    function make07() {
+        var depSelected = $('#tree').tree("getChecked", "checked");
+        if (depSelected.length == 0) {
+            $.messager.alert("提示", "<p class='infoReport'>门未选择</p>", "error");
+            return;
+        }
+        var deps = "";
+        var doors = "";
+        var keys = "";
+        for (var i in depSelected) {
+            if (depSelected[i].attributes.kind == "D") {
+                deps += depSelected[i].id;
+                doors += depSelected[i].text + "，";
+                if (keys == "") {
+                    keys = "{\"Key\":" + depSelected[i].id + ",\"Value\":\"" + depSelected[i].id + "\"}";
+                }
+                else {
+                    keys += ",{\"Key\":" + depSelected[i].id + ",\"Value\":\"" + depSelected[i].id + "\"}";
+                }
+            }
+        }
+        keys = "[" + keys + "]";
+        var nn = num;
+        if (nn > 7) {
+            $.messager.alert("提示", "<p class='infoReport'>门选择的数量超过7个</p>", "error");
+            return;
+        }
+        var demo = "";
+        var bt = $('#bt').datebox('getValue') + " 00:00:00";
+        var et = $('#et').datebox('getValue') + " 23:59:59";
+        var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+        var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + "2359";
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var username = rowData.user_name;
+        var right = $("#bk").combogrid("getValue");
+        if (right == "") {
+            $.messager.alert("提示", "请选择权限", "error", function () { });
+            return true;
+        }
+        var g = $('#bk').combogrid('grid');
+        var r = g.datagrid('getSelected');
+        cdid = r.card_id;
+        var shu = parseInt(r.issu_num) + 1;
+        demo = "卡类型：补用户卡；" + "卡号：" + card + "；" +  "有效时间：" + bt + "~" + et;
+        var TKMadeCard = { "lonSecNo": 7, "strCdsnr": card, "card_key": TKPlaintext };
+        var XFMSCardInfo = { "user_kind": "00", "card_kind": "07", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+        var xfcardinfo = ActiveX.RFMifare_XFWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo));
+        var xfcardinfojson = JSON2.parse(xfcardinfo);
+        if (!xfcardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("写卡失败，卡号：" + card + "，原因：错误信息：" + xfcardinfojson.Message);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else {
+            var cardinfo = ActiveX.RFMifare_XQWriteUserCard(JSON2.stringify(TKMadeCard), keys, shu);
+            var cardinfojson = JSON2.parse(cardinfo);
+            if (!cardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                Ajax(true, global.ms["UpdateIssuNumCardUsing"], { LoginID: LocalID, card_id: cdid, card_snr: card, issu_num: shu }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else {
+                        Ajax(true, global.xq["NewXQMadeCardLog"], { LoginID: LocalID, card_id: cdid, card_snr: card, user_name: username, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            $("#info").css("color", "Green");
+                            $("#info").html("制卡成功，卡号：" + cardsnr + "," + demo);
+                            ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        });
+                    }
+                });
+            }
+        }
+    }
+    function make08() {
+        var demo = "";
+        var cdid;
+        var keys;
+        var bt = $('#bt').datebox('getValue') + " 00:00:00";
+        var et = $('#et').datebox('getValue') + " 23:59:59";
+        var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+        var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + "2359";
+        var card = $("#card").val();
+        var cardno = $("#cardno").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        keys = "[]";
+        var userid = rowData.id;
+        var username = rowData.user_name;
+        Ajax(true, global.ms["GetCardID"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            cdid = data.Data;
+            demo = "卡类型：应急卡；" + "卡号：" + card + "；" + "有效门：所有门；" + "有效时间：" + bt + "~" + et;
+            var TKMadeCard = { "lonSecNo": 7, "strCdsnr": card, "card_key": TKPlaintext };
+            var XFMSCardInfo = { "user_kind": "00", "card_kind": "08", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+            var xfcardinfo = ActiveX.RFMifare_XFWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo));
+            var xfcardinfojson = JSON2.parse(xfcardinfo);
+            if (!xfcardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("写卡失败，卡号：" + card + "，原因：错误信息：" + xfcardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                var shu = "0";
+                var cardinfo = ActiveX.RFMifare_XQWriteUserCard(JSON2.stringify(TKMadeCard), keys, shu);
+                var cardinfojson = JSON2.parse(cardinfo);
+                if (!cardinfojson.Success) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                else {
+                    Ajax(true, global.ms["NewCardUsing"], { LoginID: LocalID, card_id: cdid, card_snr: card,num_incard:cardno, user_file_id: userid, card_kind: '08', issu_num: '0' }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        }
+                        else {
+                            Ajax(true, global.xq["NewXQMadeCardLog"], { LoginID: LocalID, card_id: cdid, card_snr: card, user_name: username, demo: demo }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    rool = setTimeout(function () { readcard() }, rooltime);
+                                    return;
+                                }
+                                $("#info").css("color", "Green");
+                                $("#info").html("制卡成功，卡号：" + cardsnr + "," + demo);
+                                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    }
+    function make02() {
+        var demo = "";
+        var cdid;
+        var keys;
+        var bt = $('#bt').datebox('getValue') + " 00:00:00";
+        var et = $('#et').datebox('getValue') + " 23:59:59";
+        var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+        var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + "2359";
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var username = rowData.user_name;
+        var right = $("#bk").combogrid("getValue");
+        if (right == "") {
+            $.messager.alert("提示", "请选择权限", "error", function () { });
+            return true;
+        }
+        keys = "[]";
+        var g = $('#bk').combogrid('grid');
+        var r = g.datagrid('getSelected');
+        cdid = r.card_id;
+        var shu = parseInt(r.issu_num)+1;
+            demo = "卡类型：补应急卡；" + "卡号：" + card + "；" + "有效门：所有门；" + "有效时间：" + bt + "~" + et;
+            var TKMadeCard = { "lonSecNo": 7, "strCdsnr": card, "card_key": TKPlaintext };
+            var XFMSCardInfo = { "user_kind": "00", "card_kind": "02", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+            var xfcardinfo = ActiveX.RFMifare_XFWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo));
+            var xfcardinfojson = JSON2.parse(xfcardinfo);
+            if (!xfcardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("写卡失败，卡号：" + card + "，原因：错误信息：" + xfcardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+            var cardinfo = ActiveX.RFMifare_XQWriteUserCard(JSON2.stringify(TKMadeCard), keys, shu);
+            var cardinfojson = JSON2.parse(cardinfo);
+            if (!cardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                Ajax(true, global.ms["UpdateIssuNumCardUsing"], { LoginID: LocalID, card_id: cdid, card_snr: card, issu_num: shu }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else {
+                        Ajax(true, global.xq["NewXQMadeCardLog"], { LoginID: LocalID, card_id: cdid, card_snr: card, user_name: username, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            $("#info").css("color", "Green");
+                            $("#info").html("制卡成功，卡号：" + cardsnr + "," + demo);
+                            ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        });
+                    }
+                });
+            }
+            }
+    }
+    function make12() {
+        var demo = "";
+        var curr_time = new Date();
+        var cdid;
+        var bt = $('#bt').datebox('getValue') + " 00:00:00";
+        var et = $('#et').datebox('getValue') + " 23:59:59";
+        var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+        var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + "2359";
+        var ee = myformatter(curr_time);
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var username = rowData.user_name;
+        Ajax(true, global.ms["GetCardID"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            cdid = data.Data;
+            demo = "卡类型：时间卡；" + "卡号：" + card + "有效时间：" + bt + "~" + et + "；";
+            var TKMadeCard = { "lonSecNo": 7, "strCdsnr": card, "card_key": TKPlaintext };
+            var XFMSCardInfo = { "user_kind": "00", "card_kind": "12", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+            var xfcardinfo = ActiveX.RFMifare_XFWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo));
+            var xfcardinfojson = JSON2.parse(xfcardinfo);
+            if (!xfcardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + xfcardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                var cardinfo = ActiveX.RFMifare_XQWriteTimeCard(JSON2.stringify(TKMadeCard), ee);
+                var cardinfojson = JSON2.parse(cardinfo);
+                if (!cardinfojson.Success) {
+                    $("#info").css("color", "Red");
+                    $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                else {
+                    Ajax(true, global.xq["NewXQMadeCardLog"], { LoginID: LocalID, card_id: cdid, card_snr: card, user_name: username, demo: demo }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        }
+                        $("#info").css("color", "Green");
+                        $("#info").html("制卡成功，卡号：" + cardsnr + "," + demo);
+                        ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    });
+                }
+            }
+        });
+    }
+    var ext = false;
+    function readcard() {
+        var currentcardsnr = ActiveX.RFMifare_GetSnr();
+        if (currentcardsnr == "") {
+            if (cardsnr != "") {
+                $("#card").val("");
+                $("#depart").val("");
+                $("#text").val("");
+                $("#room").val("");
+                $("#wei").html("");
+            }
+            $("#info").css("color", "Blue");
+            $("#info").html("读卡中……");
+            cot++;
+            if (cot > maxcot) {
+                $("#info").css("color", "Red");
+                $("#info").html("长时间未读到卡，已停止工作，要继续请刷新页面");
+                return;
+            }
+        }
+        else {
+            cot = 0;
+        }
+        if (currentcardsnr == "" || currentcardsnr == cardsnr) {
+            cardsnr = currentcardsnr;
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        cardsnr = currentcardsnr;
+        $("#info").css("color", "Green");
+        $("#info").html("读卡成功，卡号为：" + cardsnr);
+        $("#card").val(cardsnr);
+        var TKMadeCard = { "lonSecNo": 7, "strCdsnr": cardsnr, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_MSGetCardID(JSON2.stringify(TKMadeCard));
+        cardid = JSON2.parse(cardinfo).Data;
+        if (cardid == "000000") {
+            $("#depart").val("");
+            $("#text").val("");
+            $("#info").css("color", "Green");
+            $("#info").html("读卡成功，卡号：" + cardsnr + ",是否制卡");
+            ext = false;
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else {
+            Ajax(true, global.xq["GetXQMadeCardLog"], { LoginID: LocalID, card_id: cardid }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                ext = true;
+                var de = data.Data.demo;
+                Ajax(true, global.ms["GetCardUsing"], { LoginID: LocalID, card_id: cardid }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    $("#depart").val(data.Data.depart_name);
+                    $("#text").val(data.Data.user_name);
+                    $("#cardno").val(data.Data.num_incard);
+                    var hs = "，补卡次数：" + data.Data.issu_num;
+                    var kakind = data.Data.card_kind;
+                    if (data.Data.work_status == "us") {
+                        var ck = "";
+                        var na = "，用户名：" + data.Data.user_name;
+                        var bm = "，部门：" + data.Data.depart_name;
+                        if (data.Data.issu_num != "" && data.Data.issu_num != null) {
+                            if (kakind == "03") {
+                                ck = "，卡类型：用户卡";
+                                $("#info").css("color", "Green");
+                                $("#info").html("读卡成功，" + de + hs);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            else if (kakind == "07") {
+                                ck = "，卡类型：补用户卡";
+                                $("#info").css("color", "Green");
+                                $("#info").html("读卡成功，" + de + hs);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            else if (kakind == "08") {
+                                ck = "，卡类型：应急卡";
+                                $("#info").css("color", "Green");
+                                $("#info").html("读卡成功，" + de + hs);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            else if (kakind == "02") {
+                                ck = "，卡类型：补应急卡";
+                                $("#info").css("color", "Green");
+                                $("#info").html("读卡成功，" + de + hs);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                        }
+                    }
+                    else if (data.Data.work_status == "lt") {
+                        $("#info").css("color", "Green");
+                        $("#info").html("读卡成功，卡号：" + cardsnr + ",挂失卡");
+                        ext = false;
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else if (data.Data.work_status == "kl") {
+                        $("#info").css("color", "Green");
+                        $("#info").html("读卡成功，卡号：" + cardsnr + ",报废卡");
+                        ext = false;
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else if (data.Data.work_status == "re") {
+                        $("#info").css("color", "Green");
+                        $("#info").html("读卡成功，卡号：" + cardsnr + ",回收卡");
+                        ext = false;
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else if (data.Data.work_status == null&&de!=null) {
+                        $("#info").css("color", "Green");
+                        $("#info").html("读卡成功，" + de);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else {
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+
+                });
+            });
+        }
+    }
+    function myformatter(date) {
+        var y = date.getFullYear().toString();
+        var m = (date.getMonth() + 1).toString();
+        var d = date.getDate().toString();
+        var h = date.getHours().toString();
+        var min = date.getMinutes().toString();
+        var sec = date.getSeconds().toString();
+        return y + (m < 10 ? ('0' + m) : m) +  (d < 10 ? ('0' + d) : d) + (h < 10 ? ('0' + h) : h)+ (min < 10 ? ('0' + min) : min) + (sec < 10 ? ('0' + sec) : sec);
+    }
+</script>
+
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',collapsible:false" title="提示" style="padding:5px 0 0; height:80px;">
+        <div id="tou" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;">手动操作中……</div>
+        <div id="info" style="width:800px;text-align:left; color:Blue; font-weight:bold; font-size:large;">请把卡片放到读卡器上</div>
+    </div>  
+    <div data-options="region:'center',collapsible:false, border:false" style="padding:0px;width:300px; ">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north',collapsible:false,border:false" style="height:200px;">
+                <div class="easyui-panel"  data-options="collapsible:true" title="卡信息" style="width:100%;height:124px; padding:2px;">
+                    <div style="width:100%;height:30px;">
+                    类型：<select id="select" class="easyui-combobox" data-options="prompt:'类型'" style="width:110px"><option value="03">用户卡</option><option value="07">补用户卡</option><option value="08">应急卡</option><option value="02">补应急卡</option><option value="12" >时间卡</option></select>
+                    用户：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'用户'" style="width:80px;" readonly />
+                    部门：<input id="depart" class="easyui-validatebox textbox" data-options="prompt:'部门'" style="width:80px;" readonly/>
+                    卡面编号：<input id="cardno" class="easyui-validatebox textbox" data-options="prompt:'卡面编号'" style="width:80px;"  />
+                    </div>
+                    <div style="width:100%;height:30px;">
+                    卡号：<input id="card" class="easyui-validatebox textbox" data-options="prompt:'卡号'" style="width:80px;" readonly />
+                    生效日期：<input id="bt" class="easyui-datebox"  style="width:100px;" data-options="required:true" />
+                    失效日期：<input id="et" class="easyui-datebox"  style="width:100px;" data-options="required:true" />
+                    <tb id="buka">
+                    补卡：<select id="bk" class="easyui-combogrid" style="width:100px"></select></tb>
+                    </div>
+                    <div style="width:100%;height:30px;" >
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="make" style="width:60px;" >制卡</a>
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="recy"style="width:60px;" >退卡</a>
+                    </div>
+                </div><div style="width:100%;height:2px;"></div>
+                 
+                 <div style="width:100%;height:2px;"></div>
+                  <div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:70px; padding:3px;">
+                部门：<input id="departname" class="easyui-validatebox textbox" data-options="prompt:'部门'" style="width:70px;"/>
+                类型：<input id="kindname" class="easyui-validatebox textbox" data-options="prompt:'用户类型'" style="width:60px;"/>
+                用户：<input id="username" class="easyui-validatebox textbox" data-options="prompt:'用户'" style="width:60px;"/>
+                工号：<input id="useridnum" class="easyui-validatebox textbox" data-options="prompt:'工号'" style="width:60px;"/>
+                房间：<input id="roomname" class="easyui-validatebox textbox" data-options="prompt:'房间'" style="width:70px;"/>
+  	            <a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+             </div>
+                 <div style="width:100%;height:2px;"></div>
+            </div>	
+		<div data-options="region:'center',collapsible:false, border:false" style="padding:0px;width:250px; ">
+            <div style="width:100%; height:100px;">
+                    <table id="dg"> </table>
+            </div>
+		</div>
+        </div>
+    </div>
+    <div data-options="region:'east',collapsible:false" style="width:250px; " title="区域树" >
+        <ul id="tree"></ul>
+		</div>
+</div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06" style="width:0px; height:0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+
+</body>
+</html>

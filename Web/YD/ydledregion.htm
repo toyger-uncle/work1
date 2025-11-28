@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title></title>	
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+<script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+<script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+<script src="../../Scripts/json2.js" type="text/javascript"></script>
+<script src="../../Scripts/global.js" type="text/javascript"></script>
+<script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+.style6
+{
+    width: 207px;
+}
+.style8
+{
+    width: 73px;
+}
+.style9
+{
+    width: 100%;
+}
+.style10
+{
+    width: 188px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var ldatagrid;
+    var rdatagrid;
+    var ljsondata = { "total": 0, "rows": [] };
+    var rjsondata = { "total": 0, "rows": [] };
+    $(function () {
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#cd').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name',
+                onLoadSuccess: function () {
+                    var data = $('#cd').combobox('getData');
+                    $("#cd").combobox('select', data[0].pic_id);
+                },
+                onChange: function (newValue, oldValue) {
+                    Ajax(true, global.yd["GetPKLedInfoList"], { LoginID: LocalID, range_id: newValue }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#led').combobox({
+                            data: data.Data,
+                            valueField: 'led_id',
+                            textField: 'led_name',
+                            onLoadSuccess: function () {
+                                var dat = $('#led').combobox('getData');
+                                $("#led").combobox('select', dat[0].led_id);
+                            },
+                            onChange: function (newValue, oldValue) {
+                                Lloaddata(newValue);
+                                Rloaddata(newValue);
+                            }
+                        });
+                    });
+                }
+            });
+        });
+        ldatagrid = $("#dg1").datagrid({
+            idField: "region_id",
+        fitColumns: true,
+        striped: true,
+        title: "未加入区域",
+        collapsible: false,
+        remotesort: false,
+        rownumbers: true,
+        columns: [[{
+            field: 'region_name',
+            title: '区域',
+            //                sortable: true,
+            width: 80
+        }]],
+        onDblClickRow: function (rowIndex, row) {
+            var led = $("#led").combobox("getValue");
+            var region_id = row.region_id;
+            Ajax(true, global.yd["NewPKLedRegion"], { LoginID: LocalID, region_id: region_id, led_id: led }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Lloaddata(led);
+                Rloaddata(led);
+                $.messager.alert("提示", "移入成功", "info");
+            });
+        }
+    });
+    
+    rdatagrid = $("#dg2").datagrid({
+        idField: "region_id",
+        fitColumns: true,
+        striped: true,
+        title: "统计区域",
+        collapsible: false,
+        remotesort: false,
+        rownumbers: true,
+        SingleSelect: false,
+        columns: [[{
+            field: 'region_name',
+            title: '区域',
+            //                sortable: true,
+            width: 80
+        }]],
+        onDblClickRow: function (rowIndex, row) {
+            var led = $("#led").combobox("getValue");
+            var region_id = row.region_id;
+            Ajax(true, global.yd["RemovePKLedRegion"], { LoginID: LocalID, region_id: region_id, led_id: led }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Lloaddata(led);
+                Rloaddata(led);
+                $.messager.alert("提示", "移出成功", "info");
+            });
+        }
+    });
+    $("#moveIn").click(function () {
+        var rows = ldatagrid.datagrid('getSelections');
+        if (ldatagrid.datagrid('getSelections') == null) {
+            $.messager.alert("提示", "未选中项", "error");
+            return;
+        }
+        var led = $("#led").combobox("getValue");
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var region_id = row.region_id;
+            Ajax(true, global.yd["NewPKLedRegion"], { LoginID: LocalID, region_id: region_id, led_id: led }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Lloaddata(led);
+                Rloaddata(led);
+                $.messager.alert("提示", "移入成功", "info");
+            });
+        }
+        });
+    $("#moveOut").click(function () {
+        var rows = rdatagrid.datagrid('getSelections');
+        if (rdatagrid.datagrid('getSelections') == null) {
+            $.messager.alert("提示", "未选中项", "error");
+            return;
+        }
+        var led = $("#led").combobox("getValue");
+        for (var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            var region_id = row.region_id;
+            Ajax(true, global.yd["RemovePKLedRegion"], { LoginID: LocalID, region_id: region_id, led_id: led }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Lloaddata(led);
+                Rloaddata(led);
+                $.messager.alert("提示", "移出成功", "info");
+            });
+        }
+    });
+});
+function Lloaddata(id) {
+    ldatagrid.datagrid('unselectAll');
+    Ajax(true, global.yd["GetPKRegionInfoNullLedList"], { LoginID: LocalID, led_id: id }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        ljsondata.total = data.Data.length;
+        ljsondata.rows = data.Data;
+        ldatagrid.datagrid('loadData', ljsondata);
+    });
+}
+function Rloaddata(id) {
+    rdatagrid.datagrid('unselectAll');
+    Ajax(true, global.yd["GetPKLedRegionList"], { LoginID: LocalID, led_id: id}, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        rjsondata.total = data.Data.length;
+        rjsondata.rows = data.Data;
+        rdatagrid.datagrid('loadData', rjsondata);
+    });
+}
+</script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false,border:false" style="padding:2px; " >
+场地：<select id="cd" class="easyui-combobox"  style="width:100px;">  </select> 
+LED：<select id="led" class="easyui-combobox"  style="width:100px;">  </select> 
+<!--<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>-->
+<div id="info" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;"></div>
+</div>
+    <div data-options="region:'west',collapsible:false" title=""style="padding:2px;width:40%; ">
+		<table id="dg1" ></table>
+	</div>
+<div data-options="region:'center'" style="padding-top:30px; padding-left:12px;width:20%;">
+<div>
+	<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px; margin-bottom:20px;" id="moveOut" >《 移出</a></div>
+	<div><a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px"  id="moveIn">移入 》</a></div>
+</div>
+<div data-options="region:'east',split:true,collapsible:false" style="width:40%;">
+	<table id="dg2" ></table>
+</div>
+</div>
+</body>
+</html>

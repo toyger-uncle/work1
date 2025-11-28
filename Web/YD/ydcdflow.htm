@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "pic_id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + "-";
+        strDate += curr_time.getMonth() + 1 + "-";
+        strDate += curr_time.getDate() - 1;
+//        $("#dt1").datebox("setValue", strDate);
+        Ajax(true, global.yd["GetPKPicInfoList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'pic_id': '', 'pic_name': '全部' };
+            data.Data.push(temp);
+            $('#cd').combobox({
+                data: data.Data,
+                valueField: 'pic_id',
+                textField: 'pic_name'
+            });
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            singleSelect: true,
+            columns: [[{
+                field: 'pic_name',
+                title: '场地',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'stop_v',
+                title: '使用率(%)',
+                width: 80,
+                sortable: true
+            }
+            ]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata(($("#dt1").datebox("getValue") + " 00:00:00"), ($("#dt2").datebox("getValue") + " 23:59:59"), $('#cd').combobox('getValue'));
+            }
+        });
+        loaddata(($("#dt1").datebox("getValue") + " 00:00:00"), ($("#dt2").datebox("getValue") + " 23:59:59"), $('#cd').combobox('getValue'));
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        $("#shengcheng").click(function () {
+            $('#win1').window('open');
+        });
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+        $("#search").click(function () {
+            PageNum = 1;
+            var p = datagrid.datagrid('getPager');
+            p.pagination('select', 1);
+        });
+        $("#save").click(function () {
+            var you = "";
+            if ($("#id").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "pic_name";
+            }
+            if ($("#bm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "stop_v";
+            }
+            if (you == "") {
+                alert("未选择目录项！");
+                return;
+            }
+            var cd = $('#cd').combobox('getValue');
+            var fgf = $('#fgf').combobox('getValue');
+            var kinds = $('#com').combobox('getValue');
+            var yilai = $('#yilai').combobox('getValue');
+            var paixu = $('#paixu').combobox('getValue');
+            var BeginTime = $("#dt1").datebox("getValue") + " 00:00:00";
+            var EndTime = $("#dt2").datebox("getValue") + " 23:59:59";
+            if (kinds == "") {
+                alert("未选择格式！");
+                return;
+            }
+            if (kinds == "text") {
+                var url = RTURL + global.export["ExportPkCwparkMxPicUsedRatePageFile"] + "?LoginID=" + LocalID + "&pic_id=" + cd + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+            else {
+                var url = RTURL + global.export["ExportPkCwparkMxPicUsedRatePageFile"] + "?LoginID=" + LocalID + "&pic_id=" + cd + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+        });
+    });
+    function loaddata(BeginTime, EndTime, cd) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.yd["GetPkCwRecordPicFlowPageList"], { LoginID: LocalID, pic_id: cd, kind: "0", BeginTime: BeginTime, EndTime: EndTime, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata(($("#dt1").datebox("getValue") + " 00:00:00"), ($("#dt2").datebox("getValue") + " 23:59:59"), $('#cd').combobox('getValue'));
+                }
+            });
+        });
+    }
+    function clkdada() {
+        var databox = $("#do").find("input:checkbox");
+        var j = 0;
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                j++;
+            }
+        }
+        if (j <= 2) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].checked) {
+                    databox[i].disabled = true;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+    }
+    </script>
+    <div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false,border:false" style="padding:2px;" >
+        <div style="padding:2px;">
+        场地：<select id="cd" class="easyui-combobox"  style="width:100px;height:20px">  </select> 
+       <!-- 时间从<input class="easyui-datebox" id="dt1"data-options="prompt:'请选择开始时间',required:true " style="width:150px"/> 
+        到<input class="easyui-datebox" id="dt2"data-options="required:true" style="width:150px"/> -->
+        <a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="search"data-options="iconCls:'icon-search'" >查询</a>
+        <a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng"style="width:60px;" >导出</a>
+        </div>
+    </div>
+        <div data-options="region:'west',collapsible:false,border:false"  >
+	        <table id="dg" data-options="pagination:true"></table>
+        </div>
+     </div>
+
+</body>
+</html>
