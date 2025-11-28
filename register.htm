@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link href="Scripts/jquery-easyui/themes/default/easyui.css" rel="stylesheet" type="text/css" />
+    <link href="Scripts/jquery-easyui/themes/icon.css" rel="stylesheet" type="text/css" />
+    <script src="Scripts/jquery-easyui/jquery.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-easyui/jquery.easyui.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="Scripts/common.js" type="text/javascript"></script>
+    <script src="Scripts/json2.js" type="text/javascript"></script>
+    <script src="Scripts/global.js" type="text/javascript"></script>
+            <style  type="text/css" >
+body {
+text-align :center center;
+}
+div.e {
+	position:relative;
+	width:300px;
+	height:200px;
+	margin:auto auto;
+	vertical-align:middle;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var id;
+    var request = {
+        QueryString: function (val) {
+            var uri = window.location.search;
+            var re = new RegExp("" + val + "\=([^\&\?]*)", "ig");
+            return ((uri.match(re)) ? (uri.match(re)[0].substr(val.length + 1)) : null);
+        }
+    }
+    $(function () {
+        id = request.QueryString("id");
+        $("#id").val(id);
+        Ajax(true, global.lg["GetCompanyName"], {}, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $("#name").val(data.Data);
+        });
+        $("#save").click(function () {
+            var ids = $("#id").val();
+            var zcid = $("#zcid").val();
+            if (ids == "") {
+                $.messager.alert("提示", "ID号不能为空", "error");
+                return;
+            }
+            if (zcid == "") {
+                $.messager.alert("提示", "注册号不能为空", "error");
+                return;
+            }
+            Ajax(true, global.lg["Register"], { LoginID: LocalID, ID: ids, value: zcid }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                } else {
+                    $.messager.alert("提示", "注册成功", "info");
+                    window.location.href = "newLogin.htm";
+                }
+            });
+        });
+    });
+</script>
+</head>
+<body style="text-align: center">
+<div class="easyui-panel" title="软件注册" data-options="collapsible:false,maximized:true" style="width:400px;height:300px; padding:2px; text-align: center;">
+<div class="e" style=" text-align: center;">
+<div> 
+<table cellpadding="5">
+              <tr>
+				<td>单位名称：</td>
+				<td><input id="name" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "readonly="readonly"/></td>
+			
+                </tr>
+			<tr>
+				<td>ID号：</td>
+				<td><input id="id" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "readonly="readonly"/></td>
+			
+                </tr>
+			<tr>
+            <td>注册号：</td>
+				<td><input id="zcid" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "/></td>
+			</tr>
+		</table>
+
+<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">注册</a></div>
+</div>
+     </div>
+</body>
+</html>

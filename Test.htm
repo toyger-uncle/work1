@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+    <link rel="stylesheet" type="text/css" href="Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="Scripts/common.js" type="text/javascript"></script>
+    <script src="Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+    <script src="Scripts/constant.js" type="text/javascript"></script>
+    <script src="Scripts/global.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        function ddd() {
+            ajaxFileUpload(RTURL + global.mj["UpMJWhereGroupPic"], { address_group_id: "001" }, "File1", function (data, status) {
+                alert("");
+                if (data.Success) {
+                    alert(hint["success"]);
+                }
+                else {
+                    alert(hint["fail"]);
+                }
+                return data;
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id = "content">
+        <input id="File1" name="File1" type="file" /><input id="Button1" type="button" 
+            value="button" onclick="ddd()" /></div>
+</body>
+</html>

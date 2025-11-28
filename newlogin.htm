@@ -1,0 +1,167 @@
+﻿<!--<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta  http-equiv="Content-Type" content="charset=utf-8"/>
+<meta content="width=device-width,user-scalable=no" name="viewport"/> 
+<title></title>
+<link href="Scripts/jquery-easyui/themes/icon.css" rel="stylesheet" type="text/css" />
+<link href="Scripts/jquery-easyui/themes/default/easyui.css" rel="stylesheet" type="text/css" />
+<script src="Scripts/jquery/jquery-1.9.0.min.js" type="text/javascript"></script>
+<script src="Scripts/jquery-easyui/jquery.min.js" type="text/javascript"></script>
+<script src="Scripts/jquery-easyui/jquery.easyui.min.js" type="text/javascript"></script>
+<script src="Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+<script src="Scripts/json2.js" type="text/javascript"></script>
+<script src="Scripts/jquery.cookie.js" type="text/javascript"></script>
+<script src="Scripts/common.js" type="text/javascript"></script>
+<script src="Scripts/constant.js" type="text/javascript"></script>
+<script src="Scripts/login.js" type="text/javascript"></script>
+<style type="text/css">
+BODY 
+{
+    font-family: verdana,helvetica,arial,sans-serif,宋体;
+   text-align :center center;
+    background-image: url(Images/1_01.png);
+}
+div.__01 {
+	position:relative;
+	width:1024px;
+	height:600px;
+	margin:auto auto;
+	vertical-align:middle;
+}
+
+div.x767bx5f55x754cx9762--1--01 {
+	position:relative;
+	left:0px;
+	top:0px;
+	width:1024px;
+	height:169px;
+	margin:0 auto;
+}
+
+div.x767bx5f55x754cx9762--1--02 {
+	position:absolute;
+	left:0px;
+	top:169px;
+	width:345px;
+	height:337px;
+}
+
+#content
+{
+    position:absolute;
+	left:345px;
+	top:169px;
+	width:336px;
+	height:337px;
+  text-align :center;
+    background-image: url(Images/01.png);
+    }
+    .user{width:166px; height:40px; border-right:0px solid #cccccc; border-bottom: 0px solid #cccccc;line-height:40px;float:left;background: no-repeat 20px 5px;font-weight:bold;text-align: center;
+        font-size: 13pt;
+    }
+    .userno{width:166px; height:40px; border-right:1px solid #cccccc; border-bottom: 1px solid #cccccc;line-height:40px;float:left; cursor:pointer;background: no-repeat 20px 5px #fafafa;font-weight:bold;text-align: center;font-size: 13pt;}
+    .phone{width:166px; height:40px; border-left:0px solid #cccccc; border-bottom: 0px solid #cccccc;line-height:40px;float:right;display:inline;background: no-repeat 20px 5px;font-weight:bold;text-align: center;font-size: 13pt;}
+    .phoneno{width:166px; height:40px; border-left:1px solid #cccccc; border-bottom: 1px solid #cccccc; line-height:40px;float:right; background-color:#fafafa;display:inline;cursor:pointer;background: no-repeat 20px 5px #fafafa;font-weight:bold;text-align: center;
+      font-size: 13pt;  }
+    .space{ height:50px; }
+    .info{ height:35px; width:266px; margin-top:20px; margin-left:35px; }
+    .line1{ height:35px; width:40px; margin-top:0px; float:left;}
+    .txt{ border:0px; height:33px; line-height:30px;font-size:18px; margin-left:2px; float:left; width:220px;margin-top:0px;}
+    #verdiv{color: #666666; background-color:#d8d8d8; height:33px; float:right; line-height:30px; width:91px;margin-top:0px; cursor:pointer;background:url(Images/wyanzheng.png)}
+    #verdiv:hover{color: #666666; background-color:#d8d8d8; height:33px; float:right; line-height:30px; width:91px;margin-top:0px; cursor:pointer;background:url(Images/zyanzheng.png)}
+    #logback{ height:20px; width:265px; margin-top:15px; margin-left:35px; text-align:left;}
+    #nextlog{ float:left;}
+    #pswback{ height:40px; width:117px; margin-top:5px;
+float:right;text-align:right; color:#0078c5;
+    }
+    #pswback:hover{color:#000000; text-decoration:underline; cursor:pointer;}
+    #login{height:29px; width:265px; margin-top:30px; margin-left:36px; font-size:20px; line-height:37px; font-weight:bold;text-align: center;cursor:pointer;background:url(Images/ann.png)}
+    #login:hover{height:29px; width:265px; margin-top:30px; margin-left:36px; font-size:20px; line-height:37px; font-weight:bold;text-align: center;cursor:pointer;background:url(Images/an.png)}
+div.x767bx5f55x754cx9762--1--04 {
+	position:absolute;
+	left:681px;
+	top:169px;
+	width:343px;
+	height:337px;
+}
+
+
+div.x767bx5f55x754cx9762--1--25 {
+	position:absolute;
+	left:0px;
+	top:506px;
+	width:1024px;
+	height:94px;
+}
+
+
+    .style1
+    {
+        font-family: 黑体;
+        font-size: smaller;
+    }
+
+
+</style>
+</head>
+<body onkeydown="LoginPress();" style=" margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;">
+<div style="text-align: right"><a id="dd" class="" style="text-align: right; text-decoration: underline;"href="http://192.168.18.112:8088"target="_black">老版网站</a></div>
+<div class="__01">
+	<div class="x767bx5f55x754cx9762--1--01">
+		<img src="Images/(1)_01.png" width="1024" height="169" alt=""><!---->
+	</div>
+	<div class="x767bx5f55x754cx9762--1--02">
+		<img src="Images/(1)-(1)_03.png" width="348" height="337" alt="">
+	</div>
+	<div id="content" class="content" >
+    <div id="user" class="user" >密码登录</div>
+        <div id="phone" class="phoneno" >短信登录</div>
+        <div class="space" ></div>
+        <div id="userphone1"  class="info"style=" display:none;"><div class="line1"><img src="Images/zhanghao.png" width="40" height="35" alt=""></div><input type="text" id="phonetxt1"  class="txt" maxlength="30" title="手机号" onblur="changyz();"/></div>
+        <div id="userphone"  class="info"><div class="line1"><img src="Images/zhanghao.png" width="40" height="35" alt=""></div><input type="text" id="phonetxt"  class="txt" maxlength="30" title="工号|邮箱|身份证|手机号" onblur="changyz();"/></div>
+        <div id="userpsw" class="info"><div class="line1"><img src="Images/mima.png" width="40" height="35" alt=""></div><input type="password" id="pswtxt"  class="txt" maxlength="16" title="密码"/></div>
+        <div id="userver" class="info" style=" display:none;"><div class="line1"><img src="Images/mima.png" width="40" height="35" alt=""></div><input type="text" id="vertxt" class="txt" maxlength="6" style=" width:130px;" title="短信验证码"/><div id="verdiv"onclick="getpsw();" ></div></div>
+        <div id="yanzheng" class="info" style=" display:none;"><div class="line1"><img src="Images/duanxin.jpg" width="40" height="35" alt=""></div><img src="aspx/make_image.aspx" id="imageid" title="重新获取" style="width:140px;height:35px;cursor:pointer; display:inline;"/><input type="text" id="yantxt" class="txt" maxlength="1" style=" width:80px;display:inline;"/></div>
+        <div id="login" onclick="login();" style=""></div>
+        <div id="logback" ><div id="nextlog"><input type="checkbox" id="zidong" 
+                style="background-color: #C0C0C0"/><span class="style1">下次自动登录</span></div>
+            <div id="pswback" onclick="pswback();" class="style1">忘记密码？</div></div>
+    </div>
+	<div class="x767bx5f55x754cx9762--1--04">
+		<img src="Images/(1)-(1)_05.png" width="340" height="337" alt="">
+	</div>
+	<div class="x767bx5f55x754cx9762--1--25">
+		<img src="Images/(1)_25.png" width="1024" height="94" alt="">
+	</div>
+    
+</div>
+<!--<div id="win" class="easyui-window" title="注册" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:200px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+              <tr>
+				<td>单位名称：</td>
+				<td><input id="name" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "/></td>
+			
+                </tr>
+			<tr>
+				<td>ID号：</td>
+				<td><input id="id" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "/></td>
+			
+                </tr>
+			<tr>
+            <td>注册号：</td>
+				<td><input id="zcid" class="easyui-validatebox textbox" data-options="" style="width:200px;height:20px; "/></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>-->
+</body>
+</html>
