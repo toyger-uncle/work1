@@ -1,0 +1,1917 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <!--<script>
+    {
+                    text: "修改", iconCls: "icon-edit", handler: function () {
+                        k = 1;
+                        var rows = datagrid1.datagrid('getSelected');
+                        if (rows == null) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        var row = datagrid.datagrid('getSelected');
+                        if (row == null) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        if (row.charge_kind == "01" || row.charge_kind == "02" || row.charge_kind == "03" || row.charge_kind == "04" || row.charge_kind == "06" || row.charge_kind == "07") {
+                            $('#win01').window('open');
+                            $('#area01').combobox("setValue", rows.area_id);
+                            kk = 51;
+                        }
+                        if (row.charge_kind == "05" || row.charge_kind == "10") {
+                            $('#win05').window('open');
+                            $('#area05').combobox("setValue", rows.area_id);
+                            $("#uncharged_time05").val(rows.uncharged_time);
+                            $("#within_money05").val(rows.within_money);
+                            var day_num = rows.day_num;
+                            if (day_num == 1) { $("#day_num05").prop("checked", true); }
+                            if (day_num == 0) { $("#day_num05").prop("checked", false); }
+                            var zero_day = rows.zero_day;
+                            if (zero_day == 1) { $("#zero_day05").prop("checked", true); }
+                            if (zero_day == 0) { $("#zero_day05").prop("checked", false); }
+                            kk = 52;
+                        }
+                        if (row.charge_kind == "08" || row.charge_kind == "14") {
+                            $('#win08').window('open');
+                            $('#area08').combobox("setValue", rows.area_id);
+                            $("#uncharged_time08").val(rows.uncharged_time);
+                            $("#unit1_time08").val(rows.unit1_time);
+                            $("#unit1_money08").val(rows.unit1_money);
+                            $("#unit2_time08").val(rows.unit2_time);
+                            $("#unit2_money08").val(rows.unit2_money);
+                            $("#unit3_time08").val(rows.unit3_time);
+                            $("#unit3_money08").val(rows.unit3_money);
+                            $("#unit4_time08").val(rows.unit4_time);
+                            $("#unit4_money08").val(rows.unit4_money);
+                            $("#day_money08").val(rows.day_money);
+                            kk = 53;
+                        }
+                        if (row.charge_kind == "09" || row.charge_kind == "12") {
+                            $('#win09').window('open');
+                            $('#area09').combobox("setValue", rows.area_id);
+                            $("#uncharged_time09").val(rows.uncharged_time);
+                            $("#day_money09").val(rows.day_money);
+                            var zero_day = rows.zero_day;
+                            if (zero_day == 1) { $("#zero_day09").prop("checked", true); }
+                            if (zero_day == 0) { $("#zero_day09").prop("checked", false); }
+                            $("#within_time09").val(rows.within_time);
+                            $("#within_money109").val(rows.within_money);
+                            $("#unit1_time109").val(rows.unit1_time);
+                            $("#unit1_money109").val(rows.unit1_money);
+                            $("#unyh_maxmoney09").val(rows.unyh_maxmoney);
+                            $("#begin_time109").timespinner("setValue");
+                            $("#end_time109").timespinner("setValue");
+                            $("#within_time209").val(rows.within_time2);
+                            $("#within_money209").val(rows.within_money2);
+                            $("#unit2_time109").val(rows.unit2_time);
+                            $("#unit2_money109").val(rows.unit2_money);
+                            $("#first_money09").val(rows.first_money);
+                            kk = 54;
+
+                        }
+                        if (row.charge_kind == "22" || row.charge_kind == "23") {
+                            $('#win22').window('open');
+                            $('#area22').combobox("setValue", rows.area_id);
+                            $("#uncharged_time22").val(rows.uncharged_time);
+                            $("#unit1_time22").val(rows.unit1_time);
+                            $("#unit1_money22").val(rows.unit1_money);
+                            $("#unit2_time22").val(rows.unit2_time);
+                            $("#unit2_money22").val(rows.unit2_money);
+                            $("#unit3_time22").val(rows.unit3_time);
+                            $("#unit3_money22").val(rows.unit3_money);
+                            $("#unit4_time22").val(rows.unit4_time);
+                            $("#unit4_money22").val(rows.unit4_money);
+                            $("#day_money22").val(rows.day_money);
+                            $("#begin_time122").timespinner("setValue");
+                            $("#end_time122").timespinner("setValue");
+                            var day_num = rows.day_num;
+                            if (day_num == 1) { $("#day_num22").prop("checked", true); }
+                            if (day_num == 0) { $("#day_num22").prop("checked", false); }
+                            kk = 55;
+                        }
+                        if (row.charge_kind == "13" || row.charge_kind == "15") {
+                            $('#win13').window('open');
+                            $('#area13').combobox("setValue", rows.area_id);
+                            $("#uncharged_time13").val(rows.uncharged_time);
+                            $("#unit1_time13").val(rows.unit1_time);
+                            $("#unit1_money13").val(rows.unit1_money);
+                            $("#unit2_time13").val(rows.unit2_time);
+                            $("#unit2_money13").val(rows.unit2_money);
+                            $("#unit3_time13").val(rows.unit3_time);
+                            $("#unit3_money13").val(rows.unit3_money);
+                            $("#unit4_time13").val(rows.unit4_time);
+                            $("#unit4_money13").val(rows.unit4_money);
+                            $("#within_time213").val(rows.within_time2);
+                            $("#within_money213").val(rows.within_money2);
+                            kk = 56;
+                        }
+                        if (row.charge_kind == "16") {
+                            $('#win16').window('open');
+                            $('#area16').combobox("setValue", rows.area_id);
+                            $("#uncharged_time16").val(rows.uncharged_time);
+                            $("#within_time16").val(rows.within_time);
+                            $("#within_money116").val(rows.within_money);
+                            $("#unit1_time116").val(rows.unit1_time);
+                            $("#unit1_money116").val(rows.unit1_money);
+                            $("#unyh_maxmoney16").val(rows.unyh_maxmoney);
+                            $("#begin_time116").timespinner("setValue");
+                            $("#end_time116").timespinner("setValue");
+                            $("#within_time216").val(rows.within_time2);
+                            $("#within_money216").val(rows.within_money2);
+                            $("#unit2_time116").val(rows.unit2_time);
+                            $("#unit2_money116").val(rows.unit2_money);
+                            $("#first_money16").val(rows.first_money);
+                            kk = 57;
+                        }
+                        if (row.charge_kind == "18") {
+                            $('#win18').window('open');
+                            $('#area18').combobox("setValue", rows.area_id);
+                            $("#uncharged_time18").val(rows.uncharged_time);
+                            $("#unit1_time18").val(rows.unit1_time);
+                            $("#unit1_money18").val(rows.unit1_money);
+                            $("#unit2_time18").val(rows.unit2_time);
+                            $("#unit2_money18").val(rows.unit2_money);
+                            $("#unit3_time18").val(rows.unit3_time);
+                            $("#unit3_money18").val(rows.unit3_money);
+                            $("#unit4_time18").val(rows.unit4_time);
+                            $("#unit4_money18").val(rows.unit4_money);
+                            $("#within_time218").val(rows.within_time2);
+                            $("#within_money218").val(rows.within_money2);
+                            kk = 58;
+                        }
+                        if (row.charge_kind == "20" || row.charge_kind == "21") {
+                            $('#win20').window('open');
+                            $('#area20').combobox("setValue", rows.area_id);
+                            $("#uncharged_time20").val(rows.uncharged_time);
+                            $("#unit1_time20").val(rows.unit1_time);
+                            $("#unit1_money20").val(rows.unit1_money);
+                            $("#unit2_time20").val(rows.unit2_time);
+                            $("#unit2_money20").val(rows.unit2_money);
+                            $("#unit3_time20").val(rows.unit3_time);
+                            $("#unit3_money20").val(rows.unit3_money);
+                            $("#unit4_money20").val(rows.unit4_money);
+                            $("#unit4_time20").val(rows.unit4_time);
+                            kk = 59;
+                        }
+                        if (row.charge_kind == "24" || row.charge_kind == "25") {
+                            $('#win24').window('open');
+                            $('#area24').combobox("setValue", rows.area_id);
+                            $("#uncharged_time24").val(rows.uncharged_time);
+                            $("#within_time24").val(rows.within_time);
+                            $("#within_money124").val(rows.within_money);
+                            $("#unit1_time124").val(rows.unit1_time);
+                            $("#unit1_money124").val(rows.unit1_money);
+                            $("#unyh_maxmoney24").val(rows.unyh_maxmoney);
+                            $("#begin_time24").timespinner("setValue");
+                            $("#end_time24").timespinner("setValue");
+                            $("#within_time124").val(rows.within_time2);
+                            $("#within_money1124").val(rows.within_money2);
+                            $("#unit2_time124").val(rows.unit2_time);
+                            $("#unit2_money124").val(rows.unit2_money);
+                            $("#first_money24").val(rows.first_money);
+                            $("#day_money24").val(rows.day_money);
+                            var zero_day = rows.zero_day;
+                            if (zero_day == 1) { $("#zero_day24").prop("checked", true); }
+                            if (zero_day == 0) { $("#zero_day24").prop("checked", false); }
+                            $("#unit3_time24").val(rows.unit3_time);
+                            $("#unit3_money24").val(rows.unit3_money);
+                            kk = 60;
+                        }
+                        if (row.charge_kind == "17" ) {
+                            $('#win17').window('open');
+                            $('#area17').combobox("setValue", rows.area_id);
+                            $("#begin_time17").timespinner("setValue");
+                            $("#end_time17").timespinner("setValue");
+                            var week1 = rows.week1;
+                            if (week1 == 1) { $("#week1").prop("checked", true); }
+                            if (week1 == 0) { $("#week1").prop("checked", false); }
+                            var week2 = rows.week2;
+                            if (week2 == 1) { $("#week2").prop("checked", true); }
+                            if (week2 == 0) { $("#week2").prop("checked", false); }
+                            var week3 = rows.week3;
+                            if (week3 == 1) { $("#week3").prop("checked", true); }
+                            if (week3 == 0) { $("#week3").prop("checked", false); }
+                            var week4 = rows.week4;
+                            if (week4 == 1) { $("#week4").prop("checked", true); }
+                            if (week4 == 0) { $("#week4").prop("checked", false); }
+                            var week5 = rows.week5;
+                            if (week5 == 1) { $("#week5").prop("checked", true); }
+                            if (week5 == 0) { $("#week5").prop("checked", false); }
+                            var week6 = rows.week6;
+                            if (week6 == 1) { $("#week6").prop("checked", true); }
+                            if (week6 == 0) { $("#week6").prop("checked", false); }
+                            var week7 = rows.week7;
+                            if (week7 == 1) { $("#week7").prop("checked", true); }
+                            if (week7 == 0) { $("#week7").prop("checked", false); }
+                            kk = 61;
+                        }
+                    }
+                },
+                {
+                    text: "增加", iconCls: "icon-add", handler: function () {
+                        k = 0;
+                        var rows = datagrid.datagrid('getSelected');
+                        if (rows == null) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        
+                        //                        按年、季、月、半年、一次性、免费
+                        if (rows.charge_kind == "01" || rows.charge_kind == "02" || rows.charge_kind == "03" || rows.charge_kind == "04" || rows.charge_kind == "06" || rows.charge_kind == "07") {
+                            $('#win01').window('open');
+                            $('#area01').combobox("setValue", "");
+                            kk = 11;
+                        }
+                        //                        临时按次收费、IC卡按次收费
+                        if (rows.charge_kind == "05" || rows.charge_kind == "10") {
+                            $('#win05').window('open');
+                            $('#area05').combobox("setValue", "");
+                            $("#uncharged_time05").val("0");
+                            $("#within_money05").val("0");
+                            $("#day_num05").prop("checked", false);
+                            $("#zero_day05").prop("checked", false);
+                            kk = 12;
+                        }
+                        //                        临时按时段收费、IC卡按时段收费
+                        if (rows.charge_kind == "08" || rows.charge_kind == "14") {
+                            $('#win08').window('open');
+                            $('#area08').combobox("setValue", "");
+                            $("#uncharged_time08").val("0");
+                            $("#unit1_time08").val("0");
+                            $("#unit1_money08").val("0");
+                            $("#unit2_time08").val("0");
+                            $("#unit2_money08").val("0");
+                            $("#unit3_time08").val("0");
+                            $("#unit3_money08").val("0");
+                            $("#unit4_time08").val("0");
+                            $("#unit4_money08").val("0");
+                            $("#day_money08").val("0");
+                            kk = 13;
+                        }
+                        //                        IC卡收费、临时计时收费
+                        if (rows.charge_kind == "09" || rows.charge_kind == "12") {
+                            $('#win09').window('open');
+                            $('#area09').combobox("setValue", "");
+                            $("#uncharged_time09").val("0");
+                            $("#day_money09").val("0");
+                            $("#zero_day09").prop("checked", false);
+                            $("#within_time09").val("0");
+                            $("#within_money109").val("0");
+                            $("#unit1_time109").val("0");
+                            $("#unit1_money109").val("0");
+                            $("#unyh_maxmoney09").val("0");
+                            $("#begin_time109").timespinner('setValue', '00:00');
+                            $("#end_time109").timespinner('setValue', '00:00');
+                            $("#within_time209").val("0");
+                            $("#within_money209").val("0");
+                            $("#unit2_time109").val("0");
+                            $("#unit2_money109").val("0");
+                            $("#first_money09").val("0");
+                            kk = 14;
+                        }
+                        //  临时按时段收费5、IC卡临时按时段收费5
+                        if (rows.charge_kind == "22" || rows.charge_kind == "23") {
+                            $('#win22').window('open');
+                            $('#area22').combobox("setValue", "");
+                            $("#uncharged_time22").val("0");
+                            $("#unit1_time22").val("0");
+                            $("#unit1_money22").val("0");
+                            $("#unit2_time22").val("0");
+                            $("#unit2_money22").val("0");
+                            $("#unit3_time22").val("0");
+                            $("#unit3_money22").val("0");
+                            $("#unit4_time22").val("0");
+                            $("#unit4_money22").val("0");
+                            $("#day_money22").val("0");
+                            $("#begin_time122").timespinner('setValue', '00:00');
+                            $("#end_time122").timespinner('setValue', '00:00');
+                            $("#day_num22").prop("checked", false);
+                            kk = 15;
+                        }
+                        //                        IC卡临时按时段收费2、临时按时段收费2
+                        if (rows.charge_kind == "13" || rows.charge_kind == "15") {
+                            $('#win13').window('open');
+                            $('#area13').combobox("setValue", "");
+                            $("#uncharged_time13").val("0");
+                            $("#unit1_time13").val("0");
+                            $("#unit1_money13").val("0");
+                            $("#unit2_time13").val("0");
+                            $("#unit2_money13").val("0");
+                            $("#unit3_time13").val("0");
+                            $("#unit3_money13").val("0");
+                            $("#unit4_time13").val("0");
+                            $("#unit4_money13").val("0");
+                            $("#within_time213").val("0");
+                            $("#within_money213").val("0");
+                            kk = 16;
+                        }
+                        //                        临时计时收费2
+                        if (rows.charge_kind == "16") {
+                            $('#win16').window('open');
+                            $('#area16').combobox("setValue", "");
+                            $("#uncharged_time16").val("0");
+                            $("#within_time16").val("0");
+                            $("#within_money116").val("0");
+                            $("#unit1_time116").val("0");
+                            $("#unit1_money116").val("0");
+                            $("#unyh_maxmoney16").val("0");
+                            $("#begin_time116").timespinner('setValue', '00:00');
+                            $("#end_time116").timespinner('setValue', '00:00');
+                            $("#within_time216").val("0");
+                            $("#within_money216").val("0");
+                            $("#unit2_time116").val("0");
+                            $("#unit2_money116").val("0");
+                            $("#first_money16").val("0");
+                            kk = 17;
+                        }
+                        //                        临时按时段收费3
+                        if (rows.charge_kind == "18") {
+                            $('#win18').window('open');
+                            $('#area18').combobox("setValue", "");
+                            $("#uncharged_time18").val("0");
+                            $("#unit1_time18").val("0");
+                            $("#unit1_money18").val("0");
+                            $("#unit2_time18").val("0");
+                            $("#unit2_money18").val("0");
+                            $("#unit3_time18").val("0");
+                            $("#unit3_money18").val("0");
+                            $("#unit4_time18").val("0");
+                            $("#unit4_money18").val("0");
+                            $("#within_time218").val("0");
+                            $("#within_money218").val("0");
+                            kk = 18;
+                        }
+                        //                        临时按时段收费4、IC卡临时按时段收费4
+                        if (rows.charge_kind == "20" || rows.charge_kind == "21") {
+                            $('#win20').window('open');
+                            $('#area20').combobox("setValue", "");
+                            $("#uncharged_time20").val("0");
+                            $("#unit1_time20").val("0");
+                            $("#unit1_money20").val("0");
+                            $("#unit2_time20").val("0");
+                            $("#unit2_money20").val("0");
+                            $("#unit3_time20").val("0");
+                            $("#unit3_money20").val("0");
+                            $("#unit4_money20").val("0");
+                            $("#unit4_time20").val("0");
+                            kk = 19;
+                        }
+                        //                        临时计时收费3、IC卡临时收费3
+                        if (rows.charge_kind == "24" || rows.charge_kind == "25") {
+                            $('#win24').window('open');
+                            $('#area24').combobox("setValue", "");
+                            $("#uncharged_time24").val("0");
+                            $("#within_time24").val("0");
+                            $("#within_money124").val("0");
+                            $("#unit1_time124").val("0");
+                            $("#unit1_money124").val("0");
+                            $("#unyh_maxmoney24").val("0");
+                            $("#begin_time24").timespinner('setValue', '00:00');
+                            $("#end_time24").timespinner('setValue', '00:00');
+                            $("#within_time124").val("0");
+                            $("#within_money1124").val("0");
+                            $("#unit2_time124").val("0");
+                            $("#unit2_money124").val("0");
+                            $("#first_money24").val("0");
+                            $("#day_money24").val("0");
+                            $("#zero_day24").prop("checked", false);
+                            $("#unit3_time24").val("0");
+                            $("#unit3_money24").val("0");
+                            kk = 20;
+                        }
+                        if (rows.charge_kind == "17") {
+                            $('#win17').window('open');
+                            $('#area17').combobox("setValue", "");
+                            $("#begin_time17").timespinner('setValue', '00:00');
+                            $("#end_time17").timespinner('setValue', '00:00');
+                            $("#week1").prop("checked", false);
+                            $("#week2").prop("checked", false);
+                            $("#week3").prop("checked", false);
+                            $("#week4").prop("checked", false);
+                            $("#week5").prop("checked", false);
+                            $("#week6").prop("checked", false);
+                            $("#week7").prop("checked", false);
+                            kk = 21;
+                        }
+                    }
+                }],
+                onDblClickRow: function (rowIndex, rowData) {
+                    k = 1;
+                    var rows = datagrid1.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var row = datagrid.datagrid('getSelected');
+                    if (row == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    if (row.charge_kind == "01" || row.charge_kind == "02" || row.charge_kind == "03" || row.charge_kind == "04" || row.charge_kind == "06" || row.charge_kind == "07") {
+                        $('#win01').window('open');
+                        $('#area01').combobox("setValue", rows.area_id);
+                        kk = 51;
+                    }
+                    if (row.charge_kind == "05" || row.charge_kind == "10") {
+                        $('#win05').window('open');
+                        $('#area05').combobox("setValue", rows.area_id);
+                        $("#uncharged_time05").val(rows.uncharged_time);
+                        $("#within_money05").val(rows.within_money);
+                        var day_num = rows.day_num;
+                        if (day_num == 1) { $("#day_num05").prop("checked", true); }
+                        if (day_num == 0) { $("#day_num05").prop("checked", false); }
+                        var zero_day = rows.zero_day;
+                        if (zero_day == 1) { $("#zero_day05").prop("checked", true); }
+                        if (zero_day == 0) { $("#zero_day05").prop("checked", false); }
+                        kk = 52;
+                    }
+                    if (row.charge_kind == "08" || row.charge_kind == "14") {
+                        $('#win08').window('open');
+                        $('#area08').combobox("setValue", rows.area_id);
+                        $("#uncharged_time08").val(rows.uncharged_time);
+                        $("#unit1_time08").val(rows.unit1_time);
+                        $("#unit1_money08").val(rows.unit1_money);
+                        $("#unit2_time08").val(rows.unit2_time);
+                        $("#unit2_money08").val(rows.unit2_money);
+                        $("#unit3_time08").val(rows.unit3_time);
+                        $("#unit3_money08").val(rows.unit3_money);
+                        $("#unit4_time08").val(rows.unit4_time);
+                        $("#unit4_money08").val(rows.unit4_money);
+                        $("#day_money08").val(rows.day_money);
+                        kk = 53;
+                    }
+                    if (row.charge_kind == "09" || row.charge_kind == "12") {
+                        $('#win09').window('open');
+                        $('#area09').combobox("setValue", rows.area_id);
+                        $("#uncharged_time09").val(rows.uncharged_time);
+                        $("#day_money09").val(rows.day_money);
+                        var zero_day = rows.zero_day;
+                        if (zero_day == 1) { $("#zero_day09").prop("checked", true); }
+                        if (zero_day == 0) { $("#zero_day09").prop("checked", false); }
+                        $("#within_time09").val(rows.within_time);
+                        $("#within_money109").val(rows.within_money);
+                        $("#unit1_time109").val(rows.unit1_time);
+                        $("#unit1_money109").val(rows.unit1_money);
+                        $("#unyh_maxmoney09").val(rows.unyh_maxmoney);
+                        $("#begin_time109").timespinner("setValue");
+                        $("#end_time109").timespinner("setValue");
+                        $("#within_time209").val(rows.within_time2);
+                        $("#within_money209").val(rows.within_money2);
+                        $("#unit2_time109").val(rows.unit2_time);
+                        $("#unit2_money109").val(rows.unit2_money);
+                        $("#first_money09").val(rows.first_money);
+                        kk = 54;
+
+                    }
+                    if (row.charge_kind == "22" || row.charge_kind == "23") {
+                        $('#win22').window('open');
+                        $('#area22').combobox("setValue", rows.area_id);
+                        $("#uncharged_time22").val(rows.uncharged_time);
+                        $("#unit1_time22").val(rows.unit1_time);
+                        $("#unit1_money22").val(rows.unit1_money);
+                        $("#unit2_time22").val(rows.unit2_time);
+                        $("#unit2_money22").val(rows.unit2_money);
+                        $("#unit3_time22").val(rows.unit3_time);
+                        $("#unit3_money22").val(rows.unit3_money);
+                        $("#unit4_time22").val(rows.unit4_time);
+                        $("#unit4_money22").val(rows.unit4_money);
+                        $("#day_money22").val(rows.day_money);
+                        $("#begin_time122").timespinner("setValue");
+                        $("#end_time122").timespinner("setValue");
+                        var day_num = rows.day_num;
+                        if (day_num == 1) { $("#day_num22").prop("checked", true); }
+                        if (day_num == 0) { $("#day_num22").prop("checked", false); }
+                        kk = 55;
+                    }
+                    if (row.charge_kind == "13" || row.charge_kind == "15") {
+                        $('#win13').window('open');
+                        $('#area13').combobox("setValue", rows.area_id);
+                        $("#uncharged_time13").val(rows.uncharged_time);
+                        $("#unit1_time13").val(rows.unit1_time);
+                        $("#unit1_money13").val(rows.unit1_money);
+                        $("#unit2_time13").val(rows.unit2_time);
+                        $("#unit2_money13").val(rows.unit2_money);
+                        $("#unit3_time13").val(rows.unit3_time);
+                        $("#unit3_money13").val(rows.unit3_money);
+                        $("#unit4_time13").val(rows.unit4_time);
+                        $("#unit4_money13").val(rows.unit4_money);
+                        $("#within_time213").val(rows.within_time2);
+                        $("#within_money213").val(rows.within_money2);
+                        kk = 56;
+                    }
+                    if (row.charge_kind == "16") {
+                        $('#win16').window('open');
+                        $('#area16').combobox("setValue", rows.area_id);
+                        $("#uncharged_time16").val(rows.uncharged_time);
+                        $("#within_time16").val(rows.within_time);
+                        $("#within_money116").val(rows.within_money);
+                        $("#unit1_time116").val(rows.unit1_time);
+                        $("#unit1_money116").val(rows.unit1_money);
+                        $("#unyh_maxmoney16").val(rows.unyh_maxmoney);
+                        $("#begin_time116").timespinner("setValue");
+                        $("#end_time116").timespinner("setValue");
+                        $("#within_time216").val(rows.within_time2);
+                        $("#within_money216").val(rows.within_money2);
+                        $("#unit2_time116").val(rows.unit2_time);
+                        $("#unit2_money116").val(rows.unit2_money);
+                        $("#first_money16").val(rows.first_money);
+                        kk = 57;
+                    }
+                    if (row.charge_kind == "18") {
+                        $('#win18').window('open');
+                        $('#area18').combobox("setValue", rows.area_id);
+                        $("#uncharged_time18").val(rows.uncharged_time);
+                        $("#unit1_time18").val(rows.unit1_time);
+                        $("#unit1_money18").val(rows.unit1_money);
+                        $("#unit2_time18").val(rows.unit2_time);
+                        $("#unit2_money18").val(rows.unit2_money);
+                        $("#unit3_time18").val(rows.unit3_time);
+                        $("#unit3_money18").val(rows.unit3_money);
+                        $("#unit4_time18").val(rows.unit4_time);
+                        $("#unit4_money18").val(rows.unit4_money);
+                        $("#within_time218").val(rows.within_time2);
+                        $("#within_money218").val(rows.within_money2);
+                        kk = 58;
+                    }
+                    if (row.charge_kind == "20" || row.charge_kind == "21") {
+                        $('#win20').window('open');
+                        $('#area20').combobox("setValue", rows.area_id);
+                        $("#uncharged_time20").val(rows.uncharged_time);
+                        $("#unit1_time20").val(rows.unit1_time);
+                        $("#unit1_money20").val(rows.unit1_money);
+                        $("#unit2_time20").val(rows.unit2_time);
+                        $("#unit2_money20").val(rows.unit2_money);
+                        $("#unit3_time20").val(rows.unit3_time);
+                        $("#unit3_money20").val(rows.unit3_money);
+                        $("#unit4_money20").val(rows.unit4_money);
+                        $("#unit4_time20").val(rows.unit4_time);
+                        kk = 59;
+                    }
+                    if (row.charge_kind == "24" || row.charge_kind == "25") {
+                        $('#win24').window('open');
+                        $('#area24').combobox("setValue", rows.area_id);
+                        $("#uncharged_time24").val(rows.uncharged_time);
+                        $("#within_time24").val(rows.within_time);
+                        $("#within_money124").val(rows.within_money);
+                        $("#unit1_time124").val(rows.unit1_time);
+                        $("#unit1_money124").val(rows.unit1_money);
+                        $("#unyh_maxmoney24").val(rows.unyh_maxmoney);
+                        $("#begin_time24").timespinner("setValue");
+                        $("#end_time24").timespinner("setValue");
+                        $("#within_time124").val(rows.within_time2);
+                        $("#within_money1124").val(rows.within_money2);
+                        $("#unit2_time124").val(rows.unit2_time);
+                        $("#unit2_money124").val(rows.unit2_money);
+                        $("#first_money24").val(rows.first_money);
+                        $("#day_money24").val(rows.day_money);
+                        var zero_day = rows.zero_day;
+                        if (zero_day == 1) { $("#zero_day24").prop("checked", true); }
+                        if (zero_day == 0) { $("#zero_day24").prop("checked", false); }
+                        $("#unit3_time24").val(rows.unit3_time);
+                        $("#unit3_money24").val(rows.unit3_money);
+                        kk = 60;
+                    }
+                    if (row.charge_kind == "17") {
+                        $('#win17').window('open');
+                        $('#area17').combobox("setValue", rows.area_id);
+                        $("#begin_time17").timespinner("setValue");
+                        $("#end_time17").timespinner("setValue");
+                        var week1 = rows.week1;
+                        if (week1 == 1) { $("#week1").prop("checked", true); }
+                        if (week1 == 0) { $("#week1").prop("checked", false); }
+                        var week2 = rows.week2;
+                        if (week2 == 1) { $("#week2").prop("checked", true); }
+                        if (week2 == 0) { $("#week2").prop("checked", false); }
+                        var week3 = rows.week3;
+                        if (week3 == 1) { $("#week3").prop("checked", true); }
+                        if (week3 == 0) { $("#week3").prop("checked", false); }
+                        var week4 = rows.week4;
+                        if (week4 == 1) { $("#week4").prop("checked", true); }
+                        if (week4 == 0) { $("#week4").prop("checked", false); }
+                        var week5 = rows.week5;
+                        if (week5 == 1) { $("#week5").prop("checked", true); }
+                        if (week5 == 0) { $("#week5").prop("checked", false); }
+                        var week6 = rows.week6;
+                        if (week6 == 1) { $("#week6").prop("checked", true); }
+                        if (week6 == 0) { $("#week6").prop("checked", false); }
+                        var week7 = rows.week7;
+                        if (week7 == 1) { $("#week7").prop("checked", true); }
+                        if (week7 == 0) { $("#week7").prop("checked", false); }
+                        kk = 61;
+                    }
+                }
+    </script>-->
+</head>
+<body>
+    <div id="win01" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 220px; height: 180px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area01" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close01" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save01" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win05" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area05" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time05" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            每次收费
+                        </td>
+                        <td>
+                            <input id="within_money05" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="day_num05" checked="checked" name='databox' class="easyui-checkbox" />
+                            同一天内只收一次费用
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="zero_day05" checked="checked" name='databox' class="easyui-checkbox" />
+                            午夜零点记一天
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close05" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save05" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win08" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area08" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit1_time08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit2_time08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit2_money08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit3_time08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit3_money08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit4_time08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit4_money08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            全天最高收费
+                        </td>
+                        <td>
+                            <input id="day_money08" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close08" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save08" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win09" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 600px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area09" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time09" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="within_time09" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money109" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            每超过
+                        </td>
+                        <td>
+                            <input id="unit1_time109" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money109" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            如果有优惠时段，非优惠时段最高收费
+                        </td>
+                        <td>
+                            <input id="unyh_maxmoney09" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元（设0则无最高收费）
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            全天最高收费
+                        </td>
+                        <td>
+                            <input id="day_money09" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="zero_day09" checked="checked" name='databox' class="easyui-checkbox" />
+                            午夜零点记一天
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center',title:'优惠时段'" style="height: 220px; padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            优惠时段从<input id="begin_time109" class="easyui-timespinner" style="width: 80px;" required="required"
+                                data-options="min:'00:00',showSeconds:false" />
+                        </td>
+                        <td>
+                            至
+                            <input id="end_time109" class="easyui-timespinner" style="width: 80px;" required="required"
+                                data-options="min:'00:00',showSeconds:false" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="within_time209" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money209" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            每超过
+                        </td>
+                        <td>
+                            <input id="unit2_time109" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit2_money109" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            优惠时段最高收费
+                        </td>
+                        <td>
+                            <input id="first_money09" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close09" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save09" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win13" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area13" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit1_time13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit2_time13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit2_money13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit3_time13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit3_money13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit4_time13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit4_money13" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            超出时间，每
+                        </td>
+                        <td>
+                            <input id="within_time213" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money213" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close13" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save13" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win16" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area16" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time16" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="within_time16" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money116" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            每超过
+                        </td>
+                        <td>
+                            <input id="unit1_time116" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money116" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            如果有优惠时段，非优惠时段最高收费
+                        </td>
+                        <td>
+                            <input id="unyh_maxmoney16" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元（设0则无最高收费）
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center',title:'优惠时段'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    优惠时段从<input id="begin_time116" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                                <td>
+                                    至
+                                    <input id="end_time116" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="within_time216" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="within_money216" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    每超过
+                                </td>
+                                <td>
+                                    <input id="unit2_time116" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit2_money116" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    优惠时段最高收费
+                                </td>
+                                <td>
+                                    <input id="first_money16" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close16" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save16" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win17" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 350px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area17" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center'" style="padding: 5px;">
+            <div data-options="title:'一周允许停车时间'" style="width: 400px;height: 100px;padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    一周允许停车时间
+                                </td>
+                                <td>
+                                    <input type="checkbox" id="week1" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期一
+                                    <input type="checkbox" id="week2" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期二
+                                    <input type="checkbox" id="week3" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期三
+                                    <input type="checkbox" id="week4" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期四
+                                    <input type="checkbox" id="week5" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期五
+                                    <input type="checkbox" id="week6" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期六
+                                    <input type="checkbox" id="week7" checked="checked" name='databox' class="easyui-checkbox" />
+                                    星期日
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            <div data-options="title:'平时允许停车时间'" style="width: 400px; padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    平时允许停车时间
+                                </td>
+                                <td>
+                                    开始时间：
+                                    <input id="begin_time17" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                                <td>
+                                    结束时间：
+                                    <input id="end_time17" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            </div>
+
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close17" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save17" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win18" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area18" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit1_time18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit2_time18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit2_money18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit3_time18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit3_money18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit4_time18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit4_money18" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            凌晨0点后，每
+                        </td>
+                        <td>
+                            <input id="within_time218" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money218" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close18" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save18" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win20" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area20" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit1_time20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit2_time20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内超出部分每小时收费
+                        </td>
+                        <td>
+                            <input id="unit2_money20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit3_time20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内超出部分每小时收费
+                        </td>
+                        <td>
+                            <input id="unit3_money20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            超出时间，每小时内收费
+                        </td>
+                        <td>
+                            <input id="unit4_money20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input id="unit4_time20" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内返回停车费率按出场时费率算
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close20" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save20" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win22" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 400px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area22" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center'" style="padding: 5px;">
+            <div data-options="title:'正常时段'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="unit1_time22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit1_money22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="unit2_time22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit2_money22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="unit3_time22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit3_money22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="unit4_time22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit4_money22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    最高收费
+                                </td>
+                                <td>
+                                    <input id="day_money22" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            <div data-options="title:'优惠时段'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    优惠时段从<input id="begin_time122" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                                <td>
+                                    至
+                                    <input id="end_time122" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="checkbox" id="day_num22" checked="checked" name='databox' class="easyui-checkbox" />
+                                    同一天内只收一次费用
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close22" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save22" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win24" class="easyui-window" title="收费规则" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 600px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            停车区域：
+                        </td>
+                        <td>
+                            <select id="area24" class="easyui-combobox" style="width: 80px; height: 20px">
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="uncharged_time24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            分钟内不收费
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="unit3_time24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit3_money24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            停车时间
+                        </td>
+                        <td>
+                            <input id="within_time24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="within_money124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            每超过
+                        </td>
+                        <td>
+                            <input id="unit1_time124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            小时内收费
+                        </td>
+                        <td>
+                            <input id="unit1_money124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            如果有优惠时段，非优惠时段最高收费
+                        </td>
+                        <td>
+                            <input id="unyh_maxmoney24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元（设0则无最高收费）
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            全天最高收费
+                        </td>
+                        <td>
+                            <input id="day_money24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            元
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="checkbox" id="zero_day24" checked="checked" name='databox' class="easyui-checkbox" />
+                            午夜零点记一天
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center',title:'优惠时段'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <td>
+                                    优惠时段从<input id="begin_time24" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                                <td>
+                                    至
+                                    <input id="end_time24" class="easyui-timespinner" style="width: 80px;" required="required"
+                                        data-options="min:'00:00',showSeconds:false" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    停车时间
+                                </td>
+                                <td>
+                                    <input id="within_time124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="within_money1124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    每超过
+                                </td>
+                                <td>
+                                    <input id="unit2_time124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    小时内收费
+                                </td>
+                                <td>
+                                    <input id="unit2_money124" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    优惠时段最高收费
+                                </td>
+                                <td>
+                                    <input id="first_money24" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                        height: 20px" />
+                                </td>
+                                <td>
+                                    元
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close24" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save24" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

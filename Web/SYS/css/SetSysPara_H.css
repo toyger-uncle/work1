@@ -1,0 +1,25 @@
+﻿body 
+{
+    padding: 10px;
+}
+
+.btn
+{
+    height:25px;
+    width:50px;
+    font-size:medium;
+    margin:10px 2px 5px 10px;
+    }
+.txt
+{
+    height:40px;
+    width:400px;
+    font-size:medium;
+    margin:5px 2px 5px 10px;
+    }
+a
+{
+    width:100px;
+     display:inline-block; 
+     text-align:center;
+    }

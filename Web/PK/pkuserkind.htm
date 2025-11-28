@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var dd;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        $('#chargekind').combobox({
+            data: scene.chargekind1,
+            valueField: 'value',
+            textField: 'text'
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'kind_name',
+                title: '用户类别名',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'charge_kind',
+                title: '收费类别',
+                //                sortable: true,
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == "01") {
+                        return  "按年收费";
+                    }
+                    if(value=="02"){
+                    return  "按季收费";
+                    }
+                    if(value=="03"){
+                    return  "按月收费";
+                    }
+                    if(value=="04"){
+                    return  "半年收费";
+                    }
+                    if(value=="05"){
+                    return  "临时按次收费";
+                    }
+                    if(value=="06"){
+                    return  "一次性收费";
+                    }
+                    if(value=="07"){
+                    return  "不收费";
+                    }
+                }
+           
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, global.pk["RemovePKUserKind"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+                    $("#kindname").val(rows.kind_name);
+                    $("#chargemoney").val(rows.charge_money);
+                    $("#chargekind").combobox("setValue", rows.charge_kind);
+                    $("#ylcw").combobox("setValue", rows.ylcw);
+                    dd = 1;
+
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win').window('open');
+                    $("#kindname").val("");
+                    $("#chargemoney").val("0");
+                    $("#chargekind").combobox("setValue", "07");
+                    $("#ylcw").combobox("setValue", 0);
+                    dd = 0;
+
+                }
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                $("#kindname").val(rowData.kind_name);
+                $("#chargemoney").val(rowData.charge_money);
+                $("#chargekind").combobox("setValue", rowData.charge_kind);
+                $("#ylcw").combobox("setValue", rowData.ylcw);
+                dd = 1;
+
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#save").click(function () {
+            var kindname = $("#kindname").val();
+            var chargemoney = $("#chargemoney").val();
+            var chargekind =$("#chargekind").combobox("getValue");
+            var ylcw =$("#ylcw").combobox("getValue");
+            if (kindname == "") {
+                $.messager.alert("提示", "用户种类名不能为空！", "error");
+                return;
+            }
+            if (chargekind == "") {
+                $.messager.alert("提示", "收费种类不能为空！", "error");
+                return;
+            }
+            if (ylcw == "") {
+                $.messager.alert("提示", "预留车位不能为空！", "error");
+                return;
+            }
+            if (dd == 0) {
+                Ajax(true, global.pk["NewPKUserKind"], { LoginID: LocalID, kind_name: kindname, charge_kind: chargekind, ylcw: ylcw, charge_money: chargemoney }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+            if (dd == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                Ajax(true, global.pk["UpdatePKUserKind"], { LoginID: LocalID, id: id, kind_name: kindname, charge_kind: chargekind, ylcw: ylcw, charge_money: chargemoney }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+        });
+    });
+
+
+
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        var row = datagrid.datagrid('getSelected');
+        Ajax(true, global.pk["GetPKUserKindList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+    </script>
+</head>
+<body>
+<div class="easyui-panel" title="固定用户种类" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+<div style="width:100%; height:400px;">
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div>
+</div>
+<div id="win" class="easyui-window" title="固定用户种类" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:220px;height:240px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>用户种类：</td>
+				<td><input id="kindname" class="easyui-validatebox textbox" data-options="" style="width:80px;height:20px;"maxlength="3" "/></td>
+			
+                </tr>
+			
+			<tr>
+			<td>收费类别：</td>
+				<td><select id="chargekind" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+				
+
+</tr>
+            <tr>
+            <td>预留车位：</td>
+				<td><select id="ylcw" class="easyui-combobox"  style="width:80px;height:20px"> <option value="0">否</option> <option value="1">是</option>  </select></td>
+			</tr>
+            <tr>
+            <td>收费金额：</td>
+				<td><input id="chargemoney" class="easyui-validatebox textbox" data-options=""style="width:80px;height:20px" /></td>
+			</tr>
+			
+            
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

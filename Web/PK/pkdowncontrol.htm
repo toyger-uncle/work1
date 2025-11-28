@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var rool;
+    var cc = 10000;
+    $(function () {
+        Ajax(true, global.pk["GetPKDoorList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#kai1').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'door_name'
+            });
+        });
+        $('#use').combobox({
+            data: scene.use,
+            valueField: 'value',
+            textField: 'text',
+            onChange: function (newValue, oldValue) {
+                loaddata(newValue);
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+
+                field: 'ck',
+                checkbox: true,
+                width: 20
+            }, {
+                field: 'id',
+                title: '控制器号',
+                width: 80
+            }, {
+                field: 'control_name',
+                title: '控制器名',
+                width: 80
+            }, {
+                field: 'ip',
+                title: 'IP',
+                width: 80
+            }, {
+                field: 'work_flag',
+                title: '实时状态',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 0) {
+                        return '<font color="red">' + scene.workflag[value] + '</font>';
+                    }
+                    else if (value == 1) {
+                        return '<font color="green">' + scene.workflag[value] + '</font>';
+                    }
+                    else {
+                        return scene.workflag[value];
+                    }
+                }
+            }]]
+        });
+        loaddata();
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        $("#zk").click(function () {
+            var time1 = $("#text").val();
+            var name1 = $("#kai1").combobox('getValue');
+            ztt = 1;
+            if (name1 == "") {
+                $.messager.alert("提示", "未选择通道", "error");
+                return;
+            }
+            Ajax(true, global.pk["RemoteDoor"], { LoginID: LocalID, door_id: name1, openOrClose: ztt, time: time1 }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var ab = data.Data;
+                if (ab == true) {
+                    $.messager.alert("提示", "打开通道成功", "info");
+                }
+                else { $.messager.alert("提示", "打开通道失败", "error"); }
+            });
+        });
+        $("#yk").click(function () {
+            var time1 = 0;
+            var name1 = $("#kai1").combobox('getValue');
+            ztt = 1;
+            if (name1 == "") {
+                $.messager.alert("提示", "未选择通道", "error");
+                return;
+            }
+            Ajax(true, global.pk["RemoteDoor"], { LoginID: LocalID, door_id: name1, openOrClose: ztt, time: time1 }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var ab = data.Data;
+                if (ab == true) {
+                    $.messager.alert("提示", "打开通道成功", "info");
+                }
+                else { $.messager.alert("提示", "打开通道失败", "error"); }
+            });
+        });
+        $("#hui1").click(function () {
+            var name1 = $("#kai1").combobox('getValue');
+            if (name1 == "") {
+                $.messager.alert("提示", "未选择通道", "error");
+                return;
+            }
+            Ajax(true, global.pk["GetPKDoor"], { LoginID: LocalID, id: name1 }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var mach = data.Data.control_id;
+                Ajax(true, global.pk["MachReset"], { LoginID: LocalID, mach_id: mach }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "发送成功", "info");
+                    }
+                    else { $.messager.alert("提示", "发送失败", "error"); }
+                });
+            });
+        });
+        $("#clear").click(function () {
+            var rows = datagrid.datagrid('getSelected');
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id = rows.id;
+            Ajax(true, global.pk["MachFormat"], { LoginID: LocalID, mach_id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+            });
+        });
+        //        if (cc == 0) {
+        //            rool = setTimeout(function () { loaddata(); }, 10000);
+        //        }
+        //        if (cc == 1) {
+        //            rool = setTimeout(function () { loaddata(); }, 2000);
+        //        }
+        $("#chuanshu").click(function () {
+
+            for (var i = 0; i < 10; i++) {
+                if (i < 10) {
+                    cc = 1000;
+                    rool = setTimeout(function () { loaddata(); }, cc);
+                }
+                else {
+                    cc = 10000;
+                    rool = setTimeout(function () { loaddata(); }, cc);
+                }
+            }
+            var rows = datagrid.datagrid('getSelections');
+            var id;
+            var work_flag;
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            for (var i = 0; i < rows.length; i++) {
+                id = rows[i].id;
+                work_flag = rows[i].work_flag;
+                if (work_flag == 0) {
+                    alert("控制器" + id + "未连接！");
+                }
+                (function (id) {
+                    if ($("#mz").prop("checked")) {
+                        Ajax(true, global.pk["DownModular"], { LoginID: LocalID, mach_id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data == false) { alert("下载模组失败！"); }
+                        });
+                    }
+                    if ($("#sz").prop("checked")) {
+                        Ajax(true, global.pk["DownNow"], { LoginID: LocalID, mach_id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data == false) { alert("下载时钟失败！"); }
+                        });
+                    }
+                    if ($("#my").prop("checked")) {
+                        Ajax(true, global.pk["DownSystemMima"], { LoginID: LocalID, mach_id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data == false) { alert("下载密钥失败！"); }
+                        });
+                    }
+                    if ($("#card").prop("checked")) {
+                            var cc = true;
+                            Ajax(true, global.pk["DownCard"], { LoginID: LocalID, mach_id: id, isAll: cc }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                if (data.Data == false) { alert("下载卡片失败！"); }
+                            });
+                    }
+
+                })(id);
+            }
+        });
+    });
+    function loaddata(use) {
+        clearTimeout(rool);
+        Ajax(true, global.pk["GetPKControlList"], { LoginID: LocalID, work_status: use }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            rool = setTimeout(function () { loaddata(use); }, cc);
+            var pager = $("#dg").datagrid("getPager");
+            pager.pagination({
+                total: jsondata.total,
+                onSelectPage: function (pageNo, pageSize) {
+                    var start = (pageNo - 1) * pageSize;
+                    var end = start + pageSize;
+                    $("#dg").datagrid("loadData", jsondata.rows.slice(start, end));
+                    pager.pagination('refresh', {
+                        total: jsondata.total,
+                        pageNumber: pageNo
+                    });
+                }
+            });
+            pager.pagination('select');
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="下载信息" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; ">
+<div style="width:100%; height:400px;">
+<div style="padding:5px;">
+通道：<select id="kai1" class="easyui-combobox" style="width:150px;height:20px"></select>
+时间：<input id="text" class="easyui-validatebox textbox" value ="5"style="width:20px"" />s
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="yk" style="width:80px;">永远开通</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="zk" style="width:80px">暂时开通</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="hui1" style="width:80px">恢复自控</a></div>
+<div id ="do"> 
+<input type="checkbox" id="mz"    />模组
+<input type="checkbox" id="sz"  />时钟
+<input type="checkbox" id="my"   />秘钥
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="chuanshu" >传输数据</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" id="clear" >格式化</a></div>
+<div style="padding:5px;">
+<input type="checkbox" id="all" />以上全部
+<input type="checkbox" id="card" />卡片<!--是否全部下载：<input id="card1" name="cd"  value="false" type="radio"/>否
+<input id="card2" name="cd" value="true" type="radio"/>是-->
+</div>
+
+<div style="padding:5px;">
+使用状况：<select id="use" class="easyui-combobox"  style="width:80px;height:20px"></select>
+</div>
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div style="overflow:auto; ">
+     </div>
+   
+</body>
+</html>

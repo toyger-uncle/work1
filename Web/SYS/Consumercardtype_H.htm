@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>消费卡类型</title>
+    <link href="../../Scripts/ligerUI/skins/Aqua/css/ligerui-all.css" rel="stylesheet" type="text/css" />
+    <link href="css/Consumercardtype_H.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/jquery/jquery-1.9.0.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/ligerui.all.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="js/Consumercardtype_H.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    $(function () {
+        var ConsumercardData;
+        window['g'] =
+            manager = $("#maingrid").ligerGrid({
+                columns: [
+                { display: '卡类型', name: 'TKcardID', width: 250, align: 'left' },
+                { display: '类型名', name: 'TKcardName', width: 250, type: 'int', align: 'left' }
+                ], data: ConsumercardData
+            }
+            );
+    });
+
+    </script>
+
+</head>
+<body style="padding: 10px">
+<!--<a style='width: 100px; float: left; margin-left: 6px'>列表</a>-->
+
+    <div id="maingrid"></div>
+        
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + "-";
+        strDate += curr_time.getMonth() + 1 + "-";
+        strDate += curr_time.getDate() - 1;
+        $("#dt1").datebox("setValue", strDate);
+
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                width: 80,
+                sortable: true
+
+            }, {
+                field: 'operator_id',
+                title: '操作员ID',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'case_date',
+                title: '操作日起',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'fk_id',
+                title: '访客编号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'case_cardno',
+                title: '卡号（车牌号）',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'begin_date',
+                title: '开始时间',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'end_date',
+                title: '结束日期',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'in_door',
+                title: '进入通道',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'out_door',
+                title: '出场通道',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'ys_money',
+                title: '应收金额',
+                width: 80,
+                sortable: true
+            }]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata($("#dt1").datebox("getValue"), $("#dt2").datebox("getValue"),$("#ren").val());
+            }
+        });
+        loaddata();
+        $("#search").click(function () {
+            loaddata($("#dt1").datebox("getValue"), $("#dt2").datebox("getValue"), $("#ren").val());
+        });
+    });
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.pk["GetPKOperExitPageList"], { LoginID: LocalID,  sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var pp = datagrid.datagrid('getPager');
+            $(pp).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata();
+                }
+            });
+
+        });
+    }
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="未收费车辆" data-options="collapsible:false" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true"style="">
+<div  style="padding:2px;">
+    操作员：<input id="ren" class="easyui-validatebox textbox"  data-options="" style="width:100px;height:20px;" />
+    时间从<input class="easyui-datebox" id="dt1"data-options="prompt:'请选择开始时间',required:true " style="width:100px"/> 
+到<input class="easyui-datebox" id="dt2"data-options="required:true"value="${notices.release_time}" style="width:100px"/> 
+    <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="search" style="width:80px">搜索</a>
+</div>
+<div style="width:100%; height:400px;">
+		<table id="dg"style=""data-options="pagination:true"> </table>  
+</div>
+     </div>
+     </div>
+</body>
+</html>

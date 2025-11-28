@@ -1,0 +1,345 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var dd;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        $('#mfkind').combobox({
+            data: scene.chargekind,
+            valueField: 'value',
+            textField: 'text'
+        });
+        Ajax(true, global.pk["GetPKDoorList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'id': '', 'door_name': '全部' };
+            data.Data.push(temp);
+            $('#stop').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'door_name'
+            });
+            $('#weizhi').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'door_name'
+            });
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            rownumbers: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'cp',
+                title: '车牌',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'end_date',
+                title: '截止日期',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'write_when',
+                title: '写入时间',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'stop_id',
+                title: '停车点',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'totalfee',
+                title: '总金额',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'hadpaied',
+                title: '已付金额',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, global.pk["RemovePKCpOpen"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+                    $('#weizhi').combobox("setValue", rows.stop_id);
+                    $('#dt').datetimebox("setValue", rows.end_date);
+                    $("#chepai").val(rows.cp);
+                    $("#totalfee").val(rows.totalfee);
+                    $("#hadpaied").val(rows.hadpaied);
+                    dd = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win').window('open');
+                    var curr_time = new Date();
+                    var strDate = curr_time.getFullYear()+1 + "-";
+                    strDate += curr_time.getMonth() + 1 + "-";
+                    strDate += curr_time.getDate();
+                    strDate += " " + curr_time.getHours() + ":";
+                    strDate += curr_time.getMinutes() + ":";
+                    strDate += curr_time.getSeconds();
+                    $('#weizhi').combobox("setValue", "");
+                    $('#dt').datetimebox("setValue", strDate);
+                    $("#chepai").val("");
+                    $("#totalfee").val("");
+                    $("#hadpaied").val("");
+                    dd = 0;
+                }
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                $('#weizhi').combobox("setValue", rowData.stop_id);
+                $('#dt').datetimebox("setValue", rowData.end_date);
+                $("#chepai").val(rowData.cp);
+                $("#totalfee").val(rowData.totalfee);
+                $("#hadpaied").val(rowData.hadpaied);
+                dd = 1;
+            },
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata();
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#search").click(function () {
+            loaddata($("#cp").val(), $('#stop').combobox("getValue"));
+        });
+        $("#save").click(function () {
+            var stop_id = $('#weizhi').combobox("getValue");
+            var dt = $('#dt').datetimebox("getValue");
+            var mfkind = 1;
+            var cp = $("#chepai").val();
+            var totalfee = $("#totalfee").val();
+            var hadpaied = $("#hadpaied").val();
+            var curr_time = new Date();
+            var strDate = curr_time.getFullYear() + "-";
+            strDate += curr_time.getMonth() + 1 + "-";
+            strDate += curr_time.getDate();
+            strDate += " " + curr_time.getHours() + ":";
+            strDate += curr_time.getMinutes() + ":";
+            strDate += curr_time.getSeconds();
+            if (stop_id == "") {
+                alert("停车位置不能为空");
+                return;
+            }
+            if (dt == "") {
+                alert("截止时间不能为空");
+                return;
+            }
+            if (mfkind == "") {
+                alert("免费类型不能为空");
+                return;
+            }
+            if (cp == "") {
+                alert("车牌不能为空");
+                return;
+            }
+            if (totalfee == "") {
+                alert("总价格金额不能为空");
+                return;
+            }
+            if (hadpaied == "") {
+                alert("已支付金额不能为空");
+                return;
+            }
+
+            if (dd == 0) {
+
+                Ajax(true, global.pk["NewPKCpOpen"], { LoginID: LocalID, cp: cp, end_date: dt, mf_kind: mfkind, stop_id: stop_id, totalfee: totalfee, hadpaied: hadpaied, write_when: strDate }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+            if (dd == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                Ajax(true, global.pk["UpdatePKCpOpen"], { LoginID: LocalID, id: ids, cp: cp, end_date: dt, mf_kind: mfkind, stop_id: stop_id, totalfee: totalfee, hadpaied: hadpaied, write_when: strDate }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+        });
+    });
+
+
+
+    function loaddata(cp, stop_id) {
+        datagrid.datagrid('unselectAll');
+        var row = datagrid.datagrid('getSelected');
+        Ajax(true, global.pk["GetPKCpOpenPageList"], { LoginID: LocalID, cp: cp, stop_id: stop_id, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata(cp, stop_id);
+                }
+            });
+        });
+    }
+    </script>
+</head>
+<body>
+<div class="easyui-panel" title="预收费车牌" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+<div style="width:100%; height:400px;">
+<div style="padding:2px; ">
+车牌：<input id="cp" class="easyui-validatebox textbox" data-options="validType:'length[1,6]'" style="width:80px;height:20px"/>
+停车位置：<select id="stop" class="easyui-combobox"  style="width:80px;height:20px"></select>
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="search" >查询</a>
+</div>
+		<table id="dg"style="padding: 5px;"data-options="pagination:true"> </table>  
+</div>
+</div>
+<div id="win" class="easyui-window" title="预收费车牌" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:320px;height:300px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>停车位置：</td>
+				<td><select id="weizhi" class="easyui-combobox"  style="width:150px;height:20px"> </select></td>
+            </tr>
+			<tr>
+			    <td>截止日期：</td>
+				<td><input class="easyui-datetimebox" id="dt"data-options="required:true" style="width:150px"/> </td>
+            </tr>
+            <tr>
+                <td>车牌：</td>
+				<td><input id="chepai" class="easyui-validatebox textbox" data-options="" style="width:150px;height:20px"/></td>
+			</tr>
+			<!--<tr>
+				<td>免费类型：</td>
+				<td><select id="mfkind" class="easyui-combobox"  style="width:150px;height:20px"> </select></td>
+			
+            </tr>-->
+			<tr>
+				<td>总价格：</td>
+				<td><input id="totalfee" class="easyui-validatebox textbox" data-options="" style="width:150px;height:20px"/></td>
+			
+            </tr>
+			<tr>
+				<td>已支付：</td>
+				<td><input id="hadpaied" class="easyui-validatebox textbox" data-options="" style="width:150px;height:20px"/></td>
+			
+            </tr>
+            
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

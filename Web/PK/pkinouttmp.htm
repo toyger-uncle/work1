@@ -1,0 +1,454 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + "-";
+        strDate += curr_time.getMonth() + 1 + "-";  
+        strDate += curr_time.getDate() - 1;
+        $("#dt1").datebox("setValue", strDate);
+    Ajax(true, global.sys["GetAllDepartUserTree"], { LoginID: LocalID, iconCls: 'icon-tool', iconCls1: 'icon-house', root: '0' }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#ren').combotree({
+            data: JSON2.parse(data.Data)
+        });
+    });
+    Ajax(true, global.pk["GetPKAreaList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#select').combobox({
+            data: data.Data,
+            valueField: "id",
+            textField: "area_name"
+        });
+        $('#qy').combobox({
+            data: data.Data,
+            valueField: "id",
+            textField: "area_name"
+        });
+    }); 
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        fitColumns: true,
+        striped: true,
+        title: "",
+        collapsible: true,
+        remotesort: false,
+        rownumbers: true,
+        singleSelect: true,
+        sortName: sortName,
+        sortOrder: sortOrder,
+
+        columns: [[{
+            field: 'id',
+            title: '编号',
+            width: 80,
+            sortable: true
+
+        }, {
+            field: 'door_name',
+            title: '通道名',
+            width: 80,
+            sortable: true
+        }, {
+            field: 'area_name',
+            title: '区域名',
+            width: 80,
+            sortable: true
+        }, {
+            field: 'user_name',
+            title: '用户名',
+            width: 80,
+            sortable: true
+        }, {
+            field: 'kind_name',
+            title: '车类型',
+            width: 80,
+            sortable: true
+        }, {
+            field: 'begin_date',
+            title: '开始时间',
+            width: 80,
+            sortable: true
+        }, {
+            field: 'master_flag',
+            title: '通道类型',
+            width: 80,
+            sortable: true,
+            formatter: function (value, row) {
+                if (value == 0) {
+                    return '副通道';
+                }
+                if (value == 1) {
+                    return '主通道';
+                }
+            }
+        }
+            ]],
+        toolbar: [{
+            text: "删除", iconCls: "icon-remove", handler: function () {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null || rowData.length == 0) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                var ids;
+                $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                    if (data) {
+                        //                            for (var i = 0; i < rowData.length; i++) {
+                        ids = rowData.id;
+                        Ajax(true, global.pk["RemovePKJkInfo"], { LoginID: LocalID, id: ids }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            loaddata();
+                            $.messager.alert("提示", "删除成功", "info");
+                        });
+                    }
+                });
+            }
+        }, {
+            text: "修改", iconCls: "icon-edit", handler: function () {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == "") {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+
+                $('#win').window('open');
+                $("#ip").val(rows.ip);
+                $("#master").combobox("setValue", rows.master_flag);
+                $("#status").combobox("setValue", rows.status);
+                $("#door").combobox("setValue", rows.door_id);
+                $("#time").datetimebox("setValue", rows.case_date);
+                a = 1;
+            }
+        }, {
+            text: "增加", iconCls: "icon-add", handler: function () {
+                $('#win').window('open');
+                $("#master").combobox("setValue", "1");
+                $("#status").combobox("setValue", "1");
+                a = 0;
+            }
+
+        }],
+        onDblClickRow: function (rowIndex, rowData) {
+            var rows = datagrid.datagrid('getSelected');
+
+            $('#win').window('open');
+            $("#ip").val(rowData.ip);
+            $("#master").combobox("setValue", rowData.master_flag);
+            $("#status").combobox("setValue", rowData.status);
+            $("#door").combobox("setValue", rowData.door_id);
+            $("#time").datetimebox("setValue", rowData.case_date);
+            a = 1;
+        },
+        //排列行
+        onSortColumn: function (sort, order) {
+            sortName = sort;
+            sortOrder = order;
+            loaddata($("#dt1").datebox("getValue"), $("#dt2").datebox("getValue"));
+        }
+    });
+    $("#all").change(function () {
+        if ($("#all").prop("checked")) {
+            var d = $("#do").find("input:checkbox");
+            d.prop("checked", true);
+        }
+        else {
+            var d = $("#do").find("input:checkbox");
+            d.prop("checked", false);
+        }
+    });
+    loaddata();
+    $('#win').window('close');
+    $('#win1').window('close');
+    $("#search").click(function () {
+        loaddata($("#dt1").datebox("getValue"),$("#dt2").datebox("getValue"),$("#select").combobox("getValue"), $("#ren").combotree("getValue"), $("#door").val());
+    });
+    $("#shengcheng").click(function () {
+        $('#win1').window('open');
+    });
+    $("#A2").click(function () {
+        var you = "";
+        if ($("#id").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "area_name";
+        }
+        if ($("#bm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "user_name";
+        }
+        if ($("#gh").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "stop_id";
+        }
+        if ($("#xm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "begin_date";
+        }
+        if ($("#indate").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "in_out";
+        }
+        if ($("#outdate").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "master_flag";
+        }
+        if ($("#mm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "card_id";
+        }
+        if ($("#zt").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "door_name";
+        }
+        if ($("#uk").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "kind_name";
+        }
+        if ($("#oi").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "operator_id";
+        }
+        if (you == "") {
+            alert("未选择目录项！");
+            return;
+        }
+//        var door_name=
+        var fgf = $('#fgf').combobox('getValue');
+        var user_file = $('#ren').combobox('getValue');
+        var qy = $('#select').combobox('getValue');
+        var kinds = $('#com').combobox('getValue');
+        var yilai = $('#yilai').combobox('getValue');
+        var paixu = $('#paixu').combobox('getValue');
+        if (kinds == "") {
+            alert("未选择格式！");
+            return;
+        }
+        if (kinds == "text") {
+            var url = RTURL + global.export["ExportPKInOutTmpPageFile"] + "?LoginID=" + LocalID + "&user_file=" + user_file + "&area_id=" + qy + "&kind=" + $(":radio:checked").val() + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+            window.open(url);
+        }
+        else {
+            var url = RTURL + global.export["ExportPKInOutTmpPageFile"] + "?LoginID=" + LocalID + "&user_file=" + user_file + "&area_id=" + qy + "&kind=" + $(":radio:checked").val() + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+            window.open(url);
+        }
+    });
+    $("#A1").click(function () {
+        $('#win1').window('close');
+    });
+});
+function clkdada() {
+    var databox = $("#do").find("input:checkbox");
+    var j = 0;
+    for (var i = 0; i < databox.length; i++) {
+        if (databox[i].checked) {
+            j++;
+        }
+    }
+    if (j <= 2) {
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                databox[i].disabled = true;
+            }
+        }
+    }
+    else {
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].disabled) {
+                databox[i].disabled = false;
+            }
+        }
+    }
+}
+function loaddata(BeginTime, EndTime,area_id, user_file, door_name) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, global.pk["GetPKInoutTmpPageList"], { LoginID: LocalID, BeginTime: BeginTime, EndTime: EndTime, area_id: area_id, user_file: user_file, door_name: door_name, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.total = data.Ex;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+        if (jsondata.total == 0) {
+            PageNum = 1;
+        }
+        var pp = datagrid.datagrid('getPager');
+        $(pp).pagination({
+            beforePageText: '第', //页数文本框前显示的汉字 
+            afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+            displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+            onSelectPage: function (pageNumber, pageSize) {
+                PageSize = pageSize;
+                PageNum = pageNumber;
+                if (PageNum < 1) {
+                    PageNum = 1;
+                }
+                loaddata();
+            }
+        });
+
+    });
+}
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="当前在场车辆" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true"style="">
+<div  style="padding:2px;">
+    区域：<select id="select" class="easyui-combobox"  style="width:100px;height:20px">  </select> 
+   用户：<select id="ren" class="easyui-combotree" style="width:100px"></select>
+    通道名：<input id="door" class="easyui-validatebox textbox"  data-options="" style="width:100px;height:20px;" />
+    时间从<input class="easyui-datebox" id="dt1"data-options="prompt:'请选择开始时间',required:true " style="width:100px"/> 
+到<input class="easyui-datebox" id="dt2"data-options="required:true"value="${notices.release_time}" style="width:100px"/> 
+    <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" href="javascript:void(0)" id="search" style="width:80px">搜索</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125647919_easyicon_net_16'" href="javascript:void(0)" id="shengcheng" style="width:80px">导出</a>
+</div>
+<div style="width:100%; height:400px;">
+		<table id="dg"style=""data-options="pagination:true"> </table>  
+</div>
+     </div>
+     </div>
+<div id="win" class="easyui-window" title="巡检时间" data-options="iconCls:'icon-save',maximizable: false,minimizable: false" style="width:300px;height:350px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:10px;">
+        <table cellpadding="5">
+        <tr>
+				<td>卡号：</td>
+				<td><input id="xulie" class="easyui-validatebox textbox" data-options="required:true,prompt: '请输入卡号'" style="width:80px;height:20px;"maxlength="8"/></td>
+			
+			</tr>
+			<tr>
+				<td>区域：</td>
+				<td><select id="qy" class="easyui-combobox" style="width:120px"></select></td>
+			</tr>
+			<tr>
+				<td>通道：</td>
+				<td><select id="door1" class="easyui-combobox"  style="width:120px;height:20px">  </select></td>	
+                </tr>
+			<tr>
+                <td>通道类型：</td>
+				<td><select id="master" class="easyui-combobox"  style="width:120px;height:20px"> 
+        <option value="0">副通道</option> <option value="1">主通道</option> </select> </td>
+			</tr>
+			<tr>
+				<td>开始时间:</td>
+				<td><input class="easyui-datebox" id="bt"data-options="prompt:'请选择开始时间',required:true " style="width:120px"/> </td>
+			</tr>
+            <tr>
+				<td>车类型：</td>
+				<td><select id="carkind" class="easyui-combobox"  style="width:120px;height:20px">  </select></td>	
+                </tr>
+			<tr>
+				<td>结束时间:</td>
+				<td><input id="et" class="easyui-timespinner"  style="width:120px;"  
+        required="required" data-options="" /> </td>
+			</tr>
+			
+		</table>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+<div id="win1" class="easyui-window" title="导出" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:250px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+    <div style="padding:5px;">
+    排序依赖：<select id="yilai" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="area_name">区域</option>
+                <option value="user_name">用户</option>
+                <option value="stop_id">单号</option>
+                <option value="begin_date">发生时间</option>
+                <option value="in_out">进出状态</option>
+                <option value="master_flag">通道类型</option>
+                <option value="card_id">车牌(卡)</option>
+                <option value="door_name">门</option>
+                <option value="kind_name">用户类型</option>
+                <option value="operator_id">操作员编号</option></select>
+    排序类型：<select id="paixu" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="asc">正序</option>
+                <option value="desc">倒序</option></select>
+            格式：<select id="com" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="text">text</option>
+                <option value="word">word</option>
+                <option value="excel">excel</option></select>
+			<input type="checkbox" id="all" checked="checked" />全部</div>
+        <div id="do" style="padding:5px;">
+        <div id="to" style="padding:5px;">
+                分隔符：<select id="fgf" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="|">竖杠</option>
+                <option value=" ">空格</option></select></div>
+			<input type="checkbox" id="id"checked="checked"name='databox' onclick='clkdada();' />区域
+            <input type="checkbox" id="bm"checked="checked" name='databox' onclick='clkdada();' />用户
+			<input type="checkbox" id="gh" checked="checked" name='databox'onclick='clkdada();'/>单号
+            <input type="checkbox" id="xm" checked="checked"name='databox'onclick='clkdada();' />发生时间
+			<input type="checkbox" id="indate"checked="checked" name='databox'onclick='clkdada();' />进出状态
+            <input type="checkbox" id="outdate" checked="checked" name='databox'onclick='clkdada();' />通道类型
+			<input type="checkbox" id="mm" checked="checked"name='databox' onclick='clkdada();'/>车牌(卡)
+            <input type="checkbox" id="zt" checked="checked" name='databox'onclick='clkdada();' />门
+			<input type="checkbox" id="uk" checked="checked"name='databox' onclick='clkdada();'/>用户类型
+            <input type="checkbox" id="oi" checked="checked" name='databox'onclick='clkdada();' />操作员编号
+            </div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A1" style="width:80px">取消</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A2" style="width:80px">确定</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

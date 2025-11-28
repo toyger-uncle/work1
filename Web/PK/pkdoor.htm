@@ -1,0 +1,564 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var datagrid1;
+    var dd;
+    var jsondata = { "total": 0, "rows": [] };
+    var jsondata1 = { "total": 0, "rows": [] };
+    $(function () {
+        Ajax(true, global.sys["GetUserFilePageListOfPK"], { LoginID: LocalID,car_label:"1",pageSize:"1000" }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'id': '', 'user_name': '无' };
+            data.Data.push(temp);
+            $('#user').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'user_name'
+            });
+        });
+        $('#readcard1').combobox({
+            data: scene.dukaqi,
+            valueField: 'value',
+            textField: 'text'
+        });
+        $('#readcard2').combobox({
+            data: scene.dukaqi,
+            valueField: 'value',
+            textField: 'text'
+        });
+        $('#readcard3').combobox({
+            data: scene.dukaqi,
+            valueField: 'value',
+            textField: 'text'
+        });
+        $('#readcard4').combobox({
+            data: scene.dukaqi,
+            valueField: 'value',
+            textField: 'text'
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "控制器",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'control_name',
+                title: '控制器名',
+                //                sortable: true,
+                width: 80
+
+            }]],
+            onSelect: function (rowIndex, rowData) {
+                loaddata1();
+            },
+            onLoadSuccess: function (data) {
+                //默认选中第一行
+                $(this).datagrid('selectRow', 0);
+                loaddata1();
+            }
+        });
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'door_name',
+                title: '通道名',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'door_num',
+                title: '第几通道',
+                //                sortable: true,
+                width: 80
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid1.datagrid('getSelections');
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, global.pk["RemovePKDoor"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata1();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid1.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+                    Ajax(true, global.pk["GetPKDisplayInfoList"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        var temp = { 'id': '', 'display_name': '无' };
+                        data.Data.push(temp);
+                        $('#screenid').combobox({
+                            data: data.Data,
+                            valueField: 'id',
+                            textField: 'display_name'
+                        });
+                        $('#screenid').combobox("setValue", rows.screen_id);
+                    });
+                    Ajax(true, global.pk["GetPKJkInfoNoUsedList"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (rows.sencond_id == "") {
+                            var temp1 = { 'id': '', 'jk_name': '无' };
+                        }
+                        else {
+                            var temp1 = { 'id': rows.sencond_id, 'jk_name': rows.sencond_name };
+                        }
+                        data.Data.push(temp1);
+                        $('#sencondid').combobox({
+                            data: data.Data,
+                            valueField: 'id',
+                            textField: 'jk_name'
+                        });
+                        $('#sencondid').combobox("setValue", rows.sencond_id);
+                    });
+                    Ajax(true, global.pk["GetPKJkInfoNoUsedList"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (rows.master_id == "") {
+                            var temp2 = { 'id': '', 'jk_name': '无' };
+                        }
+                        else {
+                            var temp2 = { 'id': rows.master_id, 'jk_name': rows.master_name };
+                        }
+                        data.Data.push(temp2);
+                        $('#masterid').combobox({
+                            data: data.Data,
+                            valueField: 'id',
+                            textField: 'jk_name'
+                        });
+                        $('#masterid').combobox("setValue", rows.master_id);
+                    });
+                    var use = rows.used_flag;
+                    if (use == 1) { $("#used").prop("checked", true); }
+                    if (use == 0) { $("#used").prop("checked", false); }
+                    $('#tdid').val(rows.id);
+                    $('#doornum').val(rows.door_num);
+                    $('#readcard1').combobox("setValue", rows.readcard1);
+                    $('#doorname').val(rows.door_name);
+                    $('#readcard2').combobox("setValue", rows.readcard2);
+                    $('#readcard3').combobox("setValue", rows.readcard3);
+                    $('#readcard4').combobox("setValue", rows.readcard4);
+                    $('#inout').combobox("setValue", rows.inout_flag);
+                    $('#master').combobox("setValue", rows.master_flag);
+                    $('#attendflag').combobox("setValue", rows.attend_flag);
+                    $('#user').combobox("setValue", rows.user_id);
+                    dd = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    var id = rows.id;
+                    Ajax(true, global.pk["GetPKControl"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        var chang = data.Data.control_kind;
+                        Ajax(true, global.pk["GetPKDoorList"], { LoginID: LocalID, control_id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data.length >= chang) {
+                                alert("门已满");
+                                return;
+                            }
+                            $('#win').window('open');
+                            var cc;
+                            Ajax(true, global.pk["GetPKDoorMaxID"], { LoginID: LocalID }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $('#tdid').val(data.Data);
+                            });
+                            Ajax(true, global.pk["GetPKDoorNumMaxID"], { LoginID: LocalID, control_id: id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $('#doornum').val(data.Data);
+                                $('#readcard1').combobox("setValue", data.Data);
+                                if (data.Data == "" || data.Data == null) {
+                                    $('#readcard1').combobox("setText", "读头已满");
+                                }
+                            });
+                            Ajax(true, global.pk["GetPKDisplayInfoList"], { LoginID: LocalID }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                var temp = { 'id': '', 'display_name': '无' };
+                                data.Data.push(temp);
+                                $('#screenid').combobox({
+                                    data: data.Data,
+                                    valueField: 'id',
+                                    textField: 'display_name'
+                                });
+                            });
+                            Ajax(true, global.pk["GetPKJkInfoNoUsedList"], { LoginID: LocalID }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $('#sencondid').combobox({
+                                    data: data.Data,
+                                    valueField: 'id',
+                                    textField: 'jk_name'
+                                });
+                                $('#masterid').combobox({
+                                    data: data.Data,
+                                    valueField: 'id',
+                                    textField: 'jk_name'
+                                });
+                            });
+                            $("#used").prop("checked", true);
+                            $('#doorname').val("");
+                            $('#masterid').combobox("setValue", "");
+                            $('#sencondid').combobox("setValue", "");
+                            $('#screenid').combobox("setValue", "");
+                            $('#readcard2').combobox("setValue", "");
+                            $('#readcard3').combobox("setValue", "");
+                            $('#readcard4').combobox("setValue", "");
+                            $('#inout').combobox("setValue", 0);
+                            $('#attendflag').combobox("setValue", 0);
+                            $('#user').combobox("setValue", "");
+                            $('#master').combobox("setValue", 1);
+                            dd = 0;
+                        });
+                    });
+                }
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                Ajax(true, global.pk["GetPKDisplayInfoList"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    var temp = { 'id': '', 'display_name': '无' };
+                    data.Data.push(temp);
+                    $('#screenid').combobox({
+                        data: data.Data,
+                        valueField: 'id',
+                        textField: 'display_name'
+                    });
+                    $('#screenid').combobox("setValue", rowData.screen_id);
+                });
+                Ajax(true, global.pk["GetPKJkInfoNoUsedList"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (rowData.sencond_id == "") {
+                        var temp1 = { 'id': '', 'jk_name': '无' };
+                    }
+                    else {
+                        var temp1 = { 'id': rowData.sencond_id, 'jk_name': rowData.sencond_name};
+                    }
+                    data.Data.push(temp1);
+                    $('#sencondid').combobox({
+                        data: data.Data,
+                        valueField: 'id',
+                        textField: 'jk_name'
+                    });
+                    $('#sencondid').combobox("setValue", rowData.sencond_id);
+                });
+                Ajax(true, global.pk["GetPKJkInfoNoUsedList"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (rowData.master_id == "") {
+                        var temp2 = { 'id': '', 'jk_name': '无' };
+                    }
+                    else{
+                        var temp2 = { 'id': rowData.master_id, 'jk_name': rowData.master_name };
+                    }
+                    data.Data.push(temp2);
+                    $('#masterid').combobox({
+                        data: data.Data,
+                        valueField: 'id',
+                        textField: 'jk_name'
+                    });
+                    $('#masterid').combobox("setValue", rowData.master_id);
+                });
+                var use = rowData.used_flag;
+                if (use == 1) { $("#used").prop("checked", true); }
+                if (use == 0) { $("#used").prop("checked", false); }
+                $('#tdid').val(rowData.id);
+                $('#doornum').val(rowData.door_num);
+                $('#readcard1').combobox("setValue", rowData.readcard1);
+                $('#doorname').val(rowData.door_name);
+                $('#readcard2').combobox("setValue", rowData.readcard2);
+                $('#readcard3').combobox("setValue", rowData.readcard3);
+                $('#readcard4').combobox("setValue", rowData.readcard4);
+                $('#inout').combobox("setValue", rowData.inout_flag);
+                $('#master').combobox("setValue", rowData.master_flag);
+                $('#attendflag').combobox("setValue", rowData.attend_flag);
+                $('#user').combobox("setValue", rowData.user_id);
+                dd = 1;
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#save").click(function () {
+            var use;
+            if ($("#used").prop("checked") == true) { use = 1; }
+            else { use = 0; }
+            var td = $('#tdid').val();
+            var doornum = $('#doornum').val();
+            var doorname = $('#doorname').val();
+            var masterid = $('#masterid').combobox("getValue");
+            var sencondid = $('#sencondid').combobox("getValue");
+            var readcard1 = $('#readcard1').combobox("getValue");
+            var readcard2 = $('#readcard2').combobox("getValue");
+            var readcard3 = $('#readcard3').combobox("getValue");
+            var readcard4 = $('#readcard4').combobox("getValue");
+            var screenid = $('#screenid').combobox("getValue");
+            var attendflag = $('#attendflag').combobox("getValue");
+            var inout = $('#inout').combobox("getValue");
+            var master = $('#master').combobox("getValue");
+            var user = $('#user').combobox("getValue");
+            if (td == "") {
+                alert("通道编号不能为空");
+                return;
+            }
+            if (attendflag == "") {
+                alert("考勤不能为空");
+                return;
+            }
+            if (doornum == "") {
+                alert("通道数不能为空");
+                return;
+            }
+            if (doorname == "") {
+                alert("通道名不能为空");
+                return;
+            }
+            if (readcard1 == "") {
+                alert("读卡器地址1不能为空");
+                return;
+            }
+            if (inout == "") {
+                alert("通道进出不能为空");
+                return;
+            }
+            if (master == "") {
+                alert("通道类型不能为空");
+                return;
+            }
+            if (dd == 0) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                Ajax(true, global.pk["NewPKDoor"], { LoginID: LocalID, id: td, control_id: ids, attend_flag: attendflag, door_name: doorname, door_num: doornum, readcard1: readcard1, readcard2: readcard2, readcard3: readcard3, readcard4: readcard4, used_flag: use, master_flag: master, screen_id: screenid, inout_flag: inout, master_id: masterid, sencond_id: sencondid, user_id: user }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    $('#win').window('close');
+                    loaddata1();
+                });
+            }
+            if (dd == 1) {
+                var row = datagrid1.datagrid('getSelected');
+                var ids = row.control_id;
+                Ajax(true, global.pk["UpdatePKDoor"], { LoginID: LocalID, id: td, attend_flag: attendflag, control_id: ids, door_name: doorname, door_num: doornum, readcard1: readcard1, readcard2: readcard2, readcard3: readcard3, readcard4: readcard4, used_flag: use, master_flag: master, screen_id: screenid, inout_flag: inout, master_id: masterid, sencond_id: sencondid, user_id: user }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    $('#win').window('close');
+                    loaddata1();
+                });
+            }
+        });
+    });
+
+
+
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.pk["GetPKControlList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+    function loaddata1() {
+        var row = datagrid.datagrid('getSelected');
+        var id = row.id;
+        Ajax(true, global.pk["GetPKDoorList"], { LoginID: LocalID,control_id:id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+        });
+    }
+    </script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'west',collapsible:false" title=""style="padding:2px;width:250px; ">
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+	</div>
+<div data-options="region:'center'" style="padding:2px;width:250px">
+<table id="dg1"style="padding: 5px;"data-options=""> </table>  
+</div>
+
+</div>
+<div id="win" class="easyui-window" title="通道维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:450px;height:350px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>通道号：</td>
+				<td><input id="tdid" class="easyui-validatebox textbox" data-options="validType:'length[1,3]'" style="width:80px;height:20px;"maxlength="3" "/></td>
+			<td>通道名：</td>
+				<td><input id="doorname" class="easyui-validatebox textbox" data-options="required:true, validType: 'length[1,10]', prompt: '请输入控制器名'" style="width:80px;height:20px"/></td>
+                </tr>
+			<tr>
+				<td>第几个通道：</td>
+				<td><input id="doornum" class="easyui-validatebox textbox" data-options="validType:'length[1,3]'" style="width:80px;height:20px;"maxlength="3" readonly/></td>
+			<td>启用此通道：</td>
+				<td><input type="checkbox" id="used" checked ="checked" /></td>
+                </tr>
+			
+			<tr>
+			<td>读卡器地址1：</td>
+				<td><select id="readcard1" class="easyui-combobox"  style="width:80px;height:20px">  </select></td>	
+				<td>读卡器地址2：</td>
+				<td><select id="readcard2" class="easyui-combobox"  style="width:80px;height:20px"></select> </td>
+
+</tr>
+			<tr>
+			<td>读卡器地址3：</td>
+				<td><select id="readcard3" class="easyui-combobox"  style="width:80px;height:20px">  </select></td>	
+				<td>读卡器地址4：</td>
+				<td><select id="readcard4" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+
+</tr>
+            <tr>
+            <td>显示屏：</td>
+				<td><select id="screenid" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+			<td>是否考勤：</td>
+				<td><select id="attendflag" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">否</option> <option value="1">是</option> </select> </td>	
+				
+			</tr>
+			<tr>
+				<td>通道进出：</td>
+				<td><select id="inout" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">进</option> <option value="1">出</option> </select> </td>
+                <td>通道类型：</td>
+				<td><select id="master" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">副通道</option> <option value="1">主通道</option> </select> </td>
+				
+			</tr>
+            <tr>
+				<td>主摄像机:</td>
+				<td><select id="masterid" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+				
+				<td>副摄像机:</td>
+				<td><select id="sencondid" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+				
+			</tr>
+            <tr id="shouyin">
+				<td>收银员:</td>
+				<td><select id="user" class="easyui-combobox"  style="width:80px;height:20px"> </select></td>
+				
+				
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

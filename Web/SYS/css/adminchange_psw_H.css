@@ -1,0 +1,19 @@
+﻿body 
+{
+    padding: 10px;
+}
+
+button
+{
+    height:30px;
+    width:100px;
+    font-size:medium;
+    margin:5px 2px 5px 25px;
+    }
+.txt
+{
+    height:40px;
+    width:300px;
+    font-size:medium;
+    margin:5px 2px 5px 10px;
+    }

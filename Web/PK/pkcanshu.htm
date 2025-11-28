@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    $(function () {
+        Ajax(true, global.pk["GetPKUserKindList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#tmuk').combobox({
+                data: data.Data,
+                valueField: "id",
+                textField: "kind_name"
+            });
+            $('#cpuk').combobox({
+                data: data.Data,
+                valueField: "id",
+                textField: "kind_name"
+            });
+        });
+        Ajax(true, global.pk["GetModelRG"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            if (data.Data.int_type == "1") {
+                $("#gd").prop("checked", true);
+            }
+            else {
+                $("#gd").prop("checked", false);
+            }
+        });
+        Ajax(true, global.pk["GetModelYJYC"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            if (data.Data.char_type == "1") {
+                $("input[name=xz][value=1]").attr("checked", true);
+            }
+            else {
+                $("input[name=xz][value=0]").attr("checked", true);
+            }
+        });
+        Ajax(true, global.pk["GetModelCW"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            if (data.Data.char_type == "1") {
+                $("input[name=cw][value=1]").attr("checked", true);
+            }
+            else {
+                $("input[name=cw][value=0]").attr("checked", true);
+            }
+            if (data.Data.int_type == "1") {
+                $("input[name=rc][value=1]").attr("checked", true);
+            }
+            else {
+                $("input[name=rc][value=0]").attr("checked", true);
+            }
+        });
+        Ajax(true, global.pk["GetModelCPIN"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $("#daoqi").val(data.Data.int_type);
+            $("#shoufei").val(data.Data.double_type);
+            var ww = data.Data.char_type.substring(0, 3);
+            if (ww == "000") {
+                $("input[name=wsb][value=0]").attr("checked", true);
+                $("input[name=rengong][value=0]").attr("checked", true);
+                $("input[name=rgqr][value=0]").attr("checked", true);
+            }
+            if (ww == "001") {
+                $("input[name=wsb][value=1]").attr("checked", true);
+                $("input[name=rengong][value=0]").attr("checked", true);
+                $("input[name=rgqr][value=0]").attr("checked", true);
+            }
+            if (ww == "010") {
+
+                $("input[name=wsb][value=0]").attr("checked", true);
+                $("input[name=rengong][value=0]").attr("checked", true);
+                $("input[name=rgqr][value=1]").attr("checked", true);
+            }
+            if (ww == "011") {
+
+                $("input[name=wsb][value=1]").attr("checked", true);
+                $("input[name=rengong][value=0]").attr("checked", true);
+                $("input[name=rgqr][value=1]").attr("checked", true);
+            }
+            if (ww == "100") {
+
+                $("input[name=wsb][value=0]").attr("checked", true);
+                $("input[name=rengong][value=1]").attr("checked", true);
+                $("input[name=rgqr][value=0]").attr("checked", true);
+            }
+            if (ww == "101") {
+
+                $("input[name=wsb][value=1]").attr("checked", true);
+                $("input[name=rengong][value=1]").attr("checked", true);
+                $("input[name=rgqr][value=0]").attr("checked", true);
+            }
+            if (ww == "110") {
+                $("input[name=wsb][value=0]").attr("checked", true);
+                $("input[name=rengong][value=1]").attr("checked", true);
+                $("input[name=rgqr][value=1]").attr("checked", true);
+            }
+            if (ww == "111") {
+                $("input[name=wsb][value=1]").attr("checked", true);
+                $("input[name=rengong][value=1]").attr("checked", true);
+                $("input[name=rgqr][value=1]").attr("checked", true);
+            }
+        });
+        Ajax(true, global.pk["GetModelCPWS"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $("#sbws").val(data.Data.int_type);
+            $("#cpuk").combobox("setValue", data.Data.char_type.substring(0, 3));
+        });
+        Ajax(true, global.pk["GetModelTMSL"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $("#tmuk").combobox("setValue", data.Data.char_type.substring(0, 3));
+        });
+        $("#A1").click(function () {
+            var gd;
+            if ($("#gd").prop("checked")) {
+                gd = 1;
+            }
+            else { gd = 0; }
+            var rc = $("input[name='rc']:checked").val();
+            var cw = $("input[name='cw']:checked").val();
+            var xz = $("input[name='xz']:checked").val();
+            var daoqi = $("#daoqi").val();
+            var shoufei = $("#shoufei").val();
+            Ajax(true, global.pk["UpdateRG"], { LoginID: LocalID, int_type: gd }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Ajax(true, global.pk["UpdateCPIN"], { LoginID: LocalID, double_type: shoufei, int_type: daoqi }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    Ajax(true, global.pk["UpdateCW"], { LoginID: LocalID, char_type: cw, int_type: rc }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        Ajax(true, global.pk["UpdateYJYC"], { LoginID: LocalID, char_type: xz }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功！", "info");
+                        });
+                    });
+                });
+            });
+        });
+        $("#A2").click(function () {
+            var tmuk = $("#tmuk").combobox("getValue");
+            Ajax(true, global.pk["UpdateTMSL"], { LoginID: LocalID, char_type: tmuk }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $.messager.alert("提示", "保存成功！", "info");
+            });
+        });
+        $("#A3").click(function () {
+            var cpuk = $("#cpuk").combobox("getValue");
+            var wsb = $("input[name='wsb']:checked").val();
+            var rengong = $("input[name='rengong']:checked").val();
+            var rgqr = $("input[name='rgqr']:checked").val();
+            var sbws = $("#sbws").val();
+            var shuju = rengong + rgqr + wsb;
+            Ajax(true, global.pk["UpdateCPWS"], { LoginID: LocalID, char_type: cpuk, int_type: sbws }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Ajax(true, global.pk["UpdateCPINsim"], { LoginID: LocalID, char_type: shuju }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功！", "info");
+                });
+            });
+        });
+    });
+   
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="参数设置" data-options="collapsible:false,maximized:true" style="width:100%;">
+<div class="easyui-layout" data-options="fit:true">
+<div id="t" class="easyui-tabs" data-options="collapsible:false,maximized:true" style="width:100%;">  
+    <div title="系统参数" data-options="href :''" style="" > 
+    <div class="easyui-panel" title="" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; "> 
+          <table cellpadding="10">
+            <tr>
+				<td><input type="checkbox" id="gd" />固定用户出厂需要人工确定</td>
+				<td>固定用户离到期日期<input id="daoqi" class="easyui-validatebox textbox"value="" data-options=""style="width:50px;height:20px" />天显示屏提示</td>
+			</tr>
+            
+            <tr>
+            <td>车位已满是否允许固定车位用户入场</td>
+			<td><input id="rc1" name="rc"  value="1" type="radio"/>允许
+                <input id="rc2" name="rc" value="0" type="radio"/>不允许</td>	
+			</tr>
+            <tr>
+            <td>车位总数是否包括预留的车位</td>
+			<td><input id="cw1" name="cw"  value="0" type="radio"/>不包括
+                <input id="cw2" name="cw" value="1" type="radio"/>包括</td>	
+			</tr>
+            <tr>
+            <td>固定用户是否限制一进一出</td>
+			<td><input id="xz1" name="xz"  value="0" type="radio"/>限制
+                <input id="xz2" name="xz" value="1" type="radio"/>不限制</td>	
+			</tr>
+            <tr>
+            <td>收费金额>=<input id="shoufei" class="easyui-validatebox textbox"value="" data-options=""style="width:50px;height:20px" />元，则收费金额操作员可修改</td>	
+			</tr>
+            <tr>
+				<td><a id='A1' href="#" class="easyui-linkbutton" iconcls="icon-edit" plain="true"style="width: 100px;">确定</a> </td>
+			</tr>
+		</table>
+        </div>   
+    </div>  
+    <div title="条码信息设置" data-options="href :''"style="">  
+         <table cellpadding="10">
+            <tr>
+				<td>条码所属用户类别：</td>
+            <td><select id="tmuk" class="easyui-combobox"  style="width:200px;height:20px"> </select></td>
+			</tr>
+            <tr>
+				<td><a id='A2' href="#" class="easyui-linkbutton" iconcls="icon-edit" plain="true"style="width: 100px;">确定</a> </td>
+			</tr>
+		</table>     
+    </div>  
+    <div title="车牌识别" data-options="href :''"style="">  
+         <table cellpadding="10">
+            <tr>
+				<td>车牌号识别位数</td>
+				<td><input id="sbws" class="easyui-validatebox textbox"value="" data-options=""style="width:200px;height:20px" /></td>
+			</tr>
+            <tr>
+				<td>车牌识别对应收费用户类别：</td>
+            <td><select id="cpuk" class="easyui-combobox"  style="width:200px;height:20px"> </select></td>
+				
+			</tr>
+			<tr>
+            <td>车牌未识别是否允许进入</td>
+			<td><input id="wsb1" name="wsb"  value="1" type="radio"/>允许
+                <input id="wsb2" name="wsb" value="0" type="radio"/>不允许</td>	
+			</tr>
+            <tr>
+            <td>进入时车牌未识别是否需人工输入车牌</td>
+			<td><input id="rengong1" name="rengong"  value="0" type="radio"/>不输入
+                <input id="rengong2" name="rengong" value="1" type="radio"/>输入</td>	
+			</tr>
+            <tr>
+            <td>临时车进入是否需人工确认</td>
+			<td><input id="rgqr1" name="rgqr"  value="0" type="radio"/>不确认
+                <input id="rgqr2" name="rgqr" value="1" type="radio"/>确认</td>	
+			</tr>
+            <tr>
+            <td></td>
+				
+			</tr>
+            <tr>
+				<td><a id='A3' href="#" class="easyui-linkbutton" iconcls="icon-edit" plain="true"style="width: 100px;">确定</a> </td>
+			</tr>
+		</table>     
+    </div>  
+</div> 
+</div>
+</div>
+</body>
+</html>

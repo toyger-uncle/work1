@@ -1,0 +1,156 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="../../Scripts/ligerUI/skins/Aqua/css/ligerui-all.css" rel="stylesheet"
+        type="text/css" />
+    <link href="../../Scripts/ligerUI/skins/ligerui-icons.css" rel="stylesheet" type="text/css" />
+    <link href="../../Scripts/ligerUI/skins/Gray/css/common.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/jquery/jquery-1.9.0.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/core/base.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/ligerui.all.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerLayout.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerTree.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerForm.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerGrid.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerDrag.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerDialog.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerResizable.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerToolBar.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerTextBox.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerButton.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerDateEditor.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerComboBox.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-validation/jquery.metadata.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-validation/jquery.validate.min.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery-validation/messages_cn.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var rool;
+        var cc = 10000;
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var sortName = "id";
+        var sortOrder = "asc";
+        var PageSize = 10;
+        var PageNum = 1;
+        var rool;
+        $(function () {
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                pagination: true, //显示分页  
+                pageSize: PageSize, //分页大小  
+                pageList: [10, 20, 50, 100], //每页的个数  
+                //fit: true, //自动补全  
+                fitColumns: true,
+                striped: true,
+                iconCls: "icon-search", //图标  
+                title: "选择用户",
+                collapsible: true,
+                remotesort: false,
+                singleSelect: true,
+                //rownumbers:true,
+                sortName: sortName,
+                sortOrder: sortOrder,
+                columns: [[{
+                    field: 'id',
+                    title: '编号',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'user_name',
+                    title: '用户',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'depart_name',
+                    title: '部门',
+                    sortable: true,
+                    width: 80
+                }, {
+                    field: 'card_id',
+                    title: '卡号',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'card_snr',
+                    title: '卡序列号',
+                    sortable: true,
+                    width: 50
+                }, {
+                    field: 'work_status',
+                    title: '工作状态',
+                    sortable: true,
+                    width: 80
+                }, {
+                    field: 'demo',
+                    title: '信息',
+                    sortable: true,
+                    width: 180
+                }]],
+                onSelect: function (rowIndex, rowData) {
+                    if (rowData == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    
+                },
+                onSortColumn: function (sort, order) {
+                    sortName = sort;
+                    sortOrder = order;
+                    loaddata();
+                }
+            });
+            loaddata();
+        });
+        function loaddata() {
+            clearTimeout(rool);
+            Ajax(true, global.sys["GetCardLogPageList"], { LoginID: LocalID, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.total = data.Data.length;
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+                rool = setTimeout(function () { loaddata(zm, use); }, cc);
+                var pager = $("#dg").datagrid("getPager");
+                pager.pagination({
+                    total: jsondata.total,
+                    onSelectPage: function (pageNo, pageSize) {
+                        var start = (pageNo - 1) * pageSize;
+                        var end = start + pageSize;
+                        $("#dg").datagrid("loadData", jsondata.rows.slice(start, end));
+                        pager.pagination('refresh', {
+                            total: jsondata.total,
+                            pageNumber: pageNo
+                        });
+                    }
+                });
+                pager.pagination('select');
+            });
+        }                                        
+</script>
+</head>
+<body>
+    <div class="easyui-panel" title="挂失报废" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; ">
+<div style="width:100%; height:400px;">
+<div id ="do"> 
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="gsbf" >挂失报废</a></div>
+<div style="padding:5px;">
+控制组：<select id="kzz" class="easyui-combobox"  style="width:80px;height:20px"></select>
+使用状况：<select id="use" class="easyui-combobox"  style="width:80px;height:20px"></select>
+</div>
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div style="overflow:auto; ">
+     </div>
+</body>
+
+</html>

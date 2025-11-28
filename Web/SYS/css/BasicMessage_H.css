@@ -1,0 +1,339 @@
+﻿body 
+{
+    ARGIN: 0px 0px 0px 0px;
+	FONT: 12px simsun;
+	TEXT-ALIGN:center;
+	color:#263457;
+}
+.txt
+{
+    width:620px;
+    height:50px;
+    text-align:center;
+    }
+input
+{
+    width:29px;
+    margin:5 0 5 0;
+    }
+#btn
+{
+    text-align:right;
+    width:150px;
+    height:30px; 
+    font-size:large;
+    }
+a
+{
+    font-size:medium;
+    font-family:@仿宋;
+       
+    }
+.main_bt
+{
+	width:100%;
+	height:20px;
+	TEXT-ALIGN:left;
+	color:#011a77;
+	padding-top:6px;
+	background-image:url(../imgs/pzmain_bt.gif);
+}
+.main_bt span
+{
+	font-size:16px;
+	font-weight:bold;
+	margin-left:15px;
+	cursor:default;
+}
+#pz_main
+{
+	width:98%;
+	margin:1% 1% 1% 1%;
+	top:22px;
+	left:-4px;
+	position:absolute;
+}
+.text_biger
+{
+	width: 250px;
+	font-family: "新宋体";
+	font-size: 12px;
+	font-style:normal;
+	height:14px; 
+	padding-top:2px;
+	border:1px solid #4e6be8;
+}
+.text_common
+{
+	width: 100px;
+	font-family: "新宋体";
+	font-size: 12px;
+	font-style:normal;
+	height:14px; 
+	padding-top:2px;
+	border:1px solid #4e6be8;
+}
+.text
+{
+	border-style: none;
+    border-color: inherit;
+    border-width: 0px;
+height:21px; 
+	padding-top:4px;
+	background-color:#fddaa4;
+}
+.text_mini
+{
+	height:18px; 
+	width:40px;
+	border:0px;
+	background-color:#dce9f2;
+	display:none;
+}
+.select
+{
+	height:20px; 
+	border:0px;
+	background-color:#fddaa4;
+}
+.select_common
+{
+	width:100px;
+	height:18px; 
+	font-family: "新宋体";
+	font-size: 12px;
+	font-style:normal;
+	border:1px solid #4e6be8;
+}
+td
+{
+	height:20px;
+}
+.a{
+	height:1px;
+	overflow:hidden;
+	border-left:1px #556c8c solid;
+	border-right:1px #556c8c solid;
+	font-family: "新宋体";
+	font-size: 12px;
+	color: #ffffff;
+	cursor:pointer;
+	background-color:#556c8c;
+}
+.ax{
+	height:1px;
+	overflow:hidden;
+	border-left:1px #556c8c solid;
+	border-right:1px #556c8c solid;
+	padding-top:4px;
+	font-family: "新宋体";
+	font-size: 12px;
+	color: #ffffff;
+	cursor:pointer;
+	background-image:url(../imgs/pzmain_anniu.gif);
+}
+.ax:hover
+{
+	font-weight:bold;
+	background-image:url(../imgs/pzmain_anniux.gif); 
+}
+.b{
+	height:1px;
+	overflow:hidden;
+	border-left:1px #b4c2cf solid;
+	border-right:1px #b4c2cf solid;
+	font-family: "新宋体";
+	font-size: 12px;
+	color: #ffffff;
+	cursor:pointer;
+	background-color:#b4c2cf;
+}
+.bx
+{
+	height:1px;
+	overflow:hidden;
+	border-left:1px #b4c2cf solid;
+	border-right:1px #b4c2cf solid;
+	padding-top:5px;
+	font-family: "新宋体";
+	font-size: 12px;
+	color: #ffffff;
+	cursor:pointer;
+	background-image:url(../imgs/pzmain_page.gif); 
+}
+.bv{
+	height:1px;
+	overflow:hidden;
+	border-left:1px #b4c2cf solid;
+	border-right:1px #b4c2cf solid;
+	padding-top:5px;
+	font-family: "新宋体";
+	font-size: 12px;
+	color: #263457;
+	cursor:pointer;
+	background-image:url(../imgs/pzmain_pagex.gif); 
+}
+.divpage
+{
+	float:left;
+}
+.divbotton
+{
+	margin-right:10px;
+	float:right;
+}
+.divpage div:hover
+{
+	font-weight:bold;
+}
+.th
+{
+	border-right:1px #b4c2cf solid;
+	height:25px;
+	background-image:url(../imgs/pzmain_table_bt.gif);
+	cursor:default;
+}
+.thx
+{
+	height:25px;
+	background-image:url(../imgs/pzmain_table_bt.gif);
+	cursor:default;
+}
+.thv
+{
+	border-right:1px #b4c2cf solid;
+	height:25px;
+	background-image:url(../imgs/pzmain_table_bt.gif);
+	cursor:pointer;
+}
+.thxv
+{
+	height:25px;
+	background-image:url(../imgs/pzmain_table_bt.gif);
+	cursor:pointer;
+}
+.td
+{
+	border-right:1px #b4c2cf solid;
+	height:20px;
+	cursor:default;
+}
+.tdx
+{
+	height:20px;
+	cursor:default;
+}
+.tdv
+{
+	border-right:1px #b4c2cf solid;
+	border-bottom:1px #b4c2cf solid;
+	height:20px;
+	cursor:default;
+}
+.tdxv
+{
+	border-bottom:1px #b4c2cf solid;
+	height:20px;
+	cursor:default;
+}
+.trp
+{
+	background-color:#ffffff;
+}
+.tr
+{
+	background-color:#f1f8fe;
+}
+.trx
+{
+	background-color:#fddaa4;
+}
+.trxp
+{
+	background-color:#7a77f5;
+}
+.tr:hover
+{
+	background-color:#41acf0;
+}
+.trp:hover
+{
+	background-color:#41acf0;
+}
+.scrollbar
+{
+	color:#263457;
+	overflow:scroll;
+	scrollbar-face-color: #9EBFE8; 
+	scrollbar-shadow-color: #FFFFFF; 
+	scrollbar-highlight-color: #FFFFFF; 
+	scrollbar-3dlight-color: #9EBFE8; 
+	scrollbar-darkshadow-color: #9EBFE8; 
+	scrollbar-track-color: #FFFFFF; 
+	scrollbar-arrow-color: #FFFFFF
+}
+.check
+{
+	
+}
+#table_wei
+{
+	height:36px;
+	background-image:url(../imgs/pzmain_table_jt.gif);
+	border-bottom:1px #b4c2cf solid;
+	cursor:default;
+}
+.divwei
+{
+	height:23px;
+	padding-top:12px;
+	margin-right:10px;
+	float:right;
+}
+.divweil
+{
+	height:23px;
+	padding-top:12px;
+	margin-right:10px;
+	float:left;
+}
+.divweiv
+{
+	color:#b3b6af;
+	height:23px;
+	padding-top:12px;
+	margin-right:10px;
+	float:right;
+}
+.divweictl
+{
+	height:26px;
+	padding-top:9px;
+	margin-right:10px;
+	float:right;
+}
+.divweix
+{
+	height:23px;
+	padding-top:12px;
+	margin-right:10px;
+	float:right;
+	cursor:pointer;
+}
+.divweix:hover
+{
+	font-weight:bold;
+}
+.minwindow
+{
+	position:absolute;
+	z-index:99;
+	display:none;
+	border:10px #b4c2cf solid;
+	left:10%;
+	top:50px;
+}
+.draw-line   
+{ 
+    z-index:99;   
+}   

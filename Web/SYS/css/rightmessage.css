@@ -1,0 +1,34 @@
+﻿body {padding:0px; margin:0;}
+a{ width:30%; height:20px; float:left;}
+#contentright{
+	width:248px;
+	overflow:scroll;
+	left:0px;
+	color:#263457;
+	
+}
+.right_bt
+{
+	width:100%;
+	height:20px;
+	TEXT-ALIGN:center;
+	color:#011a77;
+	padding-top:6px;
+	background-image:url(../imgs/pzmain_bt.gif);
+}
+.right_bt span
+{
+	font-size:16px;
+	font-weight:bold;
+	margin-left:15px;
+	cursor:default;
+}
+#rightmessage{width:248px; height:600px}
+.left{width:50%;height:150px; float:left; }
+.r-input{width:65%;height:20px; float:right;}
+#right{width:50%;height:150px; float:right; text-align:center;}
+.r-img{height:137px; width:100px}
+.a-down-img{width:10%;height:30px; float:left}
+.a-down1{width:25%;height:30px; float:left}
+.a-down2{width:40%;height:30px; float:left}
+.a-down3{width:25%;height:30px; float:left}
