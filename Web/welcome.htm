@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+
+
+    <!--<script type="text/javascript">
+        var manager;
+        $(function () {
+            manager = $("#btn").ligerButton(
+            {
+                click: function () {
+                    //alert('111');
+                }
+            }
+            );
+
+
+            $("#btnExit").bind("click", function () {
+                //获取公司名称
+                var myurl = remoteUrl + "/" + route2 + "/PZOperatorLogout";
+                var mydata = { OperatorID: 'PZ' };
+                var mycallback = function (data) {
+
+                };
+
+                Ajaxmy(false, true, 'json', 'post', myurl, mydata, mycallback);
+            });
+        });
+
+        function f_addTabItem(url, text) {
+            var tabid = "ligerui" + new Date().toDateString();
+            parent.f_addTab(tabid, text, url);
+        }
+
+
+        function f_addVersionLog(title, items, subtitle) {
+
+            var jtitle = $("<h2 class='l-title'></h2>");
+            jtitle.html(title).appendTo('body');
+            if (subtitle) {
+                $("<div class='subtitle'>" + subtitle + "</div>").appendTo('body');
+            }
+            var tagGroups = [];
+            var tagItems = [];
+            $(items).each(function (i, item) {
+                if (!item) return;
+                var tag = item['tag'];
+                var tagIndex = $.inArray(tag, tagGroups);
+                if (tagIndex == -1) {
+                    tagGroups.push(tag);
+                    tagIndex = tagGroups.length - 1;
+                    tagItems.push([]);
+                }
+                tagItems[tagIndex].push(item);
+            });
+            $(tagGroups).each(function (i, item) {
+                f_addVersionTagLog(item, tagItems[i]);
+            });
+        }
+        function f_addVersionTagLog(tag, items) {
+            var jtitle = $("<h3 class='l-title'></h3>");
+            jtitle.html(tag).appendTo('body');
+            $(items).each(function () {
+                var jitem = $('<p class="l-log-content"><span class="l-log-content-tag"></span></p>');
+                $("span:first", jitem).html("[" + this.type + "]");
+                jitem.append(this.content).appendTo('body');
+            });
+        }
+        
+    </script>-->
+    <style type="text/css">
+        BODY {
+  text-align :center;
+}
+      #content
+{
+    position:absolute;
+	left:40%;
+	top:60%;
+	width:336px;
+	height:337px;
+   text-align :center;
+    background-image: url(../../Images/01.png);
+    }
+        
+    </style>
+</head>
+
+<body style=" margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;width:100%; height:100%"> 
+  <div class="easyui-layout" data-options="fit:true"style="">
+        
+        <img src="../Images/bj.jpg" style="width:100% ;height:100% ;margin:0 ;border:2px solid #cccccc;">
+  <!--  <div id="content" class="content">    
+    <p class="l-log-content"> 作者: 平治科技</p>
+    <p class="l-log-content"> 电话：400-600-5810</p>
+    <p class="l-log-content"> 网址：www.pingzhi.com</p>
+    <p class="l-log-content"> 地址: 杭州祥茂路166号华滋科欣设计创意园4号楼8楼(北部软件园)</p>
+      </div>-->
+         
+    <!--<iframe id="download" style="display:none;"></iframe>--></div>
+ 
+</body>
+</html>
