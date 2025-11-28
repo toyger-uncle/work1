@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" media="print" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+
+    .noprint
+    {
+        display:none }
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var bh = $.cookie("bh");
+    var idd;
+    var ab = 0;
+    var request = {
+        QueryString: function (val) {
+            var uri = window.location.search;
+            var re = new RegExp("" + val + "\=([^\&\?]*)", "ig");
+            return ((uri.match(re)) ? (uri.match(re)[0].substr(val.length + 1)) : null);
+        }
+    }
+    $(function () {
+        var curr_time = new Date();
+
+        var strDate1 = curr_time.getFullYear() + "-";
+        strDate1 += curr_time.getMonth() + 1 + "-";
+        strDate1 += curr_time.getDate();
+        strDate1 += " " + curr_time.getHours() + ":";
+        strDate1 += curr_time.getMinutes() + ":";
+        strDate1 += curr_time.getSeconds();
+        var strDate = curr_time.getFullYear().toString();
+        if (curr_time.getMonth() + 1 < 10) {
+            strDate += "0" + (curr_time.getMonth() + 1).toString();
+        }
+        else { strDate += (curr_time.getMonth() + 1).toString(); }
+        if (curr_time.getDate() < 10) {
+            strDate += "0" + (curr_time.getDate()).toString();
+        }
+        else {
+            strDate += (curr_time.getDate()).toString();
+        }
+        var id = request.QueryString("id");
+        var bumen = request.QueryString("bumen");
+        var time = request.QueryString("time");
+        var name = request.QueryString("name");
+        var fkname = request.QueryString("fk");
+        var dd = request.QueryString("dd");
+        Ajax(true, global.ex["GetQRCODE"], { LoginID: LocalID, contents: id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#img1').width = data.Data.width;
+            $('#img1').height = data.Data.height;
+            document.getElementById('img1').src = '../../qrcode/' + data.Data;
+            idd = data.Data;
+            $('#l').val("请将二维码对准扫描区域");
+            document.getElementById('l1').innerHTML = "被访人员：" + name;
+            document.getElementById('l2').innerHTML = "被访人员所属：" + bumen;
+            document.getElementById('l3').innerHTML = "自" + strDate1 + "起" + time + "小时内有效";
+            document.getElementById('l4').innerHTML = "访客姓名：" + fkname;
+
+        });
+        Ajax(true, global.lg["GetCompanyName"], {}, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            document.getElementById('l').innerHTML = data.Data;
+        });
+        $("#dayin").click(function () {
+            Ajax(true, global.fk["UpdateFkQrcodeLog"], { LoginID: LocalID, id: dd, is_print: "是", qrcode_path: idd }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                document.getElementById('img1').focus();
+                window.print();
+                ab = 1;
+            });
+        });
+        $("#fanhui").click(function () {
+            if (ab == 0) {
+                Ajax(true, global.fk["UpdateFkQrcodeLog"], { LoginID: LocalID, id: dd, qrcode_path: idd }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    ab = 0;
+                    window.location.href = "mjerweima.htm";
+                });
+            }
+            else {
+                ab = 0;
+                window.location.href = "mjerweima.htm";
+            }
+        });
+    });
+
+</script>
+</head>
+<body style=" margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; ">
+
+<div  id="cc" class ="cc" 
+        style="width:100%;  position: relative; z-index: auto; text-align: center;">
+        <div style ="padding:5px;"><label id ="l" style="font-size: xx-large"></label></div>
+      <div style ="padding:5px;"> <label style="font-size: x-large">请将二维码对准扫描区域</label></div>
+ </div>
+       <div id="dd" class="dd" style="text-align: center">
+
+       <img runat="server" id="img1" 
+               class="img1" style="width:320px;height:320px; text-align: center;padding-top:50px;"></div>
+               <div style ="padding-top:30px;text-align: center;"><label id ="l1" class="l" style="font-size: large;"></label></div>
+                 <div style ="padding:2px;text-align: center; "><label id ="l2" class="l" style="font-size: large;"></label></div>
+                <div style ="padding:2px;text-align: center; "><label id ="l3" class="l" style="font-size: large;"></label></div>
+                <div style ="padding:2px; text-align: center;"><label id ="l4" class="l" style="font-size: large;"></label></div>
+        
+
+       <div id="ee" class="ee" style="text-align: center"><a class="noprint" 
+               href="javascript:void(0)"style="width:80px; text-align: center;" id="dayin" >打印</a>&nbsp;&nbsp;
+               <a class="noprint" 
+               href="javascript:void(0)"style="width:80px; text-align: center;" id="fanhui" >返回</a></div>
+     
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+</head>
+<body>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        var editRow = undefined;
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'address_group_id',
+                title: '区域编号',
+                //                sortable: true,
+                width: 80
+                //                checkbox: true
+            }, {
+                field: 'address_group',
+                title: '区域名',
+                //                sortable: true,
+                width: 80,
+                editor: { type: 'textbox', options: { required: true, validType: 'length[1,25]', prompt: '长度不能超过25'} }
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    var address_group = rowData.address_group;
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+
+                                ids = rowData[i].address_group_id;
+                                Ajax(true, mj["RemoveMJWhereGroup"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        } 
+                    });
+
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    id = rows.id;
+                    if (editRow != undefined) {
+                        datagrid.datagrid('endEdit', editRow);
+                    }
+                    if (editRow == undefined) {
+                        datagrid.datagrid('insertRow', {
+                            index: 0,
+                            row: {
+                                address_group_id: rows.address_group_id,
+                                address_group: rows.address_group
+                            }
+                        });
+
+                        datagrid.datagrid('beginEdit', 0);
+                        editRow = 1;
+                    }
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    if (editRow != undefined) {
+                        datagrid.datagrid('endEdit', editRow);
+                    }
+                    if (editRow == undefined) {
+                        datagrid.datagrid('insertRow', {
+                            index: 0,
+                            row: {
+                                address_group: ''
+                            }
+                        });
+                        datagrid.datagrid('beginEdit', 0);
+                        editRow = 0;
+                    }
+                }
+            }, {
+                text: "保存", iconCls: "icon-save", handler: function () {
+                    if (editRow == 0) {
+                        var hp = $("#dg").datagrid('getEditor', { index: 0, field: 'address_group' });
+                        var a = $(hp.target).textbox("getValue");
+                        if (a == "") {
+                            alert("区域名不能为空！");
+                            return;
+
+                        }
+                        else if (a.length > 25) {
+                            alert("区域名长度不能超过25！");
+                            return;
+                        }
+                        else {
+                            Ajax(true, mj["NewMJWhereGroup"], { LoginID: LocalID, address_group: a }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "保存成功", "info");
+                                loaddata();
+                            });
+                        }
+                        editRow = undefined;
+                    }
+                    if (editRow == 1) {
+                        var rows = datagrid.datagrid('getSelected');
+                        var hp = $("#dg").datagrid('getEditor', { index: 0, field: 'address_group' });
+                        var a = $(hp.target).textbox("getValue");
+                        var ids = rows.address_group_id;
+                        if (a == "") {
+                            alert("区域名不能为空！");
+                            return;
+
+                        }
+                        else if (a.length > 25) {
+                            alert("区域名长度不能超过25！");
+                            return;
+                        }
+                        else {
+                            Ajax(true, mj["UpdateMJWhereGroup"], { LoginID: LocalID, address_group_id: ids, address_group: a }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "修改成功", "info");
+                                loaddata();
+                            });
+                        }
+
+                        editRow = undefined;
+                    }
+                }
+            }, {
+                text: "取消", iconCls: "icon-redo", handler: function () {
+
+                    editRow = undefined;
+                    datagrid.datagrid('rejectChanges');
+                    datagrid.datagrid('unselectAll');
+                }
+
+            }]
+        });
+        loaddata();
+        //        $('div.datagrid-toolbar a').eq(3).hide();
+        //        $('div.datagrid-toolbar a').eq(4).hide();
+
+    });
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, mj["GetMJWhereGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+</script>
+<div class="easyui-panel" title="" data-options="collapsible:false" style="">
+<div data-options="region:'left',split:true,collapsible:false" style="width:98%;padding: 2px;">
+       <table id="dg"></table>
+      </div>
+     </div>
+</body>
+</html>

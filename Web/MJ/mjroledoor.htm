@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+</style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var tree;
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var Ljsondata = { "total": 0, "rows": [] };
+        $(function () {
+            tree = $("#tt").tree({
+                checkbox: true,
+                //                onlyLeafCheck: true,
+                onSelect: function (node) {
+                    if (node.checked) {
+                        tree.tree('uncheck', node.target);
+                    }
+                    else {
+                        tree.tree('check', node.target);
+                    }
+                },
+                onCheck: function (node, checked) {
+                    var rowData = datagrid.datagrid('getSelected');
+                    if (rowData == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var roleid = rowData.id;
+                    if (node.attributes.kind == "D") {
+                        if (checked) {
+                            Ajax(true, global.mj.NewMjRoleDoor, { LoginID: LocalID, role_id: roleid, door_id: node.id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                //                            alert("jiaruchenggong");
+                            });
+                        }
+                        else {
+                            Ajax(true, global.mj.RemoveMjRoleDoor, { LoginID: LocalID, role_id: roleid, door_id: node.id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                //                            alert("shanchuchengggong");
+                            });
+                        }
+                    }
+                    if (node.attributes.kind == "A") {
+                        var jd = node.children;
+                        if (jd == null || jd == "") {
+                            alert("该区域下无门");
+                            return;
+                        }
+                        for (var i = 0; i < jd.length; i++) {
+                            var id = jd[i].id;
+                            (function (id) {
+                                if (checked) {
+                                    Ajax(true, global.mj.NewMjRoleDoor, { LoginID: LocalID, role_id: roleid, door_id: id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        //                            alert("jiaruchenggong");
+                                    });
+                                }
+                                else {
+                                    Ajax(true, global.mj.RemoveMjRoleDoor, { LoginID: LocalID, role_id: roleid, door_id: id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        //                            alert("shanchuchengggong");
+                                    });
+                                }
+                            })(id)
+                        }
+                    }
+
+                }
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                //pagination: true, //显示分页  
+                //pageSize: 10, //分页大小  
+                //pageList: [10, 50, 100], //每页的个数  
+                //fit: true, //自动补全  
+                fitColumns: true,
+                striped: true,
+                iconCls: "icon-search", //图标  
+                title: "角色列表",
+                collapsible: true,
+                remotesort: false,
+                rownumbers: true,
+                singleSelect: true,
+                //sortName:"id",
+                //sortOrder: 'desc',
+                columns: [[{
+                    field: 'id',
+                    title: '编号',
+                    //sortable: true,
+                    width: 50
+                }, {
+                    field: 'rolename',
+                    title: '角色',
+                    //sortable: true,
+                    width: 100
+                }, {
+                    field: 'level',
+                    title: '等级',
+                    //sortable: true,
+                    width: 100
+                }]],
+                onSelect: function (rowIndex, rowData) {
+                    if (rowData == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    Lloaddata(rowData.id);
+                },
+                onLoadSuccess: function (data) {
+                    //默认选中第一行
+                    $(this).datagrid('selectRow', 0);
+                    //                    Lloaddata();
+                }
+            });
+            loaddata();
+        });
+        function Lloaddata(roleid) {
+            if (datagrid.datagrid('getSelected') == null) {
+                datagrid.datagrid('selectRow', 0);
+                var datarow = datagrid.datagrid('getSelected');
+                roleid = datarow.id;
+            }
+            Ajax(true, global.mj.GetRoleWhereDoorTree, { LoginID: LocalID, roleid: roleid, iconUls: 'exicon-lock', iconCls: 'exicon-home', state: "0" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                Ljsondata.total = data.Data.length;
+                Ljsondata.rows = JSON2.parse(data.Data);
+                tree.tree('loadData', Ljsondata.rows);
+                if (data.Data.length > 0) {
+                    if (tree.tree('getSelected') == null) {
+                        var root = tree.tree("getRoot");
+                        if (root != null) {
+//                            tree.tree('select', root.target);
+                        }
+                    }
+                }
+                
+            });
+        }
+        function loaddata() {
+        Ajax(true, global.sys.GetPZUserRoleList, { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+//                Lloaddata();
+        });
+        }
+</script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'west',collapsible:false" style="padding: 2px; width: 250px;">
+           <table id="dg">
+            </table> 
+        </div>
+        <div data-options="region:'center'"title="门树" style="padding: 2px; width: 250px;">
+            <ul id="tt">
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

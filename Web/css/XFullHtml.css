@@ -1,0 +1,58 @@
+﻿body
+{
+    font-family: verdana,helvetica,arial,sans-serif,宋体;
+    font-size: 12px;
+    margin: 0;
+    padding: 2px;
+}
+.tdx
+{
+    height: 20px;
+    cursor: default;
+}
+h2
+{
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 15px;
+}
+
+.demo-info
+{
+    padding: 0 0 12px;
+}
+
+.demo-tip
+{
+    display: none;
+}
+
+.textbox
+{
+    height: 20px;
+    margin: 0;
+    padding: 0 2px;
+    box-sizing: content-box;
+}
+div.easyui-panel
+{
+    padding: 5px 0 0;
+}
+.button
+{
+    margin-left: 5px;
+}
+.th60 tr > th
+{
+    width: 60px;
+}
+.button a
+{
+    width: 80px;
+}
+.infoReport
+{
+    text-align:center;
+    font-size: 13px;
+    width:230px;
+}

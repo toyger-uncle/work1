@@ -1,0 +1,268 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var a;
+var jsondata = { "total": 0, "rows": [] };
+function myformatter(date) {
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    return (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}
+
+
+$(function () {
+    var editRow = undefined;
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        fitColumns: true,
+        striped: true,
+        title: "",
+        collapsible: true,
+        remotesort: false,
+        rownumbers: true,
+        columns: [[{
+            field: 'holiday_date',
+            title: '日期',
+            width: 80,
+            editor: { type: 'datebox', options: { required: true} }
+        }, {
+            field: 'holiday_kind',
+            title: '假期种类',
+            width: 80, formatter: function (value, row) {
+                if (value == "1") {
+                    return '假期种类1';
+                }
+                if (value == "2") {
+                    return '假期种类2';
+                }
+                if (value == "3") {
+                    return '假期种类3';
+                }
+                if (value == "4") {
+                    return '假期种类4';
+                }
+                if (value == "5") {
+                    return '假期种类5';
+                }
+                if (value == "6") {
+                    return '假期种类6';
+                }
+                if (value == "7") {
+                    return '假期种类7';
+                }
+                if (value == "8") {
+                    return '假期种类8';
+                }
+            },
+            editor: { type: 'combobox', options: {
+                required: true,
+                data: holidaykind,
+                valueField: "value",
+                textField: "text",
+                editable: false
+            }
+            }
+    }]],
+    toolbar: [{
+        text: "添加", iconCls: "icon-add", handler: function () {
+            $('div.datagrid-toolbar a').eq(3).show();
+            $('div.datagrid-toolbar a').eq(4).show();
+            if (editRow != undefined) {
+                datagrid.datagrid('endEdit', editRow);
+            }
+            if (editRow == undefined) {
+                datagrid.datagrid('insertRow', {
+                    index: 0,
+                    row: {
+                        holiday_date: '',
+                        holiday_kind: ''
+                    }
+                });
+                datagrid.datagrid('beginEdit', 0);
+                editRow = 0;
+            }
+        }
+    }, {
+        text: "修改", iconCls: "icon-edit", handler: function () {
+            var rows = datagrid.datagrid('getSelected');
+            $('div.datagrid-toolbar a').eq(3).show();
+            $('div.datagrid-toolbar a').eq(4).show();
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            id = rows.id;
+            if (editRow != undefined) {
+                datagrid.datagrid('endEdit', editRow);
+            }
+            if (editRow == undefined) {
+                datagrid.datagrid('insertRow', {
+                    index: 0,
+                    row: {
+                        holiday_date: rows.holiday_date,
+                        holiday_kind: rows.holiday_kind
+                    }
+                });
+
+                datagrid.datagrid('beginEdit', 0);
+                editRow = 1;
+            }
+        }
+    }, {
+        text: "删除", iconCls: "icon-remove", handler: function () {
+            var rowData = datagrid.datagrid('getSelections');
+            var ids;
+            if (rowData == null || rowData.length == 0) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            for (var i = 0; i < rowData.length; i++) {
+                ids = rowData[i].id;
+                Ajax(true, mj["RemoveMjHolidayTime"], { LoginID: LocalID, id: ids }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+
+                    loaddata();
+                });
+            } $.messager.alert("提示", "删除成功", "info");
+        }
+    }, {
+        text: "保存", iconCls: "icon-save", handler: function () {
+            if (editRow == 0) {
+                var hp = $("#dg").datagrid('getEditor', { index: 0, field: 'holiday_date' });
+                var hd = $(hp.target).datebox("getValue");
+                var hp1 = $("#dg").datagrid('getEditor', { index: 0, field: 'holiday_kind' });
+                var hk = $(hp1.target).combobox("getValue");
+                if (hd == "") {
+                    $.messager.alert("提示", "日期不能为空", "error");
+                    return;
+                }
+                if (hk == "") {
+                    $.messager.alert("提示", "假期种类不能为空", "error");
+                    return;
+                }
+                Ajax(true, mj["NewMjHolidayTime"], { LoginID: LocalID, holiday_date: hd, holiday_kind: hk }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    loaddata();
+                });
+                editRow = undefined;
+                $('div.datagrid-toolbar a').eq(3).hide();
+                $('div.datagrid-toolbar a').eq(4).hide();
+            }
+            if (editRow == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                var hp = $("#dg").datagrid('getEditor', { index: 0, field: 'holiday_date' });
+                var hd = $(hp.target).datebox("getValue");
+                var hp1 = $("#dg").datagrid('getEditor', { index: 0, field: 'holiday_kind' });
+                var hk = $(hp1.target).combobox("getValue");
+                if (hd == "") {
+                    $.messager.alert("提示", "日期不能为空", "error");
+                    datagrid.datagrid('rejectChanges');
+                }
+                if (hk == "") {
+                    $.messager.alert("提示", "假期种类不能为空", "error");
+                    datagrid.datagrid('rejectChanges');
+                }
+                Ajax(true, mj["UpdateMjHolidayTime"], { LoginID: LocalID, id: ids, holiday_date: hd, holiday_kind: hk }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    loaddata();
+                });
+                editRow = undefined;
+                $('div.datagrid-toolbar a').eq(3).hide();
+                $('div.datagrid-toolbar a').eq(4).hide();
+            }
+        }
+    }, {
+        text: "取消", iconCls: "icon-redo", handler: function () {
+            editRow = undefined;
+            datagrid.datagrid('rejectChanges');
+            datagrid.datagrid('unselectAll');
+            $('div.datagrid-toolbar a').eq(3).hide();
+            $('div.datagrid-toolbar a').eq(4).hide();
+        }
+
+    }],
+    onDblClickRow: function (rowIndex, rowData) {
+        $('div.datagrid-toolbar a').eq(3).show();
+        $('div.datagrid-toolbar a').eq(4).show();
+        id = rowData.id;
+        if (editRow != undefined) {
+            datagrid.datagrid('endEdit', editRow);
+        }
+        if (editRow == undefined) {
+            datagrid.datagrid('insertRow', {
+                index: 0,
+                row: {
+                    holiday_date: rowData.holiday_date,
+                    holiday_kind: rowData.holiday_kind
+                }
+            });
+
+            datagrid.datagrid('beginEdit', 0);
+            editRow = 1;
+        }
+    }
+    });
+loaddata();
+$('div.datagrid-toolbar a').eq(3).hide();
+$('div.datagrid-toolbar a').eq(4).hide();
+    
+});
+function loaddata() {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, mj["GetMjHolidayTimeList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+}
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="假期" data-options="collapsible:true" style="width:100%;height:580px; padding:2px;">
+<div data-options="region:'north'" style=" width: 100%">
+        <table id="dg">
+        </table>
+        </div>
+        </div>
+</body>
+</html>

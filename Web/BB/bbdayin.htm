@@ -1,0 +1,632 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+        }
+        h2
+        {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 15px;
+        }
+        .demo-info
+        {
+            padding: 0 0 12px;
+        }
+        .demo-tip
+        {
+            display: none;
+        }
+        .textbox
+        {
+            height: 20px;
+            margin: 0;
+            padding: 0 2px;
+            box-sizing: content-box;
+        }
+        .xiao
+        {
+            width: 110px;
+            height: 30px;
+        }
+        .caiwu
+        {
+            width: 110px;
+            height: 30px;
+        }
+        .style1
+        {
+            width: 933px;
+            height: 95%;
+        }
+        .style3
+        {
+            height: 54px;
+            width: 158px;
+            text-align: center;
+        }
+        #Text1
+        {
+            width: 206px;
+        }
+        .style76
+        {
+            text-align: center;
+            height: 30px;
+        }
+        .xiao
+        {
+            height: 30px;
+            width: 158px;
+            text-align: center;
+        }
+        .style80
+        {
+            text-align: center;
+            }
+        .xiao
+        {
+            height: 30px;
+            width: 110px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 27px;
+            width: 110px;
+            text-align: center;
+        }
+        .style106
+        {
+            text-align: center;
+            height: 27px;
+        }
+        .xiao
+        {
+            height: 27px;
+            width: 158px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 28px;
+            width: 137px;
+            text-align: center;
+        }
+        .style112
+        {
+            text-align: center;
+            height: 28px;
+        }
+        .xiao
+        {
+            height: 30px;
+            width: 84px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 28px;
+            width: 84px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 25px;
+            width: 158px;
+            text-align: center;
+        }
+        .style154
+        {
+            text-align: center;
+            height: 25px;
+        }
+        .xiao
+        {
+            text-align: center;
+            height: 6px;
+            width: 158px;
+        }
+        .style160
+        {
+            text-align: center;
+            height: 6px;
+        }
+        .xiao
+        {
+            text-align: center;
+            width: 158px;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+            width: 110px;
+            height: 32px;
+        }
+        .xiao
+        {
+            width: 137px;
+            text-align: center;
+            height: 32px;
+        }
+        .xiao
+        {
+            height: 25px;
+            width: 201px;
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+            height: 6px;
+            }
+        .xiao
+        {
+            text-align: center;
+            }
+        .xiao
+        {
+            height: 28px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 32px;
+            text-align: center;
+        }
+        .xiao
+        {
+            height: 25px;
+            text-align: center;
+        }
+        .style187
+        {
+            text-align: center;
+            height: 6px;
+            }
+        .xiao
+        {
+            text-align: center;
+            }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .xiao
+        {
+            text-align: center;
+        }
+        .style199
+        {
+            height: 25px;
+            text-align: center;
+        }
+        .style201
+        {
+            text-align: center;
+        }
+        .style202
+        {
+            text-align: center;
+            height: 45px;
+        }
+        .style203
+        {
+            width: 158px;
+            height: 25px;
+            text-align: center;
+        }
+        .style205
+        {
+            height: 100px;
+            text-align: center;
+            width: 158px;
+        }
+        .style220
+        {
+            width: 54px;
+            height: 25px;
+            text-align: center;
+        }
+        .style223
+        {
+            text-align: center;
+            height: 30px;
+            width: 23px;
+        }
+        .style224
+        {
+            width: 57px;
+            height: 25px;
+            text-align: center;
+        }
+        .style225
+        {
+            width: 57px;
+            text-align: center;
+            height: 82px;
+        }
+        .style226
+        {
+            width: 67px;
+            height: 25px;
+            text-align: center;
+        }
+    </style>
+    <style type="text/css" media="print">
+        .noprint
+        {
+            display: none;
+        }
+    </style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var sortName = "id";
+        var sortOrder = "asc";
+        var PageSize = 10;
+        var PageNum = 1;
+        var request = {
+            QueryString: function (val) {
+                var uri = window.location.search;
+                var re = new RegExp("" + val + "\=([^\&\?]*)", "ig");
+                return ((uri.match(re)) ? (uri.match(re)[0].substr(val.length + 1)) : null);
+            }
+        }
+        $(function () {
+            loaddata();
+            var id = request.QueryString("id");
+            Ajax(true, global.lz["GetLZProject"], { LoginID: LocalID, id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                //流转表标题
+                document.getElementById("bt2").value = data.Data.project_name + "流转表";
+                //流转表编号
+                document.getElementById("xmbh2").value = "No:" + data.Data.project_no;
+                document.getElementById("xmmc2").value = data.Data.project_name;
+                document.getElementById("yqwcsj2").value = data.Data.end_date.substring(0, 10);
+                document.getElementById("khmc2").value = data.Data.customer;
+                document.getElementById("jslxr2").value = data.Data.contact;
+                document.getElementById("dh2").value = data.Data.tel;
+            });
+            Ajax(true, global.lz["GetLZProjectFlow"], { LoginID: LocalID, id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                document.getElementById("xqms2").value = data.Data.demand_content;
+                document.getElementById("xqbm2").value = data.Data.demand_depart_name;
+                document.getElementById("tcz2").value = data.Data.demand_user_name;
+                document.getElementById("tcrq2").value = data.Data.demand_time.substring(0, 10);
+                document.getElementById("yfjl2").value = data.Data.develop_manager;
+                document.getElementById("yfqrrq2").value = data.Data.develop_time.substring(0, 10);
+                document.getElementById("spr2").value = data.Data.approver;
+                document.getElementById("sprq2").value = data.Data.approval_time.substring(0, 10);
+                document.getElementById("yfxmfzr2").value = data.Data.develop_header;
+                document.getElementById("yfzcy2").value = data.Data.develop_group_users;
+                document.getElementById("kfjssj2").value = data.Data.develop_begin_date.substring(0, 10) + "/" + data.Data.develop_end_date.substring(0, 10);
+                document.getElementById("ygsjgs2").value = data.Data.develop_estimated_date + "/" + data.Data.develop_actual_date;
+                document.getElementById("yfqksm2").value = data.Data.develop_grouper_content;
+                document.getElementById("yfzz2").value = data.Data.develop_grouper;
+                document.getElementById("yfrq2").value = data.Data.develop_group_time.substring(0, 10);
+                document.getElementById("csxmfzr2").value = data.Data.test_header;
+                document.getElementById("cszcy2").value = data.Data.test_group_users;
+                document.getElementById("csksjssj2").value = data.Data.test_begin_date.substring(0, 10) + "/" + data.Data.test_end_date.substring(0, 10);
+                document.getElementById("cspf2").value = data.Data.test_score;
+                document.getElementById("cssm2").value = data.Data.test_grouper_content;
+                document.getElementById("cszz2").value = data.Data.test_grouper;
+                document.getElementById("csrq2").value = data.Data.test_group_time.substring(0, 10);
+                document.getElementById("yzxmfzr2").value = data.Data.project_header;
+                document.getElementById("yzzcy2").value = data.Data.project_group_users;
+                document.getElementById("yzksjssj2").value = data.Data.project_begin_date.substring(0, 10) + "/" + data.Data.project_end_date.substring(0, 10);
+                document.getElementById("yzpf2").value = data.Data.project_score;
+                document.getElementById("yzqksm2").value = data.Data.project_manager_content;
+                document.getElementById("yzfzr2").value = data.Data.project_manager;
+                document.getElementById("yzrq2").value = data.Data.project_end_time.substring(0, 10);
+            });
+            $("#dayin").click(function () {
+                var div = document.getElementById('cc');
+                window.print();
+            });
+            //            $("#fanhui").click(function () {
+            //                window.location.href = "projectquery.htm?id=" + id;
+            //            });
+        });
+        function loaddata(project_no, project_name, customer, demand_user_name, BeginTime, EndTime) {
+            Ajax(true, global.lz["GetLZProjectPageList"], { LoginID: LocalID, project_no: project_no, project_name: project_name, customer: customer, demand_user_name: demand_user_name, BeginTime: BeginTime, EndTime: EndTime, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#text').select();
+                    return;
+                }
+                jsondata.total = data.Ex;
+                jsondata.rows = data.Data;
+            });
+        }
+        function bt2_onclick() {
+
+        }
+
+        function Text7_onclick() {
+
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        <div class="text" style="text-align: center;">
+            <input id="bt2" type="text" style="border: 0px none #FFFFFF; width: 500px; height: 60px;
+                font-family: 宋体, Arial, Helvetica, sans-serif; font-size: xx-large; text-align: center;
+                vertical-align: middle; font-weight: bolder; color: #000000;" 
+                disabled="true" onclick="return bt2_onclick()" />
+        </div>
+        <div class="text" style="text-align: right;">
+            <input id="xmbh2" type="text" style="border: 0px none #FFFFFF; width: 25%; margin-left: 0px; color: #000000; font-weight: bolder; text-align: right;"
+                disabled="true" />
+        </div>
+        <table border="1" bordercolor="#000000" cellspacing="0" class="style1" style="border-color: #000000;
+            ">
+            <tr>
+                <td class="style203">
+                    报备人</td>
+                <td class="style76" colspan="2">
+                    &nbsp;</td>
+                <td class="style76" colspan="5">
+                    &nbsp;</td>
+                <td class="style76" colspan="6">
+                    &nbsp;</td>
+                <td class="style76" colspan="4">
+                    &nbsp;</td>
+                <td class="style223">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style203" rowspan="2">
+                    项目信息</td>
+                <td class="style112" colspan="4">
+                    项目名称</td>
+                <td class="style112" colspan="6">
+                    &nbsp;</td>
+                <td class="style112" colspan="6">
+                    报备日期</td>
+                <td class="style112" colspan="2">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style112" colspan="4">
+                    项目所在地</td>
+                <td class="style112" colspan="6">
+                    &nbsp;</td>
+                <td class="style112" colspan="6">
+                    审核人</td>
+                <td class="style112" colspan="2">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style3" rowspan="8">
+                    涉及单位</td>
+                <td class="style80" colspan="3" rowspan="2">
+                    甲方</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3" rowspan="2">
+                    集成商</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3" rowspan="2">
+                    设计单位</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3" rowspan="2">
+                    合作历史</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+                <td class="style80" colspan="3">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style205" rowspan="8">
+                    项目概况</td>
+                <td class="style224">
+                    预计项目时间</td>
+                <td class="style199" colspan="7">
+                    &nbsp;</td>
+                <td class="style154" colspan="6">
+                    预计采购时间</td>
+                <td class="style154" colspan="4">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style224">
+                    采购方信息</td>
+                <td class="style106" colspan="17">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style225">
+                    各方关系及竞争对手情况分析</td>
+                <td class="style202" colspan="17">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style225" rowspan="5">
+                    项目介绍</td>
+                <td class="style199" colspan="4">
+                    子系统组成</td>
+                <td class="style187" colspan="3">
+                    &nbsp;</td>
+                <td class="style220" colspan="3">
+                    项目规模</td>
+                <td class="style160" colspan="7">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style199" colspan="4" rowspan="4">
+                    工作程度</td>
+                <td class="style187" colspan="13">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style187" colspan="13">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style187" colspan="13">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style187" colspan="13">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style205" rowspan="2">
+                    报备意见及其他诉求</td>
+                <td class="style226" colspan="18">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style226" colspan="18">
+                    &nbsp;</td>
+            </tr>
+            <tr>
+                <td class="style201">
+                    报备结果跟踪</td>
+                <td class="style201" colspan="18">
+                    &nbsp;</td>
+            </tr>
+            </table>
+    </div>
+    <div id="ee" class="noprint">
+        <a class="noprint" href="javascript:void(0)" style="width: 80px; text-align: center;
+            font-size: x-large;" id="dayin">打印</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,629 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var rool;
+    var cc=4000;
+    $(function () {
+        Ajax(true, mj["GetMJControlGrpList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#kzz').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'group_name',
+                onChange: function (newValue, oldValue) {
+                    loaddata(newValue);
+                }
+            });
+        });
+        $('#use').combobox({
+            data: scene.use,
+            valueField: 'value',
+            textField: 'text',
+            onChange: function (newValue, oldValue) {
+                loaddata(newValue);
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+
+                field: 'ck',
+                checkbox: true,
+                width: 20
+            }, {
+                field: 'id',
+                title: '控制器号',
+                width: 80
+            }, {
+                field: 'control_name',
+                title: '控制器名',
+                width: 80
+            }, {
+                field: 'ip',
+                title: 'IP',
+                width: 80
+            }, {
+                field: 'work_flag',
+                title: '实时状态',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 0) {
+                        return '<font color="red">' + scene.workflag[value] + '</font>';
+                    }
+                    else if (value == 1) {
+                        return '<font color="green">' + scene.workflag[value] + '</font>';
+                    }
+                    else {
+                        return scene.workflag[value];
+                    }
+                }
+            }]]
+        });
+        loaddata();
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        $("#clear").click(function () {
+            var rows = datagrid.datagrid('getSelected');
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            var id = rows.id;
+            $.messager.confirm("提示", "该操作会将清除所有数据，请确定是否继续该操作？", function (data) {
+                if (data) {
+                    Ajax(true, mj["MachFormat"], { LoginID: LocalID, mach_id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        cc = 4000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    });
+                }
+            });
+        });
+        //        if (cc == 0) {
+        //            rool = setTimeout(function () { loaddata(); }, 10000);
+        //        }
+        //        if (cc == 1) {
+        //            rool = setTimeout(function () { loaddata(); }, 2000);
+        //        }
+        $("#chuanshu").click(function () {
+
+            for (var i = 0; i < 5; i++) {
+                if (i < 5) {
+                    cc = 2000;
+                    rool = setTimeout(function () { loaddata(); }, cc);
+                }
+                else {
+                    cc = 4000;
+                    rool = setTimeout(function () { loaddata(); }, cc);
+                }
+            }
+            var rows = datagrid.datagrid('getSelections');
+            var id;
+            var work_flag;
+            var changdu = rows.length;
+            var cg = 0;
+            var sb = 0;
+            var bh = "";
+            var pd = new Array(rows.length);
+            if (rows == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            Ajax(true, global.mj["GetMjDownInfoSORDCount"], { LoginID: LocalID,what_do:"P" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var wcl = data.Data;
+                var clz = data.Ex;
+                if ((wcl + clz) > 0) {
+                    $.messager.alert('提示', "<p class='infoReport'>系统正忙，请稍后再试！</br>"
+                    + "当前正在处理数量：（" + clz + "）</br>" + "未处理数量：（" + wcl + "）</p>", 'error');
+                    return;
+                }
+                else {
+                    for (var i = 0; i < rows.length; i++) {
+                        id = rows[i].id;
+                        work_flag = rows[i].work_flag;
+                        pd[i] = 0;
+                        if (work_flag == 0) {
+                            alert("控制器" + id + "未连接！");
+                        }
+                        else {
+                            (function (i) {
+                                if ($("#mz").prop("checked")) {
+                                    Ajax(true, mj["DownModular"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#mq").prop("checked")) {
+                                    Ajax(true, mj["DownDoor"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#sd").prop("checked")) {
+                                    Ajax(true, mj["DownTime"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#sq").prop("checked")) {
+                                    Ajax(true, mj["DownTimeGroup"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#qz").prop("checked")) {
+                                    Ajax(true, mj["DownRight"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#jr").prop("checked")) {
+                                    Ajax(true, mj["DownHoliday"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#sz").prop("checked")) {
+                                    Ajax(true, mj["DownNow"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#ck").prop("checked")) {
+                                    Ajax(true, mj["DownCK"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#my").prop("checked")) {
+                                    Ajax(true, mj["DownSystemMima"], { LoginID: LocalID, mach_id: rows[i].id }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        if (data.Data == false) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                sb = jia(sb);
+                                                bh = diejia(bh, rows[i].id);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                        if (data.Data == true) {
+                                            if (pd[i] == 0) {
+                                                pd[i] = 1;
+                                                cg = jia(cg);
+                                                pand(changdu, sb, cg, bh);
+                                            }
+                                        }
+                                    });
+                                }
+                                if ($("#card").prop("checked")) {
+                                    if ($("#ka").prop("checked")) {
+                                        Ajax(true, mj["DownCard"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '' }, function (data) {
+                                            if (!data.Success) {
+                                                alert(data.Message);
+                                                return;
+                                            }
+                                            if (data.Data == false) {
+                                                if (pd[i] == 0) {
+                                                    pd[i] = 1;
+                                                    sb = jia(sb);
+                                                    bh = diejia(bh, rows[i].id);
+                                                    pand(changdu, sb, cg, bh);
+                                                }
+                                            }
+                                            if (data.Data == true) {
+                                                if (pd[i] == 0) {
+                                                    pd[i] = 1;
+                                                    cg = jia(cg);
+                                                    pand(changdu, sb, cg, bh);
+                                                }
+                                            }
+                                        });
+                                    }
+                                    if ($("#ka1").prop("checked")) {
+                                        $.messager.confirm("提示", "该操作全部下载所用时间较长，请确定是否要下载？", function (data) {
+                                            if (data) {
+                                                Ajax(true, mj["DownCard"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '1' }, function (data) {
+                                                    if (!data.Success) {
+                                                        alert(data.Message);
+                                                        return;
+                                                    }
+                                                    if (data.Data == false) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            sb = jia(sb);
+                                                            bh = diejia(bh, rows[i].id);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                    if (data.Data == true) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            cg = jia(cg);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                Ajax(true, mj["DownCard"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '' }, function (data) {
+                                                    if (!data.Success) {
+                                                        alert(data.Message);
+                                                        return;
+                                                    }
+                                                    if (data.Data == false) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            sb = jia(sb);
+                                                            bh = diejia(bh, rows[i].id);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                    if (data.Data == true) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            cg = jia(cg);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                                if ($("#zhiwen").prop("checked")) {
+                                    if ($("#zwzl").prop("checked")) {
+                                        Ajax(true, mj["DownZW"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '' }, function (data) {
+                                            if (!data.Success) {
+                                                alert(data.Message);
+                                                return;
+                                            }
+                                            if (data.Data == false) {
+                                                if (pd[i] == 0) {
+                                                    pd[i] = 1;
+                                                    sb = jia(sb);
+                                                    bh = diejia(bh, rows[i].id);
+                                                    pand(changdu, sb, cg, bh);
+                                                }
+                                            }
+                                            if (data.Data == true) {
+                                                if (pd[i] == 0) {
+                                                    pd[i] = 1;
+                                                    cg = jia(cg);
+                                                    pand(changdu, sb, cg, bh);
+                                                }
+                                            }
+                                        });
+
+                                    }
+                                    if ($("#zwall").prop("checked")) {
+                                        $.messager.confirm("提示", "该操作全部下载所用时间较长，请确定是否要下载？", function (data) {
+                                            if (data) {
+                                                Ajax(true, mj["DownZW"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '1' }, function (data) {
+                                                    if (!data.Success) {
+                                                        alert(data.Message);
+                                                        return;
+                                                    }
+                                                    if (data.Data == false) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            sb = jia(sb);
+                                                            bh = diejia(bh, rows[i].id);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                    if (data.Data == true) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            cg = jia(cg);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                Ajax(true, mj["DownZW"], { LoginID: LocalID, mach_id: rows[i].id, isAll: '' }, function (data) {
+                                                    if (!data.Success) {
+                                                        alert(data.Message);
+                                                        return;
+                                                    }
+                                                    if (data.Data == false) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            sb = jia(sb);
+                                                            bh = diejia(bh, rows[i].id);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                    if (data.Data == true) {
+                                                        if (pd[i] == 0) {
+                                                            pd[i] = 1;
+                                                            cg = jia(cg);
+                                                            pand(changdu, sb, cg, bh);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                }
+                            })(i);
+                        }
+                    }
+                }
+            });
+        });
+    });
+    function jia(zm) {
+        zm = zm + 1;
+        return zm;
+    }
+    function diejia(zm,id) {
+        if (zm == "") {
+            zm += id;
+        }
+        else {
+            zm += "," + id;
+        }
+        return zm;
+    }
+
+    function pand(a,b,c,d) {
+        if ((b + c) == a) {
+            if (d.length > 0) {
+                alert("控制器" + d + "未连接！");
+            }
+        }
+    }
+    function loaddata(zm, use) {
+        clearTimeout(rool);
+        Ajax(true, global.mj["GetNowMJControlMachList"], { LoginID: LocalID, group_id: zm, work_status: use }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+        rool = setTimeout(function () { loaddata(zm, use); }, cc);
+        var pager = $("#dg").datagrid("getPager");
+        pager.pagination({
+            total: jsondata.total,
+            onSelectPage: function (pageNo, pageSize) {
+                var start = (pageNo - 1) * pageSize;
+                var end = start + pageSize;
+                $("#dg").datagrid("loadData", jsondata.rows.slice(start, end));
+                pager.pagination('refresh', {
+                    total: jsondata.total,
+                    pageNumber: pageNo
+                });
+            }
+        });
+        pager.pagination('select');
+    });
+}
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="下载信息" data-options="collapsible:true,maximized:true" style="width:100%; padding:2px; ">
+<div style="width:100%; height:400px;">
+<div id ="do"> 
+<input type="checkbox" id="mz"    />模组
+<input type="checkbox" id="mq"   />门区
+<input type="checkbox" id="sd"  />时段
+<input type="checkbox" id="sq"   />时区
+<input type="checkbox" id="qz"    />群组
+<input type="checkbox" id="jr"   />假日
+<input type="checkbox" id="sz"  />时钟
+<input type="checkbox" id="ck"   />常开
+<input type="checkbox" id="my"   />秘钥
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="chuanshu" >传输数据</a></div>
+<div class="easyui-layout" style="padding:2px;height:30px;width:400px;">
+<div data-options="region:'west'" style="width:170px;padding:2px;">
+<input type="checkbox" id="zhiwen"   />指纹：<input id="zwzl" name="zw"  value="false" type="radio"checked/>增量
+<input id="zwall" name="zw" value="true" type="radio"/>全部</div>
+<div data-options="region:'center'" style="width:150px;padding:2px;">
+<input type="checkbox" id="card" />卡片<input id="ka" name="ka"  value="false" type="radio"checked/>增量
+<input id="ka1" name="ka" value="true" type="radio"/>全部</div>
+<div data-options="region:'east'" style="width:80px;">
+<input type="checkbox" id="all" />以上全部</div>
+</div>
+<div style="padding:5px;">
+控制组：<select id="kzz" class="easyui-combobox"  style="width:80px;height:20px"></select>
+使用状况：<select id="use" class="easyui-combobox"  style="width:80px;height:20px"></select>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)" style="width:60px;" id="clear" >格式化</a>
+</div>
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div style="overflow:auto; ">
+     </div>
+   
+</body>
+</html>

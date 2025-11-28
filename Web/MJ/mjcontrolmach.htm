@@ -1,0 +1,794 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+  var LocalID = $.cookie("LocalID");
+  var datagrid;
+  var a;
+  var relation_id_sign = 0;
+    var jsondata = { "total": 0, "rows": [] };
+    $(function () {
+        Ajax(true, mj["GetMJControlGrpList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#groupid').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'group_name'
+            });
+            $('#text').combobox({
+                data: data.Data,
+                method: 'get',
+                valueField: 'id',
+                textField: 'group_name',
+                panelHeight: 'auto',
+                onChange: function (newValue, oldValue) {
+                    loaddata(newValue);
+                }
+            });
+
+        });
+        $("#mac").textbox({ disabled: true });
+        $('#flag').combobox({
+            onChange: function (newValue, oldValue) {
+                if (newValue == 0) {
+                    $("#mac").textbox({ disabled: true });
+                    $("#kind").combobox('enable');
+                    $("#commkind").combobox('enable');
+                }
+                if (newValue == 1) {
+                    $("#mac").textbox({ disabled: false });
+                    $("#kind").combobox('disable');
+                    $("#commkind").combobox('disable');
+                }
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "控制器维护",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                width: 80
+
+            }, {
+                field: 'control_name',
+                title: '控制器名',
+                width: 80
+            }, {
+                field: 'comm_kind',
+                title: '通讯方式',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 0) {
+                        return '网络通讯';
+                    }
+                    if (value == 1) {
+                        return '串口通讯';
+                    }
+                    if (value == 2) {
+                        return '被动通讯';
+                    }
+                }
+            }, {
+                field: 'group_name',
+                title: '控制组名',
+                width: 80
+            }, {
+                field: 'work_status',
+                title: '状态',
+                width: 80,
+                formatter: function (value, row) {
+                    if (value == 1) {
+                        return '使用';
+                    }
+                    if (value == 2) {
+                        return '停用';
+                    }
+                }
+            }
+            ]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var ids;
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, mj["GetMJControlDoorList"], { LoginID: LocalID, control_id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    if (data.Data.length > 0) {
+                                        alert("该控制器下有门");
+                                        return;
+                                    }
+                                    Ajax(true, mj["RemoveMJControlMach"], { LoginID: LocalID, id: ids }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+                                        loaddata();
+                                        $.messager.alert("提示", "删除成功", "info");
+                                    });
+                                });
+                            }
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $("#mac").val(rows.mac);
+                    $("#flag").combobox({ disabled: true });
+                    var ck = rows.com_name;
+                    if (ck == 0) {
+                        $("#dkid").textbox({ disabled: true });
+                        $("#ip").textbox({ disabled: true });
+                        $("#ck").combobox({ disabled: true });
+                    }
+                    if (ck == 1) {
+                        $("#dkid").textbox({ disabled: true });
+                        $("#ip").textbox({ disabled: true });
+                        $("#ck").combobox({ disabled: false });
+                    }
+                    if (ck == 2) {
+                        $("#dkid").textbox({ disabled: true });
+                        $("#ip").textbox({ disabled: true });
+                        $("#ck").combobox({ disabled: true });
+                    }
+                    $('#commkind').combobox({
+                        onChange: function (newValue, oldValue) {
+                            if (newValue == 0) {
+                                $("#dkid").textbox({ disabled: true });
+                                $("#ip").textbox({ disabled: true });
+                                $("#ck").combobox({ disabled: true });
+                            }
+                            if (newValue == 1) {
+                                $("#dkid").textbox({ disabled: true });
+                                $("#ip").textbox({ disabled: true });
+                                $("#ck").combobox({ disabled: false });
+                            }
+                            if (newValue == 2) {
+                                $("#dkid").textbox({ disabled: false });
+                                $("#ip").textbox({ disabled: false });
+                                $("#ck").combobox({ disabled: true });
+                            }
+                        }
+                    });
+                    $('#win1').window('open');
+                    $("#kzqid").val(rows.id);
+                    $("#kzqname").val(rows.control_name);
+                    $("#dkid").val(rows.port);
+                    $("#ip").val(rows.ip);
+                    $("#mac").val(rows.mac);
+                    $("#ck").combobox("setValue", rows.com_name);
+                    $("#kind").combobox("setValue", rows.control_kind);
+                    $("#status").combobox("setValue", rows.work_status);
+                    $("#commkind").combobox("setValue", rows.comm_kind);
+                    $("#flag").combobox("setValue", rows.flag);
+                    if (rows.group_id == 0) {
+                        $("#groupid").combobox("setValue", "");
+                    }
+                    else {
+                        $("#groupid").combobox("setValue", rows.group_id);
+                    }
+                    a = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win1').window('open');
+                    $("#dkid").textbox({ disabled: true });
+                    $("#ip").textbox({ disabled: true });
+                    $("#ck").combobox({ disabled: true });
+                    $("#ck").combobox("setValue", "1");
+                    $("#kind").combobox("setValue", "4");
+                    $("#status").combobox("setValue", "1");
+                    $("#commkind").combobox("setValue", "0");
+                    $("#flag").combobox("setValue", "0");
+                    $("#groupid").combobox("setValue", "");
+                    $("#kzqname").val("");
+                    $("#flag").combobox({ disabled: false });
+                    $('#commkind').combobox({
+                        onChange: function (newValue, oldValue) {
+                            if (newValue == 0) {
+                                $("#dkid").textbox({ disabled: true });
+                                $("#ip").textbox({ disabled: true });
+                                $("#ck").combobox({ disabled: true });
+                            }
+                            if (newValue == 1) {
+                                $("#dkid").textbox({ disabled: true });
+                                $("#ip").textbox({ disabled: true });
+                                $("#ck").combobox({ disabled: false });
+                            }
+                            if (newValue == 2) {
+                                $("#dkid").textbox({ disabled: false });
+                                $("#ip").textbox({ disabled: false });
+                                $("#ck").combobox({ disabled: true });
+                            }
+                        }
+                    });
+                    Ajax(true, mj["GetMJControlMachMaxID"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#kzqid').val(data.Data);
+
+                    });
+                    $("#kzqname").val();
+                    $("#dkid").val();
+                    $("#ip").val();
+                    $("#ck").val();
+                    $("#kind").val();
+                    $("#status").val();
+                    $("#commkind").val();
+                    $("#flag").val();
+                    $("#groupid").val();
+                    $("#mac").val("00:00:00:00:00:00");
+
+                    a = 0;
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $("#mac").val(rowData.mac);
+                $("#flag").combobox({ disabled: true });
+                var ck = rows.com_name;
+                if (ck == 0) {
+                    $("#dkid").textbox({ disabled: true });
+                    $("#ip").textbox({ disabled: true });
+                    $("#ck").combobox({ disabled: true });
+                }
+                if (ck == 1) {
+                    $("#dkid").textbox({ disabled: true });
+                    $("#ip").textbox({ disabled: true });
+                    $("#ck").combobox({ disabled: false });
+                }
+                if (ck == 2) {
+                    $("#dkid").textbox({ disabled: false });
+                    $("#ip").textbox({ disabled: false });
+                    $("#ck").combobox({ disabled: true });
+                }
+                $('#commkind').combobox({
+                    onChange: function (newValue, oldValue) {
+                        if (newValue == 0) {
+                            $("#dkid").textbox({ disabled: true });
+                            $("#ip").textbox({ disabled: true });
+                            $("#ck").combobox({ disabled: true });
+                        }
+                        if (newValue == 1) {
+                            $("#dkid").textbox({ disabled: true });
+                            $("#ip").textbox({ disabled: true });
+                            $("#ck").combobox({ disabled: false });
+                        }
+                        if (newValue == 2) {
+                            $("#dkid").textbox({ disabled: true });
+                            $("#ip").textbox({ disabled: true });
+                            $("#ck").combobox({ disabled: true });
+                        }
+                    }
+                });
+                $('#win1').window('open');
+                $("#kzqid").val(rows.id);
+                $("#kzqname").val(rows.control_name);
+                $("#mac").val(rows.mac);
+                $("#dkid").val(rows.port);
+                $("#ip").val(rows.ip);
+                $("#ck").combobox("setValue", rows.com_name);
+                $("#kind").combobox("setValue", rows.control_kind);
+                $("#status").combobox("setValue", rows.work_status);
+                $("#commkind").combobox("setValue", rows.comm_kind);
+                $("#flag").combobox("setValue", rows.flag);
+                if (rows.group_id == 0) {
+                    $("#groupid").combobox("setValue", "");
+                }
+                else {
+                    $("#groupid").combobox("setValue", rows.group_id);
+                }
+                a = 1;
+            }
+        });
+        loaddata();
+        $('#win1').window('close');
+
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+        $("#save").click(function () {
+            if (a == 0) {
+                var id = $("#kzqid").val();
+                var name = $("#kzqname").val();
+                var ip = $("#ip").val();
+                var port = $("#dkid").val();
+                var mac = $("#mac").val();
+                var ck = $("#ck").combobox('getValue');
+                var kind = $("#kind").combobox('getValue');
+                var status = $("#status").combobox('getValue');
+                var commkind = $("#commkind").combobox('getValue');
+                var flag = $("#flag").combobox('getValue');
+                var groupid = $("#groupid").combobox('getValue');
+                var app = 1;
+                if (id == "") {
+                    $.messager.alert("提示", "控制器号不能为空！", "error");
+                    $("#id").select();
+                    return;
+                }
+                if (id.length != 3) {
+                    $.messager.alert("提示", "控制器号长度不正确！", "error");
+                    $("#id").select();
+                    return;
+                }
+                //                if (kzqid && /^[0-9]+.?[0-9]*$/.test(kzqid)) {
+
+                //                } else {
+                //                    $.messager.alert("提示", "控制器号格式不正确！", "error");
+                //                    $("#kzqid").select();
+                //                    return;
+                //                }
+                if (name == "") {
+                    $.messager.alert("提示", "控制器名不能为空！", "error");
+                    $("#kzqname").select();
+                    document.getElementById('kzqname').focus();
+                    return;
+                }
+                if (name.length > 10) {
+                    $.messager.alert("提示", "控制器名长度不能超过10！", "error");
+                    $("#name").select();
+                    document.getElementById('kzqname').focus();
+                    return;
+                }
+                if (ip == "") {
+                    $.messager.alert("提示", "IP不能为空！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (port == "") {
+                    $.messager.alert("提示", "端口号不能为空！", "error");
+                    $("#port").select();
+                    return;
+                }
+                if (ip && /\d+\.\d+\.\d+\.\d+/.test(ip)) {
+
+                } else {
+                    $.messager.alert("提示", "ip格式不正确！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (kind == "") {
+                    $.messager.alert("提示", "类型不能为空！", "error");
+                    $("#kind").select();
+                    return;
+                }
+                if (status == "") {
+                    $.messager.alert("提示", "状态不能为空！", "error");
+                    $("#status").select();
+                    return;
+                }
+                if (commkind == "") {
+                    $.messager.alert("提示", "通讯方式不能为空！", "error");
+                    $("#commkind").select();
+                    return;
+                }
+                if (flag == "") {
+                    $.messager.alert("提示", "网络类型不能为空！", "error");
+                    $("#flag").select();
+                    return;
+                }
+                Ajax(true, mj["NewMJControlMach"], { LoginID: LocalID, id: id, control_name: name, control_kind: kind, comm_kind: commkind, ip: ip, port: port, flag: flag, com_name: ck, group_id: groupid, app: app, work_status: status, mac: mac }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata();
+                });
+            }
+            if (a == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                var id = $("#kzqid").val();
+                var name = $("#kzqname").val();
+                var ip = $("#ip").val();
+                var port = $("#dkid").val();
+                var mac = $("#mac").val();
+                var kind = $("#kind").combobox('getValue');
+                var status = $("#status").combobox('getValue');
+                var commkind = $("#commkind").combobox('getValue');
+                var flag = $("#flag").combobox('getValue');
+                var groupid = $("#groupid").combobox('getValue');
+                var app = 1;
+                if (id == "") {
+                    $.messager.alert("提示", "控制器号不能为空！", "error");
+                    $("#id").select();
+                    return;
+                }
+                //                if (kzqid && /^\d{1,}$/.test(kzqid)) {
+
+                //                } else {
+                //                    $.messager.alert("提示", "控制器号格式不正确！", "error");
+                //                    $("#kzqid").select();
+                //                    return;
+                //                }
+                if (ip && /\d+\.\d+\.\d+\.\d+/.test(ip)) {
+
+                } else {
+                    $.messager.alert("提示", "ip格式不正确！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (name == "") {
+                    $.messager.alert("提示", "控制器名不能为空！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (name.length > 10) {
+                    $.messager.alert("提示", "控制器名长度不能超过10！", "error");
+                    $("#name").select();
+                    return;
+                }
+                if (ip == "") {
+                    $.messager.alert("提示", "IP不能为空！", "error");
+                    $("#ip").select();
+                    return;
+                }
+                if (port == "") {
+                    $.messager.alert("提示", "端口号不能为空！", "error");
+                    $("#port").select();
+                    return;
+                }
+
+                if (kind == "") {
+                    $.messager.alert("提示", "类型不能为空！", "error");
+                    $("#kind").select();
+                    return;
+                }
+                if (status == "") {
+                    $.messager.alert("提示", "状态不能为空！", "error");
+                    $("#status").select();
+                    return;
+                }
+                if (commkind == "") {
+                    $.messager.alert("提示", "通讯方式不能为空！", "error");
+                    $("#commkind").select();
+                    return;
+                }
+                if (flag == "") {
+                    $.messager.alert("提示", "网络类型不能为空！", "error");
+                    $("#flag").select();
+                    return;
+                }
+                Ajax(true, mj["UpdateMJControlMach"], { LoginID: LocalID, id: id, oldid: ids, control_name: name, control_kind: kind, comm_kind: commkind, ip: ip, com_name: ck, port: port, flag: flag, group_id: groupid, app: app, work_status: status, mac: mac }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win1').window('close');
+                    loaddata();
+                });
+            }
+        });
+
+    });
+ function loaddata(gn) {
+     datagrid.datagrid('unselectAll');
+     Ajax(true, mj["GetMJControlMachList"], { LoginID: LocalID, group_id: gn }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+           
+        });
+    }
+    function CheckControlId(value) {
+        var reg = /^\d{1,}$/;
+        if (reg.test(value))
+            return true;
+        else
+            return false;
+    }
+    $.extend($.fn.validatebox.defaults.rules, {
+        CHS: {
+            validator: function (value, param) {
+                return /^[\u0391-\uFFE5]+$/.test(value);
+            },
+            message: '请输入汉字'
+        },
+        english: {// 验证英语
+            validator: function (value) {
+                return /^[A-Za-z]+$/i.test(value);
+            },
+            message: '请输入英文'
+        },
+        ip: {// 验证IP地址
+            validator: function (value) {
+                return /\d+\.\d+\.\d+\.\d+/.test(value);
+            },
+            message: 'IP地址格式不正确'
+        },
+        ZIP: {
+            validator: function (value, param) {
+                return /^[0-9]\d{5}$/.test(value);
+            },
+            message: '邮政编码不存在'
+        },
+        QQ: {
+            validator: function (value, param) {
+                return /^[1-9]\d{4,10}$/.test(value);
+            },
+            message: 'QQ号码不正确'
+        },
+        mobile: {
+            validator: function (value, param) {
+                return /^(?:13\d|15\d|18\d)-?\d{5}(\d{3}|\*{3})$/.test(value);
+            },
+            message: '手机号码不正确'
+        },
+        tel: {
+            validator: function (value, param) {
+                return /^(\d{3}-|\d{4}-)?(\d{8}|\d{7})?(-\d{1,6})?$/.test(value);
+            },
+            message: '电话号码不正确'
+        },
+        mobileAndTel: {
+            validator: function (value, param) {
+                return /(^([0\+]\d{2,3})\d{3,4}\-\d{3,8}$)|(^([0\+]\d{2,3})\d{3,4}\d{3,8}$)|(^([0\+]\d{2,3}){0,1}13\d{9}$)|(^\d{3,4}\d{3,8}$)|(^\d{3,4}\-\d{3,8}$)/.test(value);
+            },
+            message: '请正确输入电话号码'
+        },
+        number: {
+            validator: function (value, param) {
+                return /^[0-9]+.?[0-9]*$/.test(value);
+            },
+            message: '请输入数字'
+        },
+        money: {
+            validator: function (value, param) {
+                return (/^(([1-9]\d*)|\d)(\.\d{1,2})?$/).test(value);
+            },
+            message: '请输入正确的金额'
+
+        },
+        mone: {
+            validator: function (value, param) {
+                return (/^(([1-9]\d*)|\d)(\.\d{1,2})?$/).test(value);
+            },
+            message: '请输入整数或小数'
+
+        },
+        integer: {
+            validator: function (value, param) {
+                return /^[+]?[1-9]\d*$/.test(value);
+            },
+            message: '请输入最小为1的整数'
+        },
+        integ: {
+            validator: function (value, param) {
+                return /^[+]?[0-9]\d*$/.test(value);
+            },
+            message: '请输入整数'
+        },
+        range: {
+            validator: function (value, param) {
+                if (/^[1-9]\d*$/.test(value)) {
+                    return value >= param[0] && value <= param[1]
+                } else {
+                    return false;
+                }
+            },
+            message: '输入的数字在{0}到{1}之间'
+        },
+        minLength: {
+            validator: function (value, param) {
+                return value.length >= param[0]
+            },
+            message: '至少输入{0}个字'
+        },
+        maxLength: {
+            validator: function (value, param) {
+                return value.length <= param[0]
+            },
+            message: '最多{0}个字'
+        },
+        //select即选择框的验证
+        selectValid: {
+            validator: function (value, param) {
+                if (value == param[0]) {
+                    return false;
+                } else {
+                    return true;
+                }
+            },
+            message: '请选择'
+        },
+        idCode: {
+            validator: function (value, param) {
+                return /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value);
+            },
+            message: '请输入正确的身份证号'
+        },
+        loginName: {
+            validator: function (value, param) {
+                return /^[\u0391-\uFFE5\w]+$/.test(value);
+            },
+            message: '登录名称只允许汉字、英文字母、数字及下划线。'
+        },
+        equalTo: {
+            validator: function (value, param) {
+                return value == $(param[0]).val();
+            },
+            message: '两次输入的字符不一至'
+        },
+        englishOrNum: {// 只能输入英文和数字
+            validator: function (value) {
+                return /^[a-zA-Z0-9_ ]{1,}$/.test(value);
+            },
+            message: '请输入英文、数字、下划线或者空格'
+        },
+        xiaoshu: {
+            validator: function (value) {
+                return /^(([1-9]+)|([0-9]+\.[0-9]{1,2}))$/.test(value);
+            },
+            message: '最多保留两位小数！'
+        },
+        ddPrice: {
+            validator: function (value, param) {
+                if (/^[1-9]\d*$/.test(value)) {
+                    return value >= param[0] && value <= param[1];
+                } else {
+                    return false;
+                }
+            },
+            message: '请输入1到100之间正整数'
+        },
+        jretailUpperLimit: {
+            validator: function (value, param) {
+                if (/^[0-9]+([.]{1}[0-9]{1,2})?$/.test(value)) {
+                    return parseFloat(value) > parseFloat(param[0]) && parseFloat(value) <= parseFloat(param[1]);
+                } else {
+                    return false;
+                }
+            },
+            message: '请输入0到100之间的最多俩位小数的数字'
+        },
+        rateCheck: {
+            validator: function (value, param) {
+                if (/^[0-9]+([.]{1}[0-9]{1,2})?$/.test(value)) {
+                    return parseFloat(value) > parseFloat(param[0]) && parseFloat(value) <= parseFloat(param[1]);
+                } else {
+                    return false;
+                }
+            },
+            message: '请输入0到1000之间的最多俩位小数的数字'
+        }
+    });
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+   <div style="padding:2px; "> 控制组名：<select id="text" class="easyui-combobox"  style="width:80px;height:20px">
+                            <option value="">全部</option>  </select></div>
+<div style="width:100%; height:400px;overflow:auto; ">
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div>
+</div>
+<!--<div class="easyui-panel" title="" data-options="collapsible:false" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true"style="">
+
+     </div>
+     </div>-->
+<div id="win1" class="easyui-window" title="控制器维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:390px;height:280px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>控制器号：</td>
+				<td><input id="kzqid" class="easyui-validatebox textbox" data-options="validType:'length[1,3]'" style="width:80px;height:20px;"maxlength="3" onblur="CheckControlId(this);"/></td>
+			<td>控制器名：</td>
+				<td><input id="kzqname" name="kzqname" class="easyui-validatebox textbox" data-options="required:true, validType: 'length[1,10]', prompt: '请输入控制器名'" style="width:80px;height:20px"/></td></tr>
+			
+			<tr>
+				
+				<td>网络类型：</td>
+				<td><select id="flag" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">有线</option> <option value="1">无线</option></select> </td>
+				<td>状态：</td>
+				<td><select id="status" class="easyui-combobox"  style="width:80px;height:20px"> 
+         <option value="1">使用</option>
+        <option value="2">停用</option></select></td>
+</tr>
+            <tr>
+			    <td>通讯方式：</td>
+				    <td><select id="commkind" class="easyui-combobox"  style="width:80px;height:20px"> 
+            <option value="0">网络通讯</option>
+            <option value="1">串口通讯</option>
+            <option value="2">被动通讯</option>  </select></td>
+				<td>类型：</td>
+				<td><select id="kind" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="4">一控四</option>
+        <option value="2">一控二</option>
+        <option value="1">一体机</option> </select></td>
+			</tr>
+			<tr>
+            <td>端口号：</td>
+				<td><input id="dkid" class="easyui-validatebox textbox"value="2020" data-options="required:true"style="width:80px;height:20px" /></td>
+				
+				<td>IP:</td>
+				<td><input id="ip" class="easyui-validatebox textbox"value="127.0.0.1"  data-options="required:true"style="width:80px;height:20px" /></td>
+			</tr>
+            <tr>
+				<td>串口：</td>
+				<td><select id="ck" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="1">COM1</option>
+                <option value="2">COM2</option>
+                <option value="3">COM3</option> 
+                <option value="4">COM4</option>
+                <option value="5">COM5</option>
+                <option value="6">COM6</option>
+                <option value="7">COM7</option>
+                <option value="8">COM8</option>
+                <option value="9">COM9</option></select></td>
+				<td>控制组名：</td>
+				<td><select id="groupid" class="easyui-combobox"  style="width:80px;height:20px">  </select> </td>
+			</tr>
+		</table>
+        
+			<div style="padding:5px;">MAC地址：<input id="mac" class="easyui-validatebox textbox"value="00:00:00:00:00:00" data-options="required:true"style="width:120px;height:20px" /></div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

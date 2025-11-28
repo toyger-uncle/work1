@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+        }
+    </style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var print;
+        var bh;
+        $(function () {
+            window.onbeforeunload = function () {
+                var active1 = document.getElementById("csocx");
+                var s1 = active1.CloseCamera;
+            }
+            Ajax(true, global.sys["GetDepartList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#bumen').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'department',
+                    onChange: function (newValue, oldValue) {
+                        Ajax(true, global.sys["GetUserFilePageListOfTK"], { LoginID: LocalID, depart_id: newValue }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $('#ren').combobox({
+                                data: data.Data,
+                                valueField: 'id',
+                                textField: 'user_name',
+                                onChange: function (newValue, oldValue) {
+                                    var active = document.getElementById("csocx");
+                                    var s = active.ClearPic;
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+
+            Ajax(true, global.fk["FKIsMustPicQrCode"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                print = data.Data;
+            });
+            var curr_time = new Date();
+
+            var strDate1 = curr_time.getFullYear() + "-";
+            strDate1 += curr_time.getMonth() + 1 + "-";
+            strDate1 += curr_time.getDate();
+            strDate1 += " " + curr_time.getHours() + ":";
+            strDate1 += curr_time.getMinutes() + ":";
+            strDate1 += curr_time.getSeconds();
+            $('#win').window('close');
+            $('#win1').window('close');
+            $("#pai").click(function () {
+                var active = document.getElementById("csocx");
+                var s = active.Photo;
+            });
+            $("#clear").click(function () {
+                var active = document.getElementById("csocx");
+                var s = active.ClearPic;
+            });
+            $("#get").click(function () {
+                var time = $('#time').numberspinner('getValue');
+                var name = $('#name').val();
+                var user = $("#ren").combobox('getValue');
+                var un = $("#ren").combobox('getText');
+                var bm = $("#bumen").combobox('getText');
+                var active = document.getElementById("csocx");
+                var s = active.GetStrPhoto;
+                var sl = s.length;
+                if (user == "") {
+                    alert("请选择被访人员");
+                    return;
+                }
+                if (time == "") {
+                    alert("有效时间不能为空");
+                    return;
+                }
+                if (time && /^[0-9]+.?[0-9]*$/.test(time)) {
+
+                } else {
+                    alert("有效时间格式不正确！");
+                    $("#time").select();
+                    return;
+                }
+                if (print == true) {
+                    if (s == "") {
+                        alert("请拍照！");
+                        return;
+                    }
+                    Ajax(true, global.fk["GetQCCodeString"], { LoginID: LocalID, user_file: user, endtime: time, fk_name: name }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        bh = data.Ex;
+                        var id = data.Data;
+                        Ajax(true, global.fk["NewFkQrcodeLog"], { LoginID: LocalID, user_file: user, pic_str: s, user_name: un, depart_name: bm, begin_date: strDate1, hourlong: time, fk_name: name, is_print: "否", card_id: bh, qrcode_path: "" }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            var active1 = document.getElementById("csocx");
+                            var s1 = active1.CloseCamera;
+                            window.location.href = "mjdayin.htm?id=" + id + "&name=" + un + "&bumen=" + bm + "&time=" + time + "&fk=" + name + "&dd=" + data.Data;
+                        });
+                    });
+                }
+                if (print == false) {
+                    Ajax(true, global.fk["GetQCCodeString"], { LoginID: LocalID, user_file: user, endtime: time, fk_name: name }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        bh = data.Ex;
+                        var id = data.Data;
+                        Ajax(true, global.fk["NewFkQrcodeLog"], { LoginID: LocalID, user_file: user, pic_str: s, user_name: un, depart_name: bm, begin_date: strDate1, hourlong: time, fk_name: name, is_print: "否", card_id: bh, qrcode_path: "" }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            var active1 = document.getElementById("csocx");
+                            var s1 = active1.CloseCamera;
+                            window.location.href = "mjdayin.htm?id=" + id + "&name=" + un + "&bumen=" + bm + "&time=" + time + "&fk=" + name + "&dd=" + data.Data;
+                        });
+                    });
+                }
+            });
+
+
+
+        });
+
+    </script>
+</head>
+<body>
+    <div class="easyui-panel" title="二维码" data-options="collapsible:false,maximized:true"
+        style="width: 100%; ">
+        <object width="575px" height="350px" id="csocx" classid="clsid:32AEBAB1-D051-43CA-9966-4A7D8C832217"
+            style="padding-top: 60px;float:right; overflow-x: hidden; overflow-y: auto; ">
+        </object>
+        <div style="width: 85px;padding-top: 60px;float:left; overflow-x: hidden; overflow-y: auto;">
+        <table cellpadding="1">
+			<tr>
+             <td>部门：</td>
+             </tr> 
+             <tr>
+             <td><select id="bumen" class="easyui-combobox" style="width: 80px; height: 20px"></select></td>
+             </tr> 
+			<tr>
+             <td>人员：</td>
+             </tr> 
+             <tr>
+             <td><select id="ren" class="easyui-combobox" style="width: 80px; height: 20px"></select></td>
+             </tr> 
+			<tr>
+             <td>有效时间（小时）：</td>
+             </tr> 
+             <tr>
+             <td>
+            <input id="time" class="easyui-numberspinner" style="width: 80px; height: 20px;"
+                value="12" required="required" data-options="min:1,max:10000" /></td>
+             </tr> 
+			<tr>
+             <td>访客姓名：</td>
+             </tr> 
+             <tr>
+             <td><input id="name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                height: 20px;" /></td>
+             </tr> 
+			<tr>
+             <td><a href="javascript:void(0)" class="easyui-linkbutton" style="width: 60px;" id="pai">
+                拍照</a> </td>
+             </tr> 
+             <tr>
+             <td><a href="javascript:void(0)" class="easyui-linkbutton" style="width: 60px;"
+                    id="clear">清除</a></td>
+             </tr> 
+    <tr>
+<td><a href="javascript:void(0)" class="easyui-linkbutton" style="width: 60px;"
+                        id="get">获取</a></td>
+</tr>
+</table>
+             
+            <!--<script>
+                var ShowWaiting = function (str) {
+                    $("<div class=\"datagrid-mask\"></div>").css({ display: "block", width: "100%", height: $(window).height() }).appendTo("body");
+                    $("<div class=\"datagrid-mask-msg\"></div>").html(str).appendTo("body").css({ display: "block", zIndex: '99999', left: ($(document.body).outerWidth(true) - 190) / 2, top: ($(window).height() - 45) / 2 });
+                }
+                ShowWaiting("ddddddddddddddddddd");
+               $.messager.alert("33333");
+            </script>-->
+        </div>
+    </div>
+</body>
+</html>

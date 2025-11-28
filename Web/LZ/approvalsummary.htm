@@ -1,0 +1,860 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+        }
+    </style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var dd;
+        var jsondata = { "total": 0, "rows": [] };
+        var demand_user_id = LocalID;
+        var sortName = "id";
+        var sortOrder = "asc";
+        var PageSize = 10;
+        var PageNum = 1;
+        var demand_user_id = LocalID;
+        var develop_grouper_id;
+        var develop_grouper;
+        var role_id;
+        var project_no;
+        $(function () {
+            Ajax(true, global.lz["GetLZUserRole"], { LoginID: LocalID, user_id: demand_user_id,role_id:"03" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                role_id = data.Data.role_id;
+            });
+            Ajax(true, global.lz["GetLZUserRoleList"], { LoginID: LocalID, role_id: "05" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#select').combobox({
+                    data: data.Data,
+                    valueField: 'user_id',
+                    textField: 'user_name',
+                    onLoadSuccess: function () {
+                        var data = $('#select').combobox('getData');
+                        $("#select ").combobox('select', data[0].user_id);
+                    }
+                });
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "project_no",
+                fitColumns: true,
+                striped: true,
+                title: "",
+                collapsible: true,
+                remotesort: false,
+                sortName: sortName,
+                sortOrder: sortOrder,
+                rownumbers: true,
+                singleSelect: true,
+                columns: [[{
+                    field: 'project_no',
+                    title: '项目编号',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'project_name',
+                    title: '项目名',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'customer',
+                    title: '客户',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'end_date',
+                    title: '要求完成时间',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'contact',
+                    title: '技术联系人',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'tel',
+                    title: '联系方式',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'demand_depart_name',
+                    title: '需求部门',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'demand_user_name',
+                    title: '需求者',
+                    //                sortable: true,
+                    width: 20
+                }, {
+                    field: 'flag',
+                    title: '状态',
+                    //                sortable: true,
+                    width: 20,
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '结案';
+                        }
+                        if (value == "1") {
+                            return '流转中';
+                        }
+                        if (value == "2") {
+                            return '作废';
+                        }
+                        if (value == "3") {
+                            return '暂停';
+                        }
+                    }
+                }, {
+                    field: 'status_flag',
+                    title: '进度',
+                    //                sortable: true,
+                    width: 20,
+                    formatter: function (value, row) {
+                        if (value == "1") {
+                            return '需求发起';
+                        }
+                        if (value == "-1") {
+                            return '研发驳回';
+                        }
+                        if (value == "2") {
+                            return '审批中';
+                        }
+                        if (value == "-2") {
+                            return '审批驳回';
+                        }
+                        if (value == "3") {
+                            return '开发中';
+                        }
+                        if (value == "4") {
+                            return '测试中';
+                        }
+                        if (value == "5") {
+                            return '验证中';
+                        }
+                        if (value == "6") {
+                            return '结案中';
+                        }
+                        if (value == "7") {
+                            return '结案';
+                        }
+                        if (value == "0") {
+                            return '草案';
+                        }
+                    }
+                }]],
+                onDblClickRow: function (rowIndex, rowData) {
+                    $('#win').window('open');
+                    var ids = rowData.id;
+                    Ajax(true, global.lz["GetLZProjectFlow"], { LoginID: LocalID, id: ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $("#demand_content").textbox("setValue", data.Data.demand_content);
+                        $("#demand_time").val(data.Data.demand_time.substring(0, 10));
+                    });
+                    var project_name = rowData.project_name;
+                    Ajax(true, global.lz["GetLZProjectFlowEx"], { LoginID: LocalID, id: ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        var fj = "";
+                        if (data.Data.demand_file != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.demand_file + '">' + data.Data.demand_file + '</a><br />';
+                        }
+
+                        if (data.Data.demand_file2 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.demand_file2 + '">' + data.Data.demand_file2 + '</a><br />';
+                        }
+                        if (data.Data.demand_file3 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.demand_file3 + '">' + data.Data.demand_file3 + '</a><br />';
+                        }
+
+                        if (data.Data.develop_file != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.develop_file + '">' + data.Data.develop_file + '</a><br />';
+                        }
+                        if (data.Data.develop_file2 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.develop_file2 + '">' + data.Data.develop_file2 + '</a><br />';
+                        }
+                        if (data.Data.develop_file3 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.develop_file3 + '">' + data.Data.develop_file3 + '</a><br />';
+                        }
+
+                        if (data.Data.test_file != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.test_file + '">' + data.Data.test_file + '</a><br />';
+                        }
+                        if (data.Data.test_file2 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.test_file2 + '">' + data.Data.test_file2 + '</a><br />';
+                        }
+                        if (data.Data.test_file3 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.test_file3 + '">' + data.Data.test_file3 + '</a><br />';
+                        }
+
+                        if (data.Data.project_file != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.project_file + '">' + data.Data.project_file + '</a><br />';
+                        }
+                        if (data.Data.project_file2 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.project_file2 + '">' + data.Data.project_file2 + '</a><br />';
+                        }
+                        if (data.Data.project_file3 != "") {
+                            fj += '<a href="' + '../../LZ/' + project_name + '/' + data.Data.project_file3 + '">' + data.Data.project_file3 + '</a><br />';
+                        }
+                        document.getElementById('download').innerHTML = fj;
+                    });
+                    if ((rowData.flag == 1) && (rowData.status_flag == 2)) {
+                        $('#void').show();
+                        $('#stop').hide();
+                        $('#restart').hide();
+                        $('#sum').hide();
+                        $('#close').show();
+                        $('#save').show();
+                    }
+                    else if (rowData.flag == 3) {
+                        $('#restart').show();
+                        $('#void').show();
+                        $('#stop').hide();
+                        $('#sum').hide();
+                        $('#close').hide();
+                    }
+                    else if ((rowData.flag == 1) && (rowData.status_flag == 6)) {
+                        $('#sum').show();
+                        $('#void').hide();
+                        $('#stop').hide();
+                        $('#restart').hide();
+                        $('#close').hide();
+                        $('#save').hide();
+                        document.getElementById('hide').innerHTML = "";
+                    }
+                    else {
+                        $('#sum').hide();
+                        $('#void').show();
+                        $('#stop').show();
+                        $('#restart').hide();
+                        $('#close').hide();
+                        $('#save').hide();
+                    }
+
+                    if ((rowData.flag == 1) && (rowData.status_flag == 2)) {
+                        Ajax(true, global.lz["GetLZProjectNO"], { LoginID: LocalID }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $("#project_no").val(data.Data);
+                        });
+                    }
+                    else {
+                        $("#project_no").val(rowData.project_no);
+                    }
+                    $("#project_name").val(rowData.project_name);
+                    $("#end_date").val(rowData.end_date.substring(0, 10));
+                    $("#customer").val(rowData.customer);
+                    $("#contact").val(rowData.contact);
+                    $("#tel").val(rowData.tel);
+                    $("#demand_depart_name").val(rowData.demand_depart_name);
+                    $("#demand_user_name").val(rowData.demand_user_name);
+                    $("#demand_depart_name").attr("disabled", true);
+                    $("#demand_user_name").attr("disabled", true);
+                    $("#demand_time").attr("disabled", true);
+                    $("#project_no").attr("disabled", true);
+                    $("#project_name").attr("disabled", true);
+                    $("#end_date").attr("disabled", true);
+                    $("#customer").attr("disabled", true);
+                    $("#contact").attr("disabled", true);
+                    $("#tel").attr("disabled", true);
+                    $("#demand_content").textbox({ disabled: true });
+                    dd = 1;
+                }
+            });
+
+            $("#close").click(function () {
+                $('#win2').window('open');
+                $("#reason").textbox('setValue', "");
+            });
+            loaddata();
+            $("#save").click(function () {
+                if (role_id == 03) {
+                    develop_grouper_id = $("#select").combobox("getValue");
+                    if (dd == 1) {
+                        project_no = $("#project_no").val();
+                        var rows = datagrid.datagrid('getSelected');
+                        var id = rows.id;
+                        var project_name = $("#project_name").val();
+                        var end_date = $("#end_date").val();
+                        var customer = $("#customer").val();
+                        var contact = $("#contact").val();
+                        var tel = $("#tel").val();
+                        var demand_content = $("#demand_content").textbox("getValue");
+                        develop_grouper = $("#select").combobox("getText");
+                        var panduan = 1;
+                        if (project_name == "") {
+                            $.messager.alert("提示", "项目名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (end_date == "") {
+                            $.messager.alert("提示", "要求完成时间不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (customer == "") {
+                            $.messager.alert("提示", "客户名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (contact == "") {
+                            $.messager.alert("提示", "联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (demand_content == "") {
+                            $.messager.alert("提示", "需求说明不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (demand_content.length > 500) {
+                            $.messager.alert("提示", "输入字数不能超过500字！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (develop_grouper_id == "") {
+                            $.messager.alert("提示", "请选择研发组长！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        Ajax(true, global.lz["UpdateLZProjectFlowSP"], { LoginID: LocalID, id: id, develop_grouper_id: develop_grouper_id, develop_grouper: develop_grouper, panduan: panduan, project_no: project_no }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "修改成功", "info");
+                            $('#win').window('close');
+                            $("#project_no").val("");
+                            loaddata();
+                        });
+                    }
+                }
+                else {
+                    $.messager.alert("提示", "您无权限审批此需求，请找相关人员获取权限", "info");
+                    $("#select").combobox();
+                }
+
+            });
+            $('#win').window('close');
+            $('#win2').window('close');
+            $('#win3').window('close');
+            $('#win4').window('close');
+            $('#win5').window('close');
+            $('#win6').window('close');
+            $("#save2").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                $.messager.confirm("提示", "确定驳回？", function (data) {
+                    if (data) {
+                        var approval_content = $("#reason").textbox('getValue');
+                        var panduan = 0;
+                        Ajax(true, global.lz["UpdateLZProjectFlowSP"], { LoginID: LocalID, id: id, approval_content: approval_content, panduan: panduan }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win2').window('close');
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#void").click(function () {
+                $('#win3').window('open');
+                $("#reason2").textbox('setValue', "");
+            });
+            $("#save3").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var demo = $("#reason2").textbox('getValue');
+                $.messager.confirm("提示", "确定作废？", function (data) {
+                    if (data) {
+                        Ajax(true, global.lz["UpZUOFEI"], { LoginID: LocalID, id: id, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win3').window('close');
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#stop").click(function () {
+                $('#win4').window('open');
+                $("#reason3").textbox('setValue', "");
+            });
+            $("#save4").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var demo = $("#reason3").textbox('getValue');
+                $.messager.confirm("提示", "确定暂停？", function (data) {
+                    if (data) {
+                        Ajax(true, global.lz["UpZANTING"], { LoginID: LocalID, id: id, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win4').window('close');
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#restart").click(function () {
+                $('#win5').window('open');
+                $("#reason4").textbox('setValue', "");
+            });
+            $("#save5").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var demo = $("#reason4").textbox('getValue');
+                $.messager.confirm("提示", "确定恢复流转？", function (data) {
+                    if (data) {
+                        Ajax(true, global.lz["UpHUIFU"], { LoginID: LocalID, id: id, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win5').window('close');
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#sum").click(function () {
+                $('#win6').window('open');
+                $("#reason5").textbox('setValue', "");
+            });
+            $("#save6").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var demo = $("#reason5").textbox('getValue');
+                $.messager.confirm("提示", "确定结案？", function (data) {
+                    if (data) {
+                        Ajax(true, global.lz["UpZONGJIE"], { LoginID: LocalID, id: id, demo: demo }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win6').window('close');
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#close2").click(function () {
+                $('#win2').window('close');
+            });
+            $("#close3").click(function () {
+                $('#win3').window('close');
+            });
+            $("#close4").click(function () {
+                $('#win4').window('close');
+            });
+            $("#close5").click(function () {
+                $('#win5').window('close');
+            });
+            $("#close6").click(function () {
+                $('#win6').window('close');
+            });
+            $("#search").click(function () {
+                var project_no = $("#xmbh").val();
+                var project_name = $("#xmmc").val();
+                var customer = $("#kh").val();
+                var demand_user_name = $("#xqz").val();
+                loaddata2(project_no, project_name, customer, demand_user_name);
+            });
+        });
+
+        function formatDateTime(date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            m = m < 10 ? ('0' + m) : m;
+            var d = date.getDate();
+            d = d < 10 ? ('0' + d) : d;
+            var h = date.getHours();
+            var minute = date.getMinutes();
+            var second = date.getSeconds();
+            minute = minute < 10 ? ('0' + minute) : minute;
+            second = second < 10 ? ('0' + second) : second;
+            return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+        }
+        function loaddata() {
+            datagrid.datagrid('unselectAll');
+            var row = datagrid.datagrid('getSelected');
+            Ajax(true, global.lz["GetLZProjectPageList"], { LoginID: LocalID, status_flag: "2|3|4|5|6|7", flag: "1|3", demand_user_id: demand_user_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+                jsondata.total = data.Ex;
+                if (jsondata.total == 0) {
+                    PageNum = 1;
+                }
+                var p = datagrid.datagrid('getPager');
+                $(p).pagination({
+                    beforePageText: '第', //页数文本框前显示的汉字 
+                    afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                    displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                    onSelectPage: function (pageNumber, pageSize) {
+                        PageSize = pageSize;
+                        PageNum = pageNumber;
+                        if (PageNum < 1) {
+                            PageNum = 1;
+                        }
+                        loaddata();
+                    }
+                });
+            });
+        }
+        function loaddata2(project_no, project_name, customer, demand_user_name) {
+            datagrid.datagrid('unselectAll');
+            Ajax(true, global.lz["GetLZProjectPageList"], { LoginID: LocalID, project_no: project_no, project_name: project_name, customer: customer, demand_user_name: demand_user_name, status_flag: "2|3|4|5|6", flag: "1|3", sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#text').select();
+                    return;
+                }
+                jsondata.total = data.Ex;
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+                if (jsondata.total == 0) {
+                    PageNum = 1;
+                }
+                var p = datagrid.datagrid('getPager');
+                $(p).pagination({
+                    beforePageText: '第', //页数文本框前显示的汉字 
+                    afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                    displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                    onSelectPage: function (pageNumber, pageSize) {
+                        PageSize = pageSize;
+                        PageNum = pageNumber;
+                        if (PageNum < 1) {
+                            PageNum = 1;
+                        }
+                        loaddata2(project_no, project_name, customer, demand_user_name);
+                    }
+                });
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true"
+        style="width: 100%; height: 60px; padding: 3px;">
+        项目编号：<input id="xmbh" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+        项目名称：<input id="xmmc" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+        客户：<input id="kh" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+        需求者：<input id="xqz" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+        <a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">
+            查询</a>
+    </div>
+    <div class="easyui-panel" title="审批总结" data-options="iconCls:'icon-search',collapsible:false,maximized:true"
+        style="width: 100%;">
+        <div style="width: 100%; height: 400px;">
+            <table id="dg" style="padding: 5px;" data-options="pagination:true">
+            </table>
+        </div>
+    </div>
+    <div id="win" class="easyui-window" title="需求详细" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 550px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            项目编号：
+                        </td>
+                        <td>
+                            <input id="project_no" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            项目名称：
+                        </td>
+                        <td>
+                            <input id="project_name" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            客户名称：
+                        </td>
+                        <td>
+                            <input id="customer" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            要求完成时间：
+                        </td>
+                        <td>
+                            <input id="end_date" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            申请日期：
+                        </td>
+                        <td>
+                            <input id="demand_time" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            技术联系人：
+                        </td>
+                        <td>
+                            <input id="contact" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系方式：
+                        </td>
+                        <td>
+                            <input id="tel" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            需求部门：
+                        </td>
+                        <td>
+                            <input id="demand_depart_name" class="easyui-validatebox textbox" data-options=""
+                                style="width: 120px; height: 20px" />
+                        </td>
+                        <td>
+                            需求者：
+                        </td>
+                        <td>
+                            <input id="demand_user_name" class="easyui-validatebox textbox" data-options="" style="width: 120px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            描述：
+                        </td>
+                        <td>
+                            <input id="demand_content" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 80px;" />
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td id="download">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" 
+                style="text-align: right; padding: 5px 0 0; height: 40px;">
+                <table align="right" style="height: auto; width: auto">
+                    <tr>
+                        <td>
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                                id="void" style="width: 60px">作废</a>
+                        </td>
+                        <td>
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                                id="stop" style="width: 60px">暂停</a>
+                        </td>
+                        <td>
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                                id="restart" style="width: 80px">恢复流转</a>
+                        </td>
+                        <td>
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                                id="close" style="width: 60px">驳回</a>
+                        </td>
+                        <td>
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                                id="sum" style="width: 60px">结案</a>
+                        </td>
+                        <td id="hide">
+                            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                                id="save" style="width: 60px">确定</a>转到<select id="select" class="easyui-combobox"
+                                    style="width: 80px;">
+                                </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="win2" class="easyui-window" title="不同意原因" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            原因（500字内）：
+                        </td>
+                        <td>
+                            <input id="reason" class="easyui-textbox" data-options="multiline:true" style="width: 300px;
+                                height: 300px;" maxlength="500" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close2" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save2" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win3" class="easyui-window" title="作废原因" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            原因（500字内）：
+                        </td>
+                        <td>
+                            <input id="reason2" class="easyui-textbox" data-options="multiline:true" style="width: 300px;
+                                height: 300px;" maxlength="500" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close3" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save3" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win4" class="easyui-window" title="暂停原因" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            原因（500字内）：
+                        </td>
+                        <td>
+                            <input id="reason3" class="easyui-textbox" data-options="multiline:true" style="width: 300px;
+                                height: 300px;" maxlength="500" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close4" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save4" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win5" class="easyui-window" title="恢复原因" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            原因（500字内）：
+                        </td>
+                        <td>
+                            <input id="reason4" class="easyui-textbox" data-options="multiline:true" style="width: 300px;
+                                height: 300px;" maxlength="500" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close5" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save5" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win6" class="easyui-window" title="结案说明" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            说明（500字内）：
+                        </td>
+                        <td>
+                            <input id="reason5" class="easyui-textbox" data-options="multiline:true" style="width: 300px;
+                                height: 300px;" maxlength="500" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close6" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save6" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+        }
+        h2
+        {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 15px;
+        }
+        .demo-info
+        {
+            padding: 0 0 12px;
+        }
+        .demo-tip
+        {
+            display: none;
+        }
+        .textbox
+        {
+            height: 20px;
+            margin: 0;
+            padding: 0 2px;
+            box-sizing: content-box;
+        }
+    </style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var datagrid2;
+        var jsondata2 = { "total": 0, "rows": [] };
+        $(function () {
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "状态统计",
+                rownumbers: true,
+                singleSelect: true,
+                columns: [[{
+                    field: 'flag',
+                    title: '状态',
+                    //                sortable: true,
+                    width: "45%",
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '结束';
+                        }
+                        if (value == "1") {
+                            return '进行中';
+                        }
+                        if (value == "2") {
+                            return '报备撤销';
+                        }
+                        if (value == "3") {
+                            return '审核撤销';
+                        }
+                    }
+                }, {
+                    field: 'sum',
+                    title: '总计',
+                    //                sortable: true,
+                    width: "45%"
+                }]]
+            });
+            datagrid2 = $("#dg2").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "进度统计",
+                rownumbers: true,
+                singleSelect: true,
+                columns: [[{
+                    field: 'status_flag',
+                    title: '进度',
+                    //                sortable: true,
+                    width: "45%",
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '草案';
+                        }
+                        if (value == "1") {
+                            return '审核中';
+                        }
+                        if (value == "-1") {
+                            return '驳回';
+                        }
+                        if (value == "2") {
+                            return '签约中';
+                        }
+                        if (value == "3") {
+                            return '已签约';
+                        }
+                    }
+                }, {
+                    field: 'sum',
+                    title: '总计',
+                    //                sortable: true,
+                    width: "45%"
+                }]]
+            });
+            loaddata();
+            loaddata2();
+            $("#search").click(function () {
+                var project_no = $("#project_no").val();
+                var project_name = $("#project_name").val();
+                var bb_user_name = $("#bb_user_name").val();
+                var project_address = $("#project_address").val();
+                loaddata(bb_user_name, project_address, project_no, project_name);
+            });
+            $("#search2").click(function () {
+                var project_no2 = $("#project_no2").val();
+                var project_name2 = $("#project_name2").val();
+                var bb_user_name2 = $("#bb_user_name2").val();
+                var project_address2 = $("#project_address2").val();
+                var you = "";
+                if ($("#jxz").is(":checked")) {
+                    if (you != "") {
+                        you += "|";
+                    }
+                    you += "1";
+                }
+
+                if ($("#ja").is(":checked")) {
+                    if (you != "") {
+                        you += "|";
+                    }
+                    you += "0";
+                }
+                if ($("#bbcs").is(":checked")) {
+                    if (you != "") {
+                        you += "|";
+                    }
+                    you += "2";
+                }
+
+                if ($("#shcs").is(":checked")) {
+                    if (you != "") {
+                        you += "|";
+                    }
+                    you += "3";
+                }
+                loaddata2(bb_user_name2, project_address2, project_no2, project_name2, you);
+            });
+
+        });
+
+        function loaddata(bb_user_name, project_address, project_no, project_name) {
+            datagrid.datagrid('unselectAll');
+            Ajax(true, global.bb["GetBBProjectList"], { LoginID: LocalID, bb_user_name: bb_user_name, project_address: project_address, project_no: project_no, project_name: project_name }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+            });
+        }
+        function loaddata2(bb_user_name2, project_address2, project_no2, project_name2, you) {
+            datagrid2.datagrid('unselectAll');
+            Ajax(true, global.bb["GetBBProjectList"], { LoginID: LocalID, flag: you, bb_user_name: bb_user_name2, project_address: project_address2, project_no: project_no2, project_name: project_name2 }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata2.rows = data.Data;
+                datagrid2.datagrid('loadData', jsondata2);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="easyui-layout" data-options="fit:true">
+        <div class="easyui-tabs" data-options="collapsible:false,maximized:true" style="width: 100%;">
+            <div title="状态查询" data-options="href :''" style="">
+                <div class="easyui-panel" title="查询条件" data-options="iconCls:'icon-search',collapsible:true"
+                    style="width: 100%; height: 60px; padding: 3px;">
+                    项目编号：<input id="project_no" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+                    项目名称：<input id="project_name" class="easyui-validatebox textbox" data-options=""
+                        style="width: 80px;" />
+                    报备人：<input id="bb_user_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+                    项目所在地：<input id="project_address" class="easyui-validatebox textbox" data-options=""
+                        style="width: 80px;" />
+                    <a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">
+                        查询</a>
+                </div>
+                <div style="width: 100%; height: 400px;">
+                    <table id="dg">
+                    </table>
+                </div>
+            </div>
+            <div title="进度查询" data-options="href :''" style="">
+                <div class="easyui-panel" title="进度选择" data-options="iconCls:'icon-search',collapsible:true">
+                    项目编号：<input id="project_no2" class="easyui-validatebox textbox" data-options="" style="width: 80px;" />
+                    项目名称：<input id="project_name2" class="easyui-validatebox textbox" data-options=""
+                        style="width: 80px;" />
+                    报备人：<input id="bb_user_name2" class="easyui-validatebox textbox" data-options=""
+                        style="width: 80px;" />
+                    项目所在地：<input id="project_address2" class="easyui-validatebox textbox" data-options=""
+                        style="width: 80px;" />
+                    <a href="javascript:void(0)" class="easyui-linkbutton" id="search2" data-options="iconCls:'icon-search'">
+                        查询</a><br>
+                    <input type="checkbox" id="jxz" checked="checked" />进行中
+                    <input type="checkbox" id="ja" />结案
+                    <input type="checkbox" id="bbcs" />报备撤销
+                    <input type="checkbox" id="shcs" />审核撤销
+                </div>
+                <div style="width: 100%; height: 400px;">
+                    <table id="dg2">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

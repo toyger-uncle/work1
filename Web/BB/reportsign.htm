@@ -1,0 +1,1755 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery/ajaxfileupload.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 2px;
+        }
+        .style1
+        {
+            width: 71px;
+        }
+        .style2
+        {
+            width: 62px;
+        }
+    </style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var dd;
+        var aa;
+        var bb;
+        var jsondata = { "total": 0, "rows": [] };
+        var sortName = "id";
+        var sortOrder = "asc";
+        var PageSize = 10;
+        var PageNum = 1;
+        var bb_user_id = LocalID;
+        var bb_depart_name;
+        var bb_user_name;
+        var xmid;
+        var update_num;
+        $(function () {
+            Ajax(true, global.sys["GetUserFile"], { LoginID: LocalID, id: bb_user_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                bb_depart_name = data.Data.department;
+                $("#bb_depart_name").val(data.Data.department);
+            });
+            Ajax(true, global.sys["GetUserFile"], { LoginID: LocalID, id: bb_user_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                bb_user_name = data.Data.user_name;
+                $("#bb_user_name").val(data.Data.user_name);
+            });
+            Ajax(true, global.bb["GetBBSHUserList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#select').combobox({
+                    data: data.Data,
+                    valueField: 'user_id',
+                    textField: 'user_name',
+                    onLoadSuccess: function () {
+                        var data = $('#select').combobox('getData');
+                        if (data != "") {
+                            $("#select ").combobox('select', data[0].user_id);
+                        }
+                    }
+                });
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "",
+                collapsible: true,
+                remotesort: false,
+                sortName: sortName,
+                sortOrder: sortOrder,
+                rownumbers: true,
+                singleSelect: true,
+                columns: [[{
+                    field: 'id',
+                    title: '编号',
+                    //                sortable: true,
+                    width: "18%"
+                }, {
+                    field: 'project_name',
+                    title: '项目名',
+                    //                sortable: true,
+                    width: "18%"
+                }, {
+                    field: 'project_address',
+                    title: '项目所在地',
+                    //                sortable: true,
+                    width: "18%"
+                }, {
+                    field: 'status_flag',
+                    title: '项目进度',
+                    //                sortable: true,
+                    width: "18%",
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '草案';
+                        }
+                        if (value == "1") {
+                            return '审核中';
+                        }
+                        if (value == "-1") {
+                            return '驳回';
+                        }
+                        if (value == "2") {
+                            return '签约中';
+                        }
+                        if (value == "3") {
+                            return '已签约';
+                        }
+                    }
+                }, {
+                    field: 'flag',
+                    title: '流转状态',
+                    //                sortable: true,
+                    width: "18%",
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '结束';
+                        }
+                        if (value == "1") {
+                            return '进行中';
+                        }
+                        if (value == "2") {
+                            return '报备撤销';
+                        }
+                        if (value == "3") {
+                            return '审核撤销';
+                        }
+                    }
+                }]],
+                toolbar: [{
+                    text: "删除", iconCls: "icon-remove", handler: function () {
+                        var rowData = datagrid.datagrid('getSelected');
+                        var ids;
+                        if (rowData == null || rowData.length == 0) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                            if (data) {
+                                ids = rowData.id;
+                                Ajax(true, global.bb["BBCHEXIAOBBProject"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                });
+                                $.messager.alert("提示", "撤销成功", "info");
+                            }
+                        });
+                    }
+                }, {
+                    text: "修改", iconCls: "icon-edit", handler: function () {
+                        var rows = datagrid.datagrid('getSelected');
+                        var id = rows.id;
+                        if (rows == null) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        Ajax(true, global.bb["GetBBProjectFlow"], { LoginID: LocalID, id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $("#a_depart_name").val(data.Data.a_depart_name);
+                            $("#a_headship").val(data.Data.a_headship);
+                            $("#a_tel").val(data.Data.a_tel);
+                            $("#integra_depart_name").val(data.Data.integra_depart_name);
+                            $("#integra_headship").val(data.Data.integra_headship);
+                            $("#integra_tel").val(data.Data.integra_tel);
+                            $("#design_depart_name").val(data.Data.design_depart_name);
+                            $("#design_headship").val(data.Data.design_headship);
+                            $("#design_tel").val(data.Data.design_tel);
+                            $("#estimated_project_date").datetimebox('setValue', data.Data.estimated_project_date);
+                            $("#estimated_purchase_date").datetimebox('setValue', data.Data.estimated_purchase_date);
+                            $("#subsystem_info").val(data.Data.subsystem_info);
+                            $("#project_scale").val(data.Data.project_scale);
+                            $("#work_schedule").val(data.Data.work_schedule);
+                            $("#work_schedule1").val(data.Data.work_schedule1);
+                            $("#work_schedule2").val(data.Data.work_schedule2);
+                            $("#work_schedule3").val(data.Data.work_schedule3);
+                            $("#purchaser_info").textbox('setValue', data.Data.purchaser_info);
+                            $("#history_log").textbox('setValue', data.Data.history_log);
+                            $("#demo").textbox('setValue', data.Data.demo);
+                            $("#opinion").textbox('setValue', data.Data.opinion);
+                            $("#result_track").textbox('setValue', data.Data.result_track);
+                        });
+                        if ((rows.flag == "1" && rows.status_flag == "0")) {
+                            $('#cs').show();
+                            $('#bcca').show();
+                        }
+                        if ((rows.flag == "1" && rows.status_flag == "1") || (rowData.flag == "1" && rowData.status_flag == "-1")) {
+                            $('#cs').show();
+                            $('#bcca').hide();
+                        }
+                        if ((rows.flag == "1" && rows.status_flag == "1") || (rows.flag == "1" && rows.status_flag == "0") || (rowData.flag == "1" && rowData.status_flag == "-1")) {
+                            $('#win').window('open');
+                            $("#bb_user_name").val(rows.bb_user_name);
+                            $("#bb_depart_name").val(rows.bb_depart_name);
+                            $("#bb_tel").val(rows.bb_tel);
+                            $("#project_name").val(rows.project_name);
+                            $("#project_address").val(rows.project_address);
+                            $("#a_name").val(rows.a_name);
+                            $("#a_contact").val(rows.a_contact);
+                            $("#project_key").val(rows.project_key);
+                            $("#project_key1").val(rows.project_key1);
+                            $("#project_key2").val(rows.project_key2);
+                            $("#integra_name").val(rows.integra_name);
+                            $("#integra_contact").val(rows.integra_contact);
+                            $("#design_name").val(rows.design_name);
+                            $("#design_contact").val(rows.design_contact);
+                            dd = 1;
+                            loadfile(id, project_name);
+                        }
+                        else if (rows.flag == "1" && rows.status_flag == "2") {
+                            $('#win').window('open');
+                            var project_name = $("#project_name").val(rows.project_name);
+                            $("#bb_user_name").val(rows.bb_user_name);
+                            $("#bb_depart_name").val(rows.bb_depart_name);
+                            $("#bb_tel").val(rows.bb_tel);
+                            $("#project_name").val(rows.project_name);
+                            $("#project_address").val(rows.project_address);
+                            $("#a_name").val(rows.a_name);
+                            $("#a_contact").val(rows.a_contact);
+                            $("#project_key").val(rows.project_key);
+                            $("#project_key1").val(rows.project_key1);
+                            $("#project_key2").val(rows.project_key2);
+                            $("#integra_name").val(rows.integra_name);
+                            $("#integra_contact").val(rows.integra_contact);
+                            $("#design_name").val(rows.design_name);
+                            $("#design_contact").val(rows.design_contact);
+                            $("#bb_user_name").attr("disabled", true);
+                            $("#bb_depart_name").attr("disabled", true);
+                            $("#bb_tel").attr("disabled", true);
+                            $("#project_name").attr("disabled", true);
+                            $("#project_address").attr("disabled", true);
+                            $("#a_name").attr("disabled", true);
+                            $("#a_depart_name").attr("disabled", true);
+                            $("#a_contact").attr("disabled", true);
+                            $("#a_headship").attr("disabled", true);
+                            $("#a_tel").attr("disabled", true);
+                            $("#project_key").attr("disabled", true);
+                            $("#project_key1").attr("disabled", true);
+                            $("#project_key2").attr("disabled", true);
+                            $("#integra_name").attr("disabled", true);
+                            $("#integra_depart_name").attr("disabled", true);
+                            $("#integra_contact").attr("disabled", true);
+                            $("#integra_headship").attr("disabled", true);
+                            $("#integra_tel").attr("disabled", true);
+                            $("#design_name").attr("disabled", true);
+                            $("#design_depart_name").attr("disabled", true);
+                            $("#design_contact").attr("disabled", true);
+                            $("#design_headship").attr("disabled", true);
+                            $("#design_tel").attr("disabled", true);
+                            $("#estimated_project_date").datetimebox({ disabled: true });
+                            $("#estimated_purchase_date").datetimebox({ disabled: true });
+                            $("#subsystem_info").attr("disabled", true);
+                            $("#project_scale").attr("disabled", true);
+                            $("#purchaser_info").textbox({ disabled: true });
+                            $("#history_log").textbox({ disabled: true });
+                            $("#demo").textbox({ disabled: true });
+                            $("#opinion").textbox({ disabled: true });
+                            dd = 1;
+
+                        }
+                        else {
+                            $.messager.alert("提示", "此报备表已不可修改", "error");
+                        }
+
+                    }
+                }, {
+                    text: "发起", iconCls: "icon-add", handler: function () {
+                        $('#win').window('open');
+                        $("#bb_user_name").val();
+                        $("#bb_depart_name").val();
+                        $("#bb_tel").val("");
+                        $("#project_name").val("");
+                        $("#project_address").val("");
+                        $("#a_name").val("");
+                        $("#a_depart_name").val("");
+                        $("#a_contact").val("");
+                        $("#a_headship").val("");
+                        $("#a_tel").val("");
+                        $("#project_key").val("");
+                        $("#project_key1").val("");
+                        $("#project_key2").val("");
+                        $("#integra_name").val("");
+                        $("#integra_depart_name").val("");
+                        $("#integra_contact").val("");
+                        $("#integra_headship").val("");
+                        $("#integra_tel").val("");
+                        $("#design_name").val("");
+                        $("#design_depart_name").val("");
+                        $("#design_contact").val("");
+                        $("#design_headship").val("");
+                        $("#design_tel").val("");
+                        $("#estimated_project_date").datetimebox("setValue");
+                        $("#estimated_purchase_date").datetimebox("setValue");
+                        $("#subsystem_info").val("");
+                        $("#project_scale").val("");
+                        $("#work_schedule").val("");
+                        $("#work_schedule1").val("");
+                        $("#work_schedule2").val("");
+                        $("#work_schedule3").val("");
+                        $("#purchaser_info").textbox('setValue', "");
+                        $("#history_log").textbox('setValue', "");
+                        $("#demo").textbox('setValue', "");
+                        $("#opinion").textbox('setValue', "");
+                        $("#result_track").textbox('setValue', "");
+                        document.getElementById('download').innerHTML = "";
+                        aa = 0;
+
+                    }
+                }],
+                onDblClickRow: function (rowIndex, rowData) {
+                    var id = rowData.id;
+                    Ajax(true, global.bb["GetBBProjectFlow"], { LoginID: LocalID, id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $("#a_depart_name").val(data.Data.a_depart_name);
+                        $("#a_headship").val(data.Data.a_headship);
+                        $("#a_tel").val(data.Data.a_tel);
+                        $("#integra_depart_name").val(data.Data.integra_depart_name);
+                        $("#integra_headship").val(data.Data.integra_headship);
+                        $("#integra_tel").val(data.Data.integra_tel);
+                        $("#design_depart_name").val(data.Data.design_depart_name);
+                        $("#design_headship").val(data.Data.design_headship);
+                        $("#design_tel").val(data.Data.design_tel);
+                        $("#estimated_project_date").datetimebox('setValue', data.Data.estimated_project_date);
+                        $("#estimated_purchase_date").datetimebox('setValue', data.Data.estimated_purchase_date);
+                        $("#subsystem_info").val(data.Data.subsystem_info);
+                        $("#project_scale").val(data.Data.project_scale);
+                        $("#work_schedule").val(data.Data.work_schedule);
+                        $("#work_schedule1").val(data.Data.work_schedule1);
+                        $("#work_schedule2").val(data.Data.work_schedule2);
+                        $("#work_schedule3").val(data.Data.work_schedule3);
+                        $("#purchaser_info").textbox('setValue', data.Data.purchaser_info);
+                        $("#history_log").textbox('setValue', data.Data.history_log);
+                        $("#demo").textbox('setValue', data.Data.demo);
+                        $("#opinion").textbox('setValue', data.Data.opinion);
+                        $("#result_track").textbox('setValue', data.Data.result_track);
+                    });
+                    if ((rowData.flag == "1" && rowData.status_flag == "0")) {
+                        $('#cs').show();
+                        $('#bcca').show();
+                    }
+                    if ((rowData.flag == "1" && rowData.status_flag == "1") || (rowData.flag == "1" && rowData.status_flag == "-1")) {
+                        $('#cs').show();
+                        $('#bcca').hide();
+                    }
+                    if ((rowData.flag == "1" && rowData.status_flag == "1") || (rowData.flag == "1" && rowData.status_flag == "0") || (rowData.flag == "1" && rowData.status_flag == "-1")) {
+                        $('#win').window('open');
+
+                        var project_name = $("#project_name").val(rowData.project_name);
+                        $("#bb_user_name").val(rowData.bb_user_name);
+                        $("#bb_depart_name").val(rowData.bb_depart_name);
+                        $("#bb_tel").val(rowData.bb_tel);
+                        $("#project_name").val(rowData.project_name);
+                        $("#project_address").val(rowData.project_address);
+                        $("#a_name").val(rowData.a_name);
+                        $("#a_contact").val(rowData.a_contact);
+                        $("#project_key").val(rowData.project_key);
+                        $("#project_key1").val(rowData.project_key1);
+                        $("#project_key2").val(rowData.project_key2);
+                        $("#integra_name").val(rowData.integra_name);
+                        $("#integra_contact").val(rowData.integra_contact);
+                        $("#design_name").val(rowData.design_name);
+                        $("#design_contact").val(rowData.design_contact);
+                        dd = 1;
+                        loadfile(id, project_name);
+                    }
+                    else if (rowData.flag == "1" && rowData.status_flag == "2") {
+                        $('#win').window('open');
+                        var id = rowData.id;
+                        var project_name = $("#project_name").val(rowData.project_name);
+                        $("#bb_user_name").val(rowData.bb_user_name);
+                        $("#bb_depart_name").val(rowData.bb_depart_name);
+                        $("#bb_tel").val(rowData.bb_tel);
+                        $("#project_name").val(rowData.project_name);
+                        $("#project_address").val(rowData.project_address);
+                        $("#a_name").val(rowData.a_name);
+                        $("#a_contact").val(rowData.a_contact);
+                        $("#project_key").val(rowData.project_key);
+                        $("#project_key1").val(rowData.project_key1);
+                        $("#project_key2").val(rowData.project_key2);
+                        $("#integra_name").val(rowData.integra_name);
+                        $("#integra_contact").val(rowData.integra_contact);
+                        $("#design_name").val(rowData.design_name);
+                        $("#design_contact").val(rowData.design_contact);
+                        $("#bb_user_name").attr("disabled", true);
+                        $("#bb_depart_name").attr("disabled", true);
+                        $("#bb_tel").attr("disabled", true);
+                        $("#project_name").attr("disabled", true);
+                        $("#project_address").attr("disabled", true);
+                        $("#a_name").attr("disabled", true);
+                        $("#a_depart_name").attr("disabled", true);
+                        $("#a_contact").attr("disabled", true);
+                        $("#a_headship").attr("disabled", true);
+                        $("#a_tel").attr("disabled", true);
+                        $("#project_key").attr("disabled", true);
+                        $("#project_key1").attr("disabled", true);
+                        $("#project_key2").attr("disabled", true);
+                        $("#integra_name").attr("disabled", true);
+                        $("#integra_depart_name").attr("disabled", true);
+                        $("#integra_contact").attr("disabled", true);
+                        $("#integra_headship").attr("disabled", true);
+                        $("#integra_tel").attr("disabled", true);
+                        $("#design_name").attr("disabled", true);
+                        $("#design_depart_name").attr("disabled", true);
+                        $("#design_contact").attr("disabled", true);
+                        $("#design_headship").attr("disabled", true);
+                        $("#design_tel").attr("disabled", true);
+                        $("#estimated_project_date").datetimebox({ disabled: true });
+                        $("#estimated_purchase_date").datetimebox({ disabled: true });
+                        $("#subsystem_info").attr("disabled", true);
+                        $("#project_scale").attr("disabled", true);
+                        $("#purchaser_info").textbox({ disabled: true });
+                        $("#history_log").textbox({ disabled: true });
+                        $("#demo").textbox({ disabled: true });
+                        $("#opinion").textbox({ disabled: true });
+                        dd = 1;
+                    }
+                    else {
+                        $.messager.alert("提示", "此报备表已不可修改", "error");
+                    }
+                }
+            });
+            loaddata();
+            $("#file_upload").change(function () {
+                if (dd == 1) {
+                    loadfj();
+                }
+                if (aa == 0) {
+                    var sh_user_id = $("#select").combobox("getValue");
+                    var sh_user_name = $("#select").combobox("getText");
+                    var bb_user_name = $("#bb_user_name").val();
+                    var bb_depart_name = $("#bb_depart_name").val();
+                    var bb_tel = $("#bb_tel").val();
+                    var project_name = $("#project_name").val();
+                    var project_address = $("#project_address").val();
+                    var a_name = $("#a_name").val();
+                    var a_depart_name = $("#a_depart_name").val();
+                    var a_contact = $("#a_contact").val();
+                    var a_headship = $("#a_headship").val();
+                    var a_tel = $("#a_tel").val();
+                    var project_key = $("#project_key").val();
+                    var project_key1 = $("#project_key1").val();
+                    var project_key2 = $("#project_key2").val();
+                    var integra_name = $("#integra_name").val();
+                    var integra_depart_name = $("#integra_depart_name").val();
+                    var integra_contact = $("#integra_contact").val();
+                    var integra_headship = $("#integra_headship").val();
+                    var integra_tel = $("#integra_tel").val();
+                    var design_name = $("#design_name").val();
+                    var design_depart_name = $("#design_depart_name").val();
+                    var design_contact = $("#design_contact").val();
+                    var design_headship = $("#design_headship").val();
+                    var design_tel = $("#design_tel").val();
+                    var estimated_project_date = $("#estimated_project_date").datetimebox('getValue');
+                    var estimated_purchase_date = $("#estimated_purchase_date").datetimebox('getValue');
+                    var subsystem_info = $("#subsystem_info").val();
+                    var project_scale = $("#project_scale").val();
+                    var work_schedule = $("#work_schedule").val();
+                    var work_schedule1 = $("#work_schedule1").val();
+                    var work_schedule2 = $("#work_schedule2").val();
+                    var work_schedule3 = $("#work_schedule3").val();
+                    var purchaser_info = $("#purchaser_info").textbox('getValue');
+                    var history_log = $("#history_log").textbox('getValue');
+                    var demo = $("#demo").textbox('getValue');
+                    var opinion = $("#opinion").textbox('getValue');
+                    var result_track = $("#result_track").textbox('getValue');
+                    bb_depart_name = bb_depart_name;
+                    bb_user_name = bb_user_name;
+                    var tjsj = new Date();
+                    var begin_time = formatDateTime(tjsj);
+                    Ajax(true, global.bb["NewBBProjectCA"], { LoginID: LocalID, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        var fjid = data.Data;
+                        xmid = data.Data;
+                        var id = fjid;
+                        loadfj();
+                        loadfile(id, project_name);
+                        bb = 0;
+                    });
+                }
+            });
+            $('#win').window('close');
+            $('#cs').hide();
+            $("#close").click(function () {
+                $('#win').window('close');
+            });
+            $("#cs").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                $.messager.confirm("提示", "确定撤销？", function (data) {
+                    if (data) {
+                        Ajax(true, global.bb["BBCHEXIAOBBProject"], { LoginID: LocalID, id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                            }
+                            $.messager.alert("提示", "保存成功", "info");
+                            $('#win').window('close');
+                            loaddata();
+                        });
+                    }
+                });
+            });
+            $("#bcca").click(function () {
+                var sh_user_id = $("#select").combobox("getValue");
+                var sh_user_name = $("#select").combobox("getText");
+                if (dd == 1) {
+                    var rows = datagrid.datagrid('getSelected');
+                    var id = rows.id;
+                    var FABU = 0;
+                    Ajax(true, global.bb["GetBBProject"], { LoginID: LocalID, id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                        }
+                        update_num = data.Data.update_num + 1;
+
+                        var bb_user_name = $("#bb_user_name").val();
+                        var bb_depart_name = $("#bb_depart_name").val();
+                        var bb_tel = $("#bb_tel").val();
+                        var project_name = $("#project_name").val();
+                        var project_address = $("#project_address").val();
+                        var a_name = $("#a_name").val();
+                        var a_depart_name = $("#a_depart_name").val();
+                        var a_contact = $("#a_contact").val();
+                        var a_headship = $("#a_headship").val();
+                        var a_tel = $("#a_tel").val();
+                        var project_key = $("#project_key").val();
+                        var project_key1 = $("#project_key1").val();
+                        var project_key2 = $("#project_key2").val();
+                        var integra_name = $("#integra_name").val();
+                        var integra_depart_name = $("#integra_depart_name").val();
+                        var integra_contact = $("#integra_contact").val();
+                        var integra_headship = $("#integra_headship").val();
+                        var integra_tel = $("#integra_tel").val();
+                        var design_name = $("#design_name").val();
+                        var design_depart_name = $("#design_depart_name").val();
+                        var design_contact = $("#design_contact").val();
+                        var design_headship = $("#design_headship").val();
+                        var design_tel = $("#design_tel").val();
+                        var estimated_project_date = $("#estimated_project_date").datetimebox('getValue');
+                        var estimated_purchase_date = $("#estimated_purchase_date").datetimebox('getValue');
+                        var subsystem_info = $("#subsystem_info").val();
+                        var project_scale = $("#project_scale").val();
+                        var work_schedule = $("#work_schedule").val();
+                        var work_schedule1 = $("#work_schedule1").val();
+                        var work_schedule2 = $("#work_schedule2").val();
+                        var work_schedule3 = $("#work_schedule3").val();
+                        var purchaser_info = $("#purchaser_info").textbox('getValue');
+                        var history_log = $("#history_log").textbox('getValue');
+                        var demo = $("#demo").textbox('getValue');
+                        var opinion = $("#opinion").textbox('getValue');
+                        var result_track = $("#result_track").textbox('getValue');
+                        bb_depart_name = bb_depart_name;
+                        bb_user_name = bb_user_name;
+                        var tjsj = new Date();
+                        var begin_time = formatDateTime(tjsj);
+                        if (bb_tel == "") {
+                            $.messager.alert("提示", "报备人联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_name == "") {
+                            $.messager.alert("提示", "要求完成时间不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_address == "") {
+                            $.messager.alert("提示", "项目所在地不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_name == "") {
+                            $.messager.alert("提示", "甲方单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_contact == "") {
+                            $.messager.alert("提示", "甲方联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key == "") {
+                            $.messager.alert("提示", "关键字1不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key1 == "") {
+                            $.messager.alert("提示", "关键字2不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key2 == "") {
+                            $.messager.alert("提示", "关键字3不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_name == "") {
+                            $.messager.alert("提示", "集成商单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_contact == "") {
+                            $.messager.alert("提示", "集成商联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_name == "") {
+                            $.messager.alert("提示", "设计单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_contact == "") {
+                            $.messager.alert("提示", "设计单位联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        Ajax(true, global.bb["UpdateBBProject"], { LoginID: LocalID, id: id, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, FABU: FABU, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "修改成功", "info");
+                            Ajax(true, global.bb["UpdateBBProjectFlow"], { LoginID: LocalID, id: id, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $('#win').window('close');
+                                loaddata();
+                                document.getElementById('download').innerHTML = "";
+                                dd = null;
+                            });
+                        });
+                    });
+                }
+                if (aa == 0) {
+                    if (bb == 0) {
+                        var id = xmid;
+                        var FABU = 0;
+                        Ajax(true, global.bb["GetBBProject"], { LoginID: LocalID, id: id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                            }
+                            update_num = data.Data.update_num + 1;
+
+                            var bb_user_name = $("#bb_user_name").val();
+                            var bb_depart_name = $("#bb_depart_name").val();
+                            var bb_tel = $("#bb_tel").val();
+                            var project_name = $("#project_name").val();
+                            var project_address = $("#project_address").val();
+                            var a_name = $("#a_name").val();
+                            var a_depart_name = $("#a_depart_name").val();
+                            var a_contact = $("#a_contact").val();
+                            var a_headship = $("#a_headship").val();
+                            var a_tel = $("#a_tel").val();
+                            var project_key = $("#project_key").val();
+                            var project_key1 = $("#project_key1").val();
+                            var project_key2 = $("#project_key2").val();
+                            var integra_name = $("#integra_name").val();
+                            var integra_depart_name = $("#integra_depart_name").val();
+                            var integra_contact = $("#integra_contact").val();
+                            var integra_headship = $("#integra_headship").val();
+                            var integra_tel = $("#integra_tel").val();
+                            var design_name = $("#design_name").val();
+                            var design_depart_name = $("#design_depart_name").val();
+                            var design_contact = $("#design_contact").val();
+                            var design_headship = $("#design_headship").val();
+                            var design_tel = $("#design_tel").val();
+                            var estimated_project_date = $("#estimated_project_date").datetimebox('getValue');
+                            var estimated_purchase_date = $("#estimated_purchase_date").datetimebox('getValue');
+                            var subsystem_info = $("#subsystem_info").val();
+                            var project_scale = $("#project_scale").val();
+                            var work_schedule = $("#work_schedule").val();
+                            var work_schedule1 = $("#work_schedule1").val();
+                            var work_schedule2 = $("#work_schedule2").val();
+                            var work_schedule3 = $("#work_schedule3").val();
+                            var purchaser_info = $("#purchaser_info").textbox('getValue');
+                            var history_log = $("#history_log").textbox('getValue');
+                            var demo = $("#demo").textbox('getValue');
+                            var opinion = $("#opinion").textbox('getValue');
+                            var result_track = $("#result_track").textbox('getValue');
+                            bb_depart_name = bb_depart_name;
+                            bb_user_name = bb_user_name;
+                            var tjsj = new Date();
+                            var begin_time = formatDateTime(tjsj);
+                            Ajax(true, global.bb["UpdateBBProject"], { LoginID: LocalID, id: id, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, FABU: FABU, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "修改成功", "info");
+                                Ajax(true, global.bb["UpdateBBProjectFlow"], { LoginID: LocalID, id: id, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    $('#win').window('close');
+                                    loaddata();
+                                    document.getElementById('download').innerHTML = "";
+                                    aa = null;
+                                    bb = null;
+                                });
+                            });
+                        });
+                    }
+                    else {
+                        var sh_user_id = $("#select").combobox("getValue");
+                        var sh_user_name = $("#select").combobox("getText");
+                        var bb_user_name = $("#bb_user_name").val();
+                        var bb_depart_name = $("#bb_depart_name").val();
+                        var bb_tel = $("#bb_tel").val();
+                        var project_name = $("#project_name").val();
+                        var project_address = $("#project_address").val();
+                        var a_name = $("#a_name").val();
+                        var a_depart_name = $("#a_depart_name").val();
+                        var a_contact = $("#a_contact").val();
+                        var a_headship = $("#a_headship").val();
+                        var a_tel = $("#a_tel").val();
+                        var project_key = $("#project_key").val();
+                        var project_key1 = $("#project_key1").val();
+                        var project_key2 = $("#project_key2").val();
+                        var integra_name = $("#integra_name").val();
+                        var integra_depart_name = $("#integra_depart_name").val();
+                        var integra_contact = $("#integra_contact").val();
+                        var integra_headship = $("#integra_headship").val();
+                        var integra_tel = $("#integra_tel").val();
+                        var design_name = $("#design_name").val();
+                        var design_depart_name = $("#design_depart_name").val();
+                        var design_contact = $("#design_contact").val();
+                        var design_headship = $("#design_headship").val();
+                        var design_tel = $("#design_tel").val();
+                        var estimated_project_date = $("#estimated_project_date").datetimebox('getValue');
+                        var estimated_purchase_date = $("#estimated_purchase_date").datetimebox('getValue');
+                        var subsystem_info = $("#subsystem_info").val();
+                        var project_scale = $("#project_scale").val();
+                        var work_schedule = $("#work_schedule").val();
+                        var work_schedule1 = $("#work_schedule1").val();
+                        var work_schedule2 = $("#work_schedule2").val();
+                        var work_schedule3 = $("#work_schedule3").val();
+                        var purchaser_info = $("#purchaser_info").textbox('getValue');
+                        var history_log = $("#history_log").textbox('getValue');
+                        var demo = $("#demo").textbox('getValue');
+                        var opinion = $("#opinion").textbox('getValue');
+                        var result_track = $("#result_track").textbox('getValue');
+                        bb_depart_name = bb_depart_name;
+                        bb_user_name = bb_user_name;
+                        var tjsj = new Date();
+                        var begin_time = formatDateTime(tjsj);
+                        if (bb_tel == "") {
+                            $.messager.alert("提示", "报备人联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_name == "") {
+                            $.messager.alert("提示", "要求完成时间不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_address == "") {
+                            $.messager.alert("提示", "项目所在地不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_name == "") {
+                            $.messager.alert("提示", "甲方单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_contact == "") {
+                            $.messager.alert("提示", "甲方联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key == "") {
+                            $.messager.alert("提示", "关键字1不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key1 == "") {
+                            $.messager.alert("提示", "关键字2不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key2 == "") {
+                            $.messager.alert("提示", "关键字3不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_name == "") {
+                            $.messager.alert("提示", "集成商单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_contact == "") {
+                            $.messager.alert("提示", "集成商联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_name == "") {
+                            $.messager.alert("提示", "设计单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_contact == "") {
+                            $.messager.alert("提示", "设计单位联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        Ajax(true, global.bb["NewBBProjectCA"], { LoginID: LocalID, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $('#win').window('close');
+                            loaddata();
+                            document.getElementById('download').innerHTML = "";
+                            aa = null;
+                        });
+                    }
+                }
+            });
+            $("#save").click(function () {
+                var sh_user_id = $("#select").combobox("getValue");
+                var sh_user_name = $("#select").combobox("getText");
+                if (dd == 1) {
+                    var rows = datagrid.datagrid('getSelected');
+                    var id = rows.id;
+                    var FABU = 1;
+                    Ajax(true, global.bb["GetBBProject"], { LoginID: LocalID, id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                        }
+                        update_num = data.Data.update_num + 1;
+
+                        var bb_user_name = $("#bb_user_name").val();
+                        var bb_depart_name = $("#bb_depart_name").val();
+                        var bb_tel = $("#bb_tel").val();
+                        var project_name = $("#project_name").val();
+                        var project_address = $("#project_address").val();
+                        var a_name = $("#a_name").val();
+                        var a_depart_name = $("#a_depart_name").val();
+                        var a_contact = $("#a_contact").val();
+                        var a_headship = $("#a_headship").val();
+                        var a_tel = $("#a_tel").val();
+                        var project_key = $("#project_key").val();
+                        var project_key1 = $("#project_key1").val();
+                        var project_key2 = $("#project_key2").val();
+                        var integra_name = $("#integra_name").val();
+                        var integra_depart_name = $("#integra_depart_name").val();
+                        var integra_contact = $("#integra_contact").val();
+                        var integra_headship = $("#integra_headship").val();
+                        var integra_tel = $("#integra_tel").val();
+                        var design_name = $("#design_name").val();
+                        var design_depart_name = $("#design_depart_name").val();
+                        var design_contact = $("#design_contact").val();
+                        var design_headship = $("#design_headship").val();
+                        var design_tel = $("#design_tel").val();
+                        var estimated_project_date = $("#estimated_project_date").val();
+                        var estimated_purchase_date = $("#estimated_purchase_date").val();
+                        var subsystem_info = $("#subsystem_info").val();
+                        var project_scale = $("#project_scale").val();
+                        var work_schedule = $("#work_schedule").val();
+                        var work_schedule1 = $("#work_schedule1").val();
+                        var work_schedule2 = $("#work_schedule2").val();
+                        var work_schedule3 = $("#work_schedule3").val();
+                        var purchaser_info = $("#purchaser_info").textbox('getValue');
+                        var history_log = $("#history_log").textbox('getValue');
+                        var demo = $("#demo").textbox('getValue');
+                        var opinion = $("#opinion").textbox('getValue');
+                        var result_track = $("#result_track").textbox('getValue');
+                        bb_depart_name = bb_depart_name;
+                        bb_user_name = bb_user_name;
+                        var tjsj = new Date();
+                        var begin_time = formatDateTime(tjsj);
+                        if (bb_tel == "") {
+                            $.messager.alert("提示", "报备人联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_name == "") {
+                            $.messager.alert("提示", "要求完成时间不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_address == "") {
+                            $.messager.alert("提示", "项目所在地不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_name == "") {
+                            $.messager.alert("提示", "甲方单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_contact == "") {
+                            $.messager.alert("提示", "甲方联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key == "") {
+                            $.messager.alert("提示", "关键字1不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key1 == "") {
+                            $.messager.alert("提示", "关键字2不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key2 == "") {
+                            $.messager.alert("提示", "关键字3不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_name == "") {
+                            $.messager.alert("提示", "集成商单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_contact == "") {
+                            $.messager.alert("提示", "集成商联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_name == "") {
+                            $.messager.alert("提示", "设计单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_contact == "") {
+                            $.messager.alert("提示", "设计单位联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (sh_user_id == "") {
+                            $.messager.alert("提示", "请选择审核人！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        Ajax(true, global.bb["UpdateBBProject"], { LoginID: LocalID, id: id, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, FABU: FABU, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "修改成功", "info");
+                            Ajax(true, global.bb["UpdateBBProjectFlow"], { LoginID: LocalID, id: id, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $('#win').window('close');
+                                loaddata();
+                                document.getElementById('download').innerHTML = "";
+                                Ajax(true, global.bb["UpBBSHEMail"], { LoginID: LocalID, id: id }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                });
+                            });
+                        });
+                    });
+                }
+                if (aa == 0) {
+                    Ajax(true, global.bb["GetBBProjectID"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                        }
+                        xmid = data.Data;
+                        var bb_user_name = $("#bb_user_name").val();
+                        var bb_depart_name = $("#bb_depart_name").val();
+                        var bb_tel = $("#bb_tel").val();
+                        var project_name = $("#project_name").val();
+                        var project_address = $("#project_address").val();
+                        var a_name = $("#a_name").val();
+                        var a_depart_name = $("#a_depart_name").val();
+                        var a_contact = $("#a_contact").val();
+                        var a_headship = $("#a_headship").val();
+                        var a_tel = $("#a_tel").val();
+                        var project_key = $("#project_key").val();
+                        var project_key1 = $("#project_key1").val();
+                        var project_key2 = $("#project_key2").val();
+                        var integra_name = $("#integra_name").val();
+                        var integra_depart_name = $("#integra_depart_name").val();
+                        var integra_contact = $("#integra_contact").val();
+                        var integra_headship = $("#integra_headship").val();
+                        var integra_tel = $("#integra_tel").val();
+                        var design_name = $("#design_name").val();
+                        var design_depart_name = $("#design_depart_name").val();
+                        var design_contact = $("#design_contact").val();
+                        var design_headship = $("#design_headship").val();
+                        var design_tel = $("#design_tel").val();
+                        var estimated_project_date = $("#estimated_project_date").val();
+                        var estimated_purchase_date = $("#estimated_purchase_date").val();
+                        var subsystem_info = $("#subsystem_info").val();
+                        var project_scale = $("#project_scale").val();
+                        var work_schedule = $("#work_schedule").val();
+                        var work_schedule1 = $("#work_schedule1").val();
+                        var work_schedule2 = $("#work_schedule2").val();
+                        var work_schedule3 = $("#work_schedule3").val();
+                        var purchaser_info = $("#purchaser_info").textbox('getValue');
+                        var history_log = $("#history_log").textbox('getValue');
+                        var demo = $("#demo").textbox('getValue');
+                        var opinion = $("#opinion").textbox('getValue');
+                        var result_track = $("#result_track").textbox('getValue');
+                        bb_depart_name = bb_depart_name;
+                        bb_user_name = bb_user_name;
+                        var tjsj = new Date();
+                        var begin_time = formatDateTime(tjsj);
+                        if (bb_tel == "") {
+                            $.messager.alert("提示", "报备人联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_name == "") {
+                            $.messager.alert("提示", "要求完成时间不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_address == "") {
+                            $.messager.alert("提示", "项目所在地不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_name == "") {
+                            $.messager.alert("提示", "甲方单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_contact == "") {
+                            $.messager.alert("提示", "甲方联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (a_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key == "") {
+                            $.messager.alert("提示", "关键字1不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key1 == "") {
+                            $.messager.alert("提示", "关键字2不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (project_key2 == "") {
+                            $.messager.alert("提示", "关键字3不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_name == "") {
+                            $.messager.alert("提示", "集成商单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_contact == "") {
+                            $.messager.alert("提示", "集成商联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (integra_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_name == "") {
+                            $.messager.alert("提示", "设计单位名不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_contact == "") {
+                            $.messager.alert("提示", "设计单位联系人不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (design_tel == "") {
+                            $.messager.alert("提示", "联系方式不能为空！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        if (sh_user_id == "") {
+                            $.messager.alert("提示", "请选择审核人！", "error");
+                            $("#select").combobox();
+                            return;
+                        }
+                        Ajax(true, global.bb["NewBBProjectXM"], { LoginID: LocalID, id: xmid, project_name: project_name, bb_user_id: bb_user_id, bb_user_name: bb_user_name, bb_depart_name: bb_depart_name, bb_tel: bb_tel, project_address: project_address, sh_user_id: sh_user_id, sh_user_name: sh_user_name, begin_time: begin_time, update_num: update_num, a_name: a_name, a_depart_name: a_depart_name, a_contact: a_contact, a_headship: a_headship, a_tel: a_tel, integra_name: integra_name, integra_depart_name: integra_depart_name, integra_contact: integra_contact, integra_headship: integra_headship, integra_tel: integra_tel, design_name: design_name, design_depart_name: design_depart_name, design_contact: design_contact, design_headship: design_headship, design_tel: design_tel, history_log: history_log, estimated_project_date: estimated_project_date, estimated_purchase_date: estimated_purchase_date, purchaser_info: purchaser_info, demo: demo, subsystem_info: subsystem_info, project_scale: project_scale, work_schedule: work_schedule, work_schedule2: work_schedule2, work_schedule3: work_schedule3, opinion: opinion, result_track: result_track, project_key: project_key, project_key1: project_key1, project_key2: project_key2 }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            var fjid = data.Data;
+                            Ajax(true, global.bb["UpBBSHEMail"], { LoginID: LocalID, id: xmid }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "添加成功", "info");
+                                $('#win').window('close');
+                            });
+                        });
+                    });
+                }
+            });
+        });
+        function formatDateTime(date) {
+            var y = date.getFullYear();
+            var m = date.getMonth() + 1;
+            m = m < 10 ? ('0' + m) : m;
+            var d = date.getDate();
+            d = d < 10 ? ('0' + d) : d;
+            var h = date.getHours();
+            var minute = date.getMinutes();
+            var second = date.getSeconds();
+            minute = minute < 10 ? ('0' + minute) : minute;
+            second = second < 10 ? ('0' + second) : second;
+            return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+        }
+        function delxq() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 1 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 1 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+        }
+        function delxq2() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 2 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 2 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+        }
+        function delxq3() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 3 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 3 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+        }
+        function delxq4() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 4 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 4 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+        }
+        function delxq5() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 5 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                Ajax(true, global.bb["ClearBBFile"], { LoginID: LocalID, id: id, ids: 5 }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                });
+            }
+        }
+        function loadfj() {
+            if (aa == 0) {
+                var id = xmid;
+                var project_name = $("#project_name").val();
+                ajaxFileUpload(global.bb["UpBBFile"], { LoginID: LocalID, id: id, project_name: project_name }, "file_upload", function (data, status) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                    $("#file_upload").bind("change", function () {
+                        loadfj();
+                    });
+                });
+            }
+            else {
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                var project_name = rows.project_name;
+                ajaxFileUpload(global.bb["UpBBFile"], { LoginID: LocalID, id: id, project_name: rows.project_name }, "file_upload", function (data, status) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    loadfile(id, project_name);
+                    $("#file_upload").bind("change", function () {
+                        loadfj();
+                    });
+                });
+            }
+        }
+        function loadfile(id, project_name) {
+            Ajax(true, global.bb["GetBBProjectFlowEx"], { LoginID: LocalID, id: id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var fj = "";
+                if (data.Data.bb_file != "") {
+                    fj += '<a href="' + '../../BB/' + project_name + '/' + data.Data.bb_file + '">' + data.Data.bb_file + '</a>' + '<button onclick="delxq()">删除</button><br />';
+                }
+
+                if (data.Data.bb_file1 != "") {
+                    fj += '<a href="' + '../../BB/' + project_name + '/' + data.Data.bb_file1 + '">' + data.Data.bb_file1 + '</a>' + '<button onclick="delxq2()">删除</button><br />';
+                }
+                if (data.Data.bb_file2 != "") {
+                    fj += '<a href="' + '../../BB/' + project_name + '/' + data.Data.bb_file2 + '">' + data.Data.bb_file2 + '</a>' + '<button onclick="delxq3()">删除</button><br />';
+                }
+                if (data.Data.bb_file3 != "") {
+                    fj += '<a href="' + '../../BB/' + project_name + '/' + data.Data.bb_file3 + '">' + data.Data.bb_file3 + '</a>' + '<button onclick="delxq4()">删除</button><br />';
+                }
+                if (data.Data.bb_file4 != "") {
+                    fj += '<a href="' + '../../BB/' + project_name + '/' + data.Data.bb_file4 + '">' + data.Data.bb_file4 + '</a>' + '<button onclick="delxq5()">删除</button><br />';
+                }
+                document.getElementById('download').innerHTML = fj;
+            });
+        }
+        function loaddata() {
+            datagrid.datagrid('unselectAll');
+            var row = datagrid.datagrid('getSelected');
+            Ajax(true, global.bb["GetBBProjectPageList"], { LoginID: LocalID, status_flag: "0|1|2", flag: "1", bb_user_id: bb_user_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+                jsondata.total = data.Ex;
+                if (jsondata.total == 0) {
+                    PageNum = 1;
+                }
+                var p = datagrid.datagrid('getPager');
+                $(p).pagination({
+                    beforePageText: '第', //页数文本框前显示的汉字 
+                    afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                    displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                    onSelectPage: function (pageNumber, pageSize) {
+                        PageSize = pageSize;
+                        PageNum = pageNumber;
+                        if (PageNum < 1) {
+                            PageNum = 1;
+                        }
+                        loaddata();
+                    }
+                });
+            });
+
+        }
+
+    </script>
+</head>
+<body>
+    <div class="easyui-panel" title="报备签约" data-options="iconCls:'icon-search',collapsible:false,maximized:true"
+        style="width: 100%;">
+        <div style="width: 100%; height: 500px;">
+            <table id="dg" style="padding: 5px;" data-options="pagination:true">
+            </table>
+        </div>
+    </div>
+    <div id="win" class="easyui-window" title="报备详细" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 500px; height: 450px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north'" style="width: 500px; height: 200px; padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td class="style2">
+                            报备人：
+                        </td>
+                        <td>
+                            <input id="bb_user_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" disabled="disabled" />
+                        </td>
+                        <td class="style1">
+                            报备部门：
+                        </td>
+                        <td>
+                            <input id="bb_depart_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px"  disabled="disabled" />
+                        </td>
+                        <td>
+                            联系方式：
+                        </td>
+                        <td>
+                            <input id="bb_tel" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="style2">
+                            项目名称：
+                        </td>
+                        <td>
+                            <input id="project_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            项目所在地：
+                        </td>
+                        <td>
+                            <input id="project_address" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="style1">
+                            关键字1：
+                        </td>
+                        <td>
+                            <input id="project_key" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            关键字2：
+                        </td>
+                        <td>
+                            <input id="project_key1" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            关键字3：
+                        </td>
+                        <td>
+                            <input id="project_key2" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="style2">
+                            甲方单位：
+                        </td>
+                        <td>
+                            <input id="a_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            负责部门：
+                        </td>
+                        <td>
+                            <input id="a_depart_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            甲方联系人：
+                        </td>
+                        <td>
+                            <input id="a_contact" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系人职务：
+                        </td>
+                        <td>
+                            <input id="a_headship" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系方式：
+                        </td>
+                        <td>
+                            <input id="a_tel" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="style2">
+                            集成商单位：
+                        </td>
+                        <td>
+                            <input id="integra_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            负责部门：
+                        </td>
+                        <td>
+                            <input id="integra_depart_name" class="easyui-validatebox textbox" data-options=""
+                                style="width: 80px; height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            集成商联系人：
+                        </td>
+                        <td>
+                            <input id="integra_contact" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系人职务：
+                        </td>
+                        <td>
+                            <input id="integra_headship" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系方式：
+                        </td>
+                        <td>
+                            <input id="integra_tel" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="style2">
+                            设计单位：
+                        </td>
+                        <td>
+                            <input id="design_name" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td class="style1">
+                            负责部门：
+                        </td>
+                        <td>
+                            <input id="design_depart_name" class="easyui-validatebox textbox" data-options=""
+                                style="width: 80px; height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            设计单位联系人：
+                        </td>
+                        <td>
+                            <input id="design_contact" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系人职务：
+                        </td>
+                        <td>
+                            <input id="design_headship" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            联系方式：
+                        </td>
+                        <td>
+                            <input id="design_tel" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center'," style="padding: 5px;">
+                <table>
+                    <tr>
+                        <td class="style2">
+                            合作历史：
+                        </td>
+                        <td>
+                            <input id="history_log" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 50px;" maxlength="1000" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            采购方信息：
+                        </td>
+                        <td>
+                            <input id="purchaser_info" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 50px;" maxlength="1000" />
+                        </td>
+                    </tr>
+                </table>
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <td>
+                            预计项目时间：
+                        </td>
+                        <td>
+                            <input id="estimated_project_date" class="easyui-datetimebox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            预计采购时间：
+                        </td>
+                        <td>
+                            <input id="estimated_purchase_date" class="easyui-datetimebox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            项目规模：
+                        </td>
+                        <td>
+                            <input id="project_scale" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            子系统组成：
+                        </td>
+                        <td>
+                            <input id="subsystem_info" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            工作程度：
+                        </td>
+                        <td>
+                            <input id="work_schedule" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            <input id="work_schedule1" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            <input id="work_schedule2" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                        <td>
+                            <input id="work_schedule3" class="easyui-validatebox textbox" data-options="" style="width: 80px;
+                                height: 20px" />
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            各方关系及竞争对手情况分析：
+                        </td>
+                        <td>
+                            <input id="demo" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 50px;" maxlength="1000" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            报备意见及其它诉求：
+                        </td>
+                        <td>
+                            <input id="opinion" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 50px;" maxlength="1000" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            报备结果跟踪：
+                        </td>
+                        <td>
+                            <input id="result_track" class="easyui-textbox" data-options="multiline:true" style="width: 400px;
+                                height: 50px;" maxlength="1000" />
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td>
+                            附件:
+                        </td>
+                        <td>
+                            <input id="file_upload" type="file" style="width: 80%;" name="file_upload" />
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td id="download">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <table>
+                    <tr>
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                            id="close" style="width: 80px">关闭</a>
+                    </tr>
+                    <tr>
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                            id="cs" style="width: 80px">撤销</a>
+                    </tr>
+                    <tr>
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                            id="bcca" style="width: 80px">保存草案</a>
+                    </tr>
+                    <tr id="hide">
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)"
+                            id="save" style="width: 80px">提交</a>转到<select id="select" class="easyui-combobox"
+                                style="width: 100px;">
+                            </select>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

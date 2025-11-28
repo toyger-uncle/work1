@@ -1,0 +1,198 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+     <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+</head>
+<body>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid1;
+    var id = null;
+    var jsondata1 = { "total": 0, "rows": [] };
+    $(function () {
+        var editRow = undefined;
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'group_name',
+                title: '控制组名',
+                //                sortable: true,
+                width: 80,
+                editor: { type: 'textbox', options: { required: true, validType: 'length[1,25]', prompt: '长度不能超过25'} }
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid1.datagrid('getSelections');
+                    var group_name = rowData.group_name;
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, mj["RemoveMJControlGrp"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+
+                                    loaddata1();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid1.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    id = rows.id;
+                    if (editRow != undefined) {
+                        datagrid1.datagrid('endEdit', editRow);
+                    }
+                    if (editRow == undefined) {
+                        datagrid1.datagrid('insertRow', {
+                            index: 0,
+                            row: {
+                                id: rows.id,
+                                group_name: rows.group_name
+                            }
+                        });
+
+                        datagrid1.datagrid('beginEdit', 0);
+                        editRow = 1;
+                    }
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    if (editRow != undefined) {
+                        datagrid1.datagrid('endEdit', editRow);
+                    }
+                    if (editRow == undefined) {
+                        datagrid1.datagrid('insertRow', {
+                            index: 0,
+                            row: {
+                                group_name: ''
+                            }
+                        });
+                        datagrid1.datagrid('beginEdit', 0);
+                        editRow = 0;
+                    }
+                }
+            }, {
+                text: "保存", iconCls: "icon-save", handler: function () {
+                    if (editRow == 0) {
+
+                        var hp = $("#dg1").datagrid('getEditor', { index: 0, field: 'group_name' });
+                        var gn = $(hp.target).textbox("getValue");
+                        if (gn == "") {
+                            alert("控制组名不能为空！");
+                            return;
+
+                        }
+                        else if (gn.length > 25) {
+                            alert("控制组名长度不能超过25！");
+                            return;
+                        }
+                        else {
+                            Ajax(true, mj["NewMJControlGrp"], { LoginID: LocalID, group_name: gn }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "保存成功", "info");
+                                loaddata1();
+                            });
+                        }
+                        editRow = undefined;
+                    }
+                    if (editRow == 1) {
+                        var rows = datagrid1.datagrid('getSelected');
+                        var hp = $("#dg1").datagrid('getEditor', { index: 0, field: 'group_name' });
+                        var gn = $(hp.target).textbox("getValue");
+                        var ids = rows.id;
+                        if (gn == "") {
+                            alert("控制组名不能为空！");
+                            return;
+
+                        }
+                        else if (gn.length > 25) {
+                            alert("控制组名长度不能超过25！");
+                            return;
+                        }
+                        else {
+                            Ajax(true, mj["UpdateMJControlGrp"], { LoginID: LocalID, id: ids, group_name: gn }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                $.messager.alert("提示", "修改成功", "info");
+                                loaddata1();
+                            });
+                        }
+                        editRow = undefined;
+                    }
+                }
+            }, {
+                text: "取消", iconCls: "icon-redo", handler: function () {
+                    editRow = undefined;
+                    datagrid1.datagrid('rejectChanges');
+                    datagrid1.datagrid('unselectAll');
+                }
+
+            }]
+        });
+        loaddata1();
+
+    });
+
+
+
+    function loaddata1() {
+        datagrid1.datagrid('unselectAll');
+        Ajax(true, mj["GetMJControlGrpList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+        });
+    }
+    </script>
+<div class="easyui-panel" title="" data-options="collapsible:false" style="">
+<div data-options="region:'left',split:true,collapsible:false" style="width:98%;padding: 2px;">
+       <table id="dg1"></table>
+      </div>
+
+	
+     </div>
+</body>
+</html>

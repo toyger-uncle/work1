@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var tp;
+var jsondata = { "total": 0, "rows": [] };
+var sec = 0;
+function Reflash() {
+    $('#dg').datagrid('reload');
+}
+$(function () {
+    Ajax(true, sys["GetAllSysAreaTree"], { LoginID: LocalID, iconCls: 'icon-tool', iconCls1: 'icon-house', root: '0' }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#qy').combotree({
+            data: JSON2.parse(data.Data)
+        });
+    });
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        fitColumns: true,
+        striped: true,
+        title: "",
+        collapsible: true,
+        remotesort: false,
+        rownumbers: true,
+        singleSelect: true,
+
+        columns: [[{
+            field: 'id',
+            title: '门号',
+            width: 80
+
+        }, {
+            field: 'door_name',
+            title: '门名',
+            width: 80
+        }, {
+            field: 'comm_message',
+            title: '实时状态',
+            width: 80
+        }, {
+            field: 'last_time',
+            title: '最后时间',
+            width: 80
+        }
+            ]]
+    });
+    loaddata();
+    $("#search").click(function () {
+        loaddata($("#text").val(), $("#qy").combotree('getValue'));
+    });
+});
+var rool;
+function loaddata(doorname, areaid) {
+    clearTimeout(rool);
+    Ajax(true, mj["GetMJControlDoorList"], { LoginID: LocalID, door_name: doorname, area_id: areaid }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+        rool = setTimeout(function () { loaddata(doorname, areaid); }, 10000);
+    });
+}
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="简单门状态" data-options="collapsible:true,maximized:true" style="width:100%;height:500px; ">
+<div style="padding:5px;">
+    区域：<select id="qy" class="easyui-combotree"  style="width:100px;height:20px;"> 
+            </select>
+            门名：<input id="text" class="easyui-validatebox textbox" data-options=""style="width:100px;height:20px;" />
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a></div>
+<div data-options="region:'left',split:true,collapsible:false" style="width:100%;">
+       <table id="dg"></table>
+      </div>
+     </div>
+</body>
+</html>

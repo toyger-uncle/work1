@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + 3 + "-";
+        strDate += curr_time.getMonth() + 1 + "-";
+        strDate += curr_time.getDate() + " ";
+        strDate += curr_time.getHours() + ":";
+        strDate += curr_time.getMinutes() + ":";
+        strDate += curr_time.getSeconds();
+        $("#dt2").datetimebox("setValue", strDate);
+        var endTime = $("#dt2").datetimebox("getValue");
+        $("#save").click(function () {
+            var ks = $("#dt1").datetimebox("getValue");
+            var js = $("#dt2").datetimebox("getValue");
+            if (ks == "") {
+                alert("有效期不能为空！");
+                return;
+            }
+            if (js == "") {
+                alert("更改的有效期不能为空！");
+                return;
+            }
+            Ajax(true, global.mj["UpdateMjCardUsingAllEndDate"], { LoginID: LocalID, oldend: ks, newend: js }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $.messager.alert("提示", "修改成功", "info");
+            });
+        });
+    });
+</script>
+
+    </head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+有效期<input class="easyui-datetimebox" id="dt1"data-options="required:true"value="${notices.release_time}" style="width:150px"/> 
+前的修改为<input class="easyui-datetimebox" id="dt2"data-options="required:true" style="width:150px"/> 
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="save" >提交</a>
+        </div>
+</body>
+</html>

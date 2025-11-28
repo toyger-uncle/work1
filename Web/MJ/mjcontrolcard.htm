@@ -1,0 +1,276 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>	
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var datagrid1;
+    var jsondata1 = { "total": 0, "rows": [] };
+    var sortName = "card_num";
+    var sortOrder = "true";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        Ajax(true, mj["GetMJControlMachList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#select').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'control_name',
+                onLoadSuccess: function () {
+                    var data = $('#select').combobox('getData');
+                    $("#select").combobox('select', data[0].id);
+                    loaddata($('#select').combobox('getValue'));
+                    loaddata1($('#select').combobox('getValue'));
+                }
+                //                onChange: function (newValue, oldValue) {
+                //                    loaddata(newValue);
+                //                    loaddata1(newValue);
+                //                }
+            });
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            columns: [[{
+                field: 'card_num',
+                title: '编号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'card_id',
+                title: '库中卡号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'down_card_id',
+                title: '控制器中卡号',
+                //                sortable: true,
+                width: 80,
+                sortable: true
+            }, {
+                field: 'get_date',
+                title: '获取时间',
+                width: 80,
+                sortable: true
+            }]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                if ($('#select').combobox('getValue') == "") { loaddata(); }
+                else { loaddata($('#select').combobox('getValue')); }
+            }
+        });
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            columns: [[{
+                field: 'card_num',
+                title: '编号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'card_id',
+                title: '库中卡号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'user_name',
+                title: '姓名',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'down_flag',
+                title: '下载状况',
+                //                sortable: true,
+                width: 80,
+                sortable: true,
+                formatter: function (value, row) {
+                    if (value == "0") {
+                        return '未下载';
+                    }
+                    if (value == "1") {
+                        return '已下载';
+                    }
+                }
+            }]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                if ($('#select').combobox('getValue') == "") { loaddata1(); }
+                else {
+                    loaddata1($('#select').combobox('getValue'));
+                }
+            }
+        });
+        $("#save").click(function () {
+            var ab = $('#select').combobox('getValue');
+            var aa = $('#aa').val();
+            var bb = $('#bb').val();
+            if (ab == "") {
+                alert("请选择控制器!");
+                return;
+            }
+            if (parseInt(bb) - parseInt(aa) > 1000) {
+                alert("读取数据不能一次性超过1000条!");
+                return;
+            }
+            Ajax(true, global.mj["GetMjDownInfoSORDCount"], { LoginID: LocalID, what_do: "P" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var wcl = data.Data;
+                var clz = data.Ex;
+                if ((wcl + clz) > 0) {
+                    $.messager.alert('提示', "<p class='infoReport'>系统正忙，请稍后再试！</br>"
+                    + "当前正在处理数量：（" + clz + "）</br>" + "未处理数量：（" + wcl + "）</p>", 'error');
+                    return;
+                }
+                else {
+                    Ajax(true, mj["UpCard"], { LoginID: LocalID, mach_id: ab, b_num: aa, e_num: bb }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                    });
+                }
+            });
+        });
+        $("#search").click(function () {
+            var ab = $('#select').combobox('getValue');
+            if (ab == "") {
+                alert("请选择控制器!");
+                return;
+            }
+            loaddata1(ab);
+            loaddata(ab);
+        });
+    });
+
+    function loaddata(a) {
+//        var a = $('#select').combobox('getValue');
+        datagrid.datagrid('unselectAll');
+        Ajax(true, mj["GetMjReadControlCardPageList"], { LoginID: LocalID, control_id: a, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                        loaddata(a);
+                }
+            });
+        });
+    }
+    function loaddata1(a) {
+//        var a = $('#select').combobox('getValue');
+        datagrid1.datagrid('unselectAll');
+        Ajax(true, mj["GetMjControlCardPageList"], { LoginID: LocalID, control_id: a, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.total = data.Ex;
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+            if (jsondata1.total == 0) {
+                PageNum = 1;
+            }
+            var pp = datagrid1.datagrid('getPager');
+            $(pp).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata1.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata1.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata1.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata1(a);
+                }
+            });
+        });
+    }
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="下载卡反读" data-options="collapsible:false,maximized:true" style="width:100%;height:500px; ">
+<div data-options="region:'north',collapsible:false,border:false" >
+<div  style="padding:2px;">
+    控制器名：<select id="select" class="easyui-combobox"  style="width:100px;height:20px">  </select> 
+   编号：从 <input id="aa" class="easyui-validatebox textbox" value="1" data-options="required:true" style="width:50px;height:20px;" />
+    到<input id="bb" class="easyui-validatebox textbox" value="10" data-options="required:true" style="width:50px;height:20px;" />
+    <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">读取</a>
+<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'" style="width:80px">查询</a>
+</div>
+ <div style="padding:2px;">
+<table id="dg" data-options="pagination:true"></table>
+</div>
+<div style="padding:2px;">
+<table id="dg1" data-options="pagination:true"></table>
+</div>
+ </div>
+ </div>
+
+</body>
+</html>

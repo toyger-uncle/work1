@@ -1,0 +1,128 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <style  type="text/css" media="print" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+    .noprint
+    {
+        display:none }
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var datatable;
+    var jsondata = { "total": 0, "rows": [] };
+        var request = {
+            QueryString: function (val) {
+                var uri = window.location.search;
+                var re = new RegExp("" + val + "\=([^\&\?]*)", "ig");
+                return ((uri.match(re)) ? (uri.match(re)[0].substr(val.length + 1)) : null);
+            }
+        }
+        $(function () {
+            //var node = request.QueryString("node");
+            var id = request.QueryString("id");
+
+            tree = $("#tt").tree({
+                animate: true,
+                onSelect: function (node) {
+                    if (node.attributes.kind == "U") {
+                        Ajax(true, global.sys["GetUserFile"], { LoginID: LocalID, id: node.id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            document.getElementById('img1').src = "../../Qr/" + data.Data.qrcode;
+                            
+                        });
+                    }
+                    else {
+                        document.getElementById('img1').src = "";
+                    }
+                }
+            });
+            $("#btn").click(function (e) {
+                var arr = $('#tt').tree('getChildren');
+                var str = $("#findnode").val();
+                if (arr.length <= 0) return;
+                var getObj = null;
+                var wc;
+                for (i = 0; i < arr.length; i++) {
+                    wc = arr[i].id;
+                    if (arr[i].text.indexOf(str) != -1) {
+                        getObj = arr[i];
+                        break
+                    }
+                }
+                if (getObj == null) { alert("查无此人") }
+                else {
+                    var node = $('#tt').tree('find', wc);
+                    $('#tt').tree('expandTo', node.target);
+                    $('#tt').tree('select', node.target);
+                }
+            });
+            loaddata();
+            $("#dayin").click(function () {
+                document.getElementById('img1').focus();
+                window.print();
+            });
+            $("#fanhui").click(function () {
+                window.location.href = "xiangqingdayinX.htm?id=" + id ;
+            });
+        });
+        function loaddata() {
+            Ajax(true, global.sys["GetAllDepartUserTree"], { LoginID: LocalID, iconUls: 'icon-man', iconCls: 'icon-tool', state: 'closed' }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.total = data.Data.length;
+                jsondata.rows = JSON2.parse(data.Data);
+                tree.tree('loadData', jsondata.rows);
+            });
+        }
+
+</script>
+</head>
+<body style=" margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; ">
+
+
+       <div id="dd" class="dd" style="width:270px;height:435px;border:0px solid #000;float:left;text-align: center">
+
+       <img runat="server" id="img1" 
+               class="img1" style="width:200px;height:200px; text-align: center;padding-top:100px;">
+               <div id="ee" class="ee" style="padding-left:20px;"><a class="noprint" 
+               href="javascript:void(0)"style="width:80px; text-align: center;font-size: 20px;" id="dayin" >打印</a>&nbsp;&nbsp;
+               <!--<a class="noprint" 
+               href="javascript:void(0)"style="width:80px; text-align: center;font-size: 20px;" id="fanhui" >返回</a><--></div>
+     
+               </div>
+<div class="noprint" title=""style="width:250px;height:850px;float:right; overflow-x: hidden; overflow-y: auto;">
+               <div class="noprint">
+        <input type="text" id="findnode"/><input type="button" id="btn" value="搜索"/>
+               </div>
+<div class="easyui-panel" title="人员树" style="width:250px;height:800px;">
+		    <ul class="" id="tt" style=""></ul></div>
+		</div>
+       
+
+</body>
+</html>

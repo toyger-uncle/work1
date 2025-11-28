@@ -1,0 +1,56 @@
+﻿body,html{height:100%; font-size:12px; font-family:@宋体;}
+body{padding:0px; margin:0; overflow:hidden;font-family:新宋体;}  
+#layout{width:100%; margin:0; padding:0;} 
+.space{ color:#E7E7E7;}
+/* 顶部*/ 
+.l-topinfo{ margin:0; padding:0; height:53px; line-height: 50px; position:relative; background:url(../../Images/pzcard_top.gif);}
+.l-topinfo-logo{background:url('../../images/pzcard_pzbz.gif') no-repeat 10px 0px; padding-left:70px; height:53px; line-height: 50px; font-size:24px;font-weight:bolder;color:#ffffff;cursor:default;}
+.l-topinfo-welcome{  position:absolute; height:24px; line-height:24px; right:20px; top:2px; width:210px; text-align:right;}
+.l-topinfo-welcome div {display:inline;color:white; margin-left:2px;margin-right:2px; cursor:pointer;}
+#quit{display:inline; height:26px; line-height:26px; padding-left:10px; color:white; cursor:pointer;}
+#info{display:block;color:white; margin-left:2px;margin-right:2px;padding-right:10px; cursor:pointer; background:url(../../Images/pzcard_hydl.gif) no-repeat 20px 0px;cursor:default; width:200px;}
+#quit:hover{color:#f4df52;font-weight:bold;font-size:14px;}
+#info:hover{color:#f4df52;font-weight:bold;}
+#help:hover{color:#f4df52;font-weight:bold;font-size:14px;}
+.l-nav{display:block;margin-left:auto; margin-right:auto; height:27px;line-height:27px;background-image:url(../../images/pzcard_naxbj.gif);border:0px solid #44649e;border-bottom:0px;padding-top:0px;color:#FFFFFF;font-size:12px;}
+.l-nav ul{display:block;float:left;padding-left:0px; margin-top:0px;}
+.l-nav ul li{display:block;float:left;width:95px;height:27px;background-image:url(../../images/nav_listbj.gif);text-align:center;margin-left:0px;margin-right:0px;overflow:hidden;cursor:pointer;text-align:center;font-weight:bolder;}
+.l-nav ul li:hover{color:#f4df52;font-size:14px;}
+
+/* 底部 */ 
+.l-layout-bottom{ background:#E5EDEF; text-align:center;}
+/* 菜单列表 */
+.l-link{ display:block; line-height:22px; height:22px; padding-left:16px;border:1px solid white; margin:4px;}
+.l-link-over{ background:#FFEEAC; border:1px solid #DB9F00;} 
+.menulist{ margin-left:2px; margin-right:2px; margin-top:2px;text-align:left; color:#000;}
+.menulist li{ height:24px; line-height:24px; padding-left:24px; display:block; position:relative; cursor:pointer; text-align:left;}
+.menulist li img{ position:absolute; left:4px; top:4px; width:16px; height:16px;}
+/*.menulist li.over{}
+.menulist li.over .menuitem-l{width:2px; height:24px; position:absolute; left:0; top:0;}
+.menulist li.over .menuitem-r{ width:2px; height:24px; position:absolute; right:0; top:0;}*/
+
+.l-link{ display:block; height:26px; line-height:26px; padding-left:10px; text-decoration:underline; color:#333;}
+.l-link2{text-decoration:underline; color:white; margin-left:2px;margin-right:2px;}
+.l-layout-top{background:#102A49; color:White;}
+.l-layout-bottom{ background:#E5EDEF; text-align:center;}
+#pageloading{position:absolute; left:0px; top:0px; background:white url('loading.gif') no-repeat center; width:100%; height:100%;z-index:99999;}
+.l-link{ display:block; line-height:22px; height:22px; padding-left:16px;border:1px solid white; margin:4px;}
+.l-link-over{ background:#FFEEAC; border:1px solid #DB9F00;} 
+.l-winbar{ background:#2B5A76; height:30px; position:absolute; left:0px; bottom:0px; width:100%; z-index:99999;}
+.space{ color:#E7E7E7;}
+/* 顶部 */ 
+.l-topmenu{ margin:0; padding:0; height:31px; line-height:31px; background:url('lib/images/top.jpg') repeat-x bottom;  position:relative; border-top:1px solid #1D438B;  }
+.l-topmenu-logo{ color:#E7E7E7; padding-left:35px; line-height:26px;background:url('lib/images/topicon.gif') no-repeat 10px 5px;}
+.l-topmenu-welcome{  position:absolute; height:24px; line-height:24px;  right:30px; top:2px;color:#070A0C;}
+.l-topmenu-welcome a{ color:#E7E7E7; text-decoration:underline} 
+    .body-gray2014 #framecenter{
+    margin-top:3px;
+}
+    .viewsourcelink {
+        background:#B3D9F7;  display:block; position:absolute; right:10px; top:3px; padding:6px 4px; color:#333; text-decoration:underline;
+}
+.viewsourcelink-over {
+    background:#81C0F2;
+}
+.l-topmenu-welcome label {color:white;
+}

@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var datagrid1;
+    var dd;
+    var aa;
+    var jsondata = { "total": 0, "rows": [] };
+    var jsondata1 = { "total": 0, "rows": [] };
+    $(function () {
+        datagrid = $("#dg").datagrid({
+            idField: "address_id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'address_id',
+                title: '地址编号',
+                width: 80
+            }, {
+                field: 'display_name',
+                title: '显示屏名',
+                width: 80
+            }]],
+            onSelect: function (rowIndex, rowData) {
+                loaddata1();
+            },
+            onLoadSuccess: function (data) {
+                //默认选中第一行
+                $(this).datagrid('selectRow', 0);
+            }
+        });
+        datagrid1 = $("#dg1").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'display_name',
+                title: '显示屏',
+                width: 80
+            }, {
+                field: 'door_name',
+                title: '门名',
+                width: 40
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelected');
+                    var ids = rowData.id;
+                    var row = datagrid1.datagrid('getSelections');
+                    if (row == null || row.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            var door_id = "";
+                            var display_id = "";
+                            var j = 0;
+                            for (var i = 0; i < row.length; i++) {
+                                if (j != 0) {
+                                    door_id += "|";
+                                    display_id += "|";
+                                }
+                                door_id += row[i].door_id;
+                                display_id += row[i].display_id;
+                                j++;
+                            }
+                            Ajax(true, global.mj["RemoveMjDisplayDoor"], { LoginID: LocalID, display_id: display_id, door_id: door_id }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                loaddata1();
+                                $.messager.alert("提示", "删除成功", "info");
+                            });
+                        }
+                    });
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    var row = datagrid.datagrid('getSelected');
+                    if (row == null) {
+                        $.messager.alert("提示", "未选择显示屏", "error");
+                        return;
+                    }
+                    var id = row.id;
+                    Ajax(true, global.mj["GetMJControlDoorNullDisplayList"], { LoginID: LocalID, display_id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#door').combobox({
+                            data: data.Data,
+                            valueField: 'id',
+                            textField: 'door_name'
+                        });
+                    });
+                    $('#win1').window('open');
+                    $("#door").combobox("setValue", "");
+                }
+            }]
+        });
+        loaddata();
+        $('#win1').window('close');
+        $("#close1").click(function () {
+            $('#win1').window('close');
+        });
+        $("#search").click(function () {
+            var lj = $("#Select1").combobox("getValue");
+            var machtype = $('#Select2').combobox("getValue");
+            loaddata(machtype, lj);
+        });
+        $("#save1").click(function () {
+            var row = datagrid.datagrid('getSelected');
+            var id = row.id;
+            var door = $("#door").combobox("getValue");
+            if (door == "") {
+                alert("门不能为空");
+                return;
+            }
+            Ajax(true, global.mj["NewMjDisplayDoor"], { LoginID: LocalID, display_id: id, door_id: door }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $.messager.alert("提示", "添加成功", "info");
+                $('#win1').window('close');
+                loaddata1();
+            });
+        });
+    });
+
+    function loaddata1() {
+        var row = datagrid.datagrid('getSelected');
+        var id = row.id;
+        Ajax(true, global.mj["GetMjDisplayDoorList"], { LoginID: LocalID, display_id: id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+        });
+    }
+
+
+    function loaddata(machtype, lj) {
+        datagrid.datagrid('unselectAll');
+        var row = datagrid.datagrid('getSelected');
+        Ajax(true, global.pk["GetPKDisplayInfoList"], { LoginID: LocalID, mach_type: machtype, comm_kind: lj }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+    </script>
+</head>
+<body>
+<div class="easyui-panel" title="显示屏" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false,border:false" style="padding:5px;" >
+类型：<select id="Select1" class="easyui-combobox"  style="width:80px;height:20px">
+                <option value="">全部</option>
+                <option value="5">BX-5MK1</option> 
+                <option value="4">BX-5K1</option></select> 
+                连接方式：<select id="Select2" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="">全部</option>
+                    <option value="1">串口通讯</option>
+                    <option value="2">被动通讯</option> </select> 
+                    <a class="easyui-linkbutton" data-options="iconCls:'icon-search'" href="javascript:void(0)" id="search" style="width:80px">搜索</a>
+</div>
+<div data-options="region:'west',collapsible:false" title=""style="padding:2px;width:250px; ">
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+	</div>
+<div data-options="region:'center'" style="padding:2px;width:250px">
+<table id="dg1"style="padding: 5px;"data-options=""> </table>  
+</div>
+</div>
+</div>
+
+<div id="win1" class="easyui-window" title="显示屏门维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:120px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>门:</td>
+				<td><select id="door" class="easyui-combobox"  style="width:140px;height:20px"> </select></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close1" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save1" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,566 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var jsondata = { "total": 0, "rows": [] };
+$(function () {
+    Ajax(true, mj["GetMjRightGroupList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#nextgroup').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+    });
+    Ajax(true, mj["GetMjTimeGroupList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#mondaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#tuesdaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#wednesdaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#thursdaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#fridaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#saturdaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#sundaytime').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime1').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime2').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime3').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime4').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime5').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime6').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime7').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#holidaytime8').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#securitydoor').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+        $('#pswdoor').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'name'
+        });
+    });
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        fitColumns: true,
+        striped: true,
+        title: "",
+        collapsible: true,
+        remotesort: false,
+        rownumbers: true,
+        singleSelect: true,
+        columns: [[{
+            field: 'name',
+            title: '应用群组名',
+            //                sortable: true,
+            width: 80
+        }]],
+        onClickRow: function (index, row) {
+            loadright();
+        },
+        onDblClickRow: function (rowIndex, rowData) {
+            $('#win').window('open');
+            $('#text').val(rowData.name);
+        },
+        onLoadSuccess: function (data) {
+            //默认选中第一行
+            $(this).datagrid('selectRow', 0);
+            loadright();
+        }
+    });
+    loaddata();
+    $('#win').window('close');
+    $("#close").click(function () {
+        $('#win').window('close');
+    });
+    $("#A1").click(function () {
+        var row = datagrid.datagrid('getSelected');
+        var id = row.id;
+        var name = $('#text').val();
+        Ajax(true, mj["UpdateMjRightGroup"], { LoginID: LocalID, id: id, name: name }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $.messager.alert("提示", "保存成功", "info");
+            loaddata();
+            $('#win').window('close');
+        });
+    });
+    $("#save").click(function () {
+        var row = datagrid.datagrid('getSelected');
+        var id = row.id;
+        var name = row.name;
+        var monday_time = $("#mondaytime").combobox('getValue');
+        if (monday_time == "") {
+            alert("周一通行时区不能为空");
+            return;
+        }
+        var security_door = $("#securitydoor").combobox('getValue');
+        if (security_door == "") {
+            alert("安全密码时区不能为空");
+            return;
+        }
+        var tuesday_time = $("#tuesdaytime").combobox('getValue');
+        if (tuesday_time == "") {
+            alert("周二通行时区不能为空");
+            return;
+        }
+        var psw_door = $("#pswdoor").combobox('getValue');
+        if (psw_door == "") {
+            alert("个人密码时区不能为空");
+            return;
+        }
+        var wednesday_time = $("#wednesdaytime").combobox('getValue');
+        if (wednesday_time == "") {
+            alert("周三通行时区不能为空");
+            return;
+        }
+        var next_group;
+        if ($("#nextgroup").combobox('getText') == "无") { next_group = "00"; }
+        else { next_group = $("#nextgroup").combobox('getValue'); }
+        var thursday_time = $("#thursdaytime").combobox('getValue');
+        if (thursday_time == "") {
+            alert("周四通行时区不能为空");
+            return;
+        }
+        var friday_time = $("#fridaytime").combobox('getValue');
+        if (friday_time == "") {
+            alert("周五通行时区不能为空");
+            return;
+        }
+        var saturday_time = $("#saturdaytime").combobox('getValue');
+        if (saturday_time == "") {
+            alert("周六通行时区不能为空");
+            return;
+        }
+        var sunday_time = $("#sundaytime").combobox('getValue');
+        if (sunday_time == "") {
+            alert("周日通行时区不能为空");
+            return;
+        }
+        var holiday_time1 = $("#holidaytime1").combobox('getValue');
+        if (holiday_time1 == "") {
+            alert("种类1#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time2 = $("#holidaytime2").combobox('getValue');
+        if (holiday_time2 == "") {
+            alert("种类2#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time3 = $("#holidaytime3").combobox('getValue');
+        if (holiday_time3 == "") {
+            alert("种类3#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time4 = $("#holidaytime4").combobox('getValue');
+        if (holiday_time4 == "") {
+            alert("种类4#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time5 = $("#holidaytime5").combobox('getValue');
+        if (holiday_time5 == "") {
+            alert("种类5#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time6 = $("#holidaytime6").combobox('getValue');
+        if (holiday_time6 == "") {
+            alert("种类6#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time7 = $("#holidaytime7").combobox('getValue');
+        if (holiday_time7 == "") {
+            alert("种类7#假日当天时区不能为空");
+            return;
+        }
+        var holiday_time8 = $("#holidaytime8").combobox('getValue');
+        if (holiday_time8 == "") {
+            alert("种类8#假日当天时区不能为空");
+            return;
+        }
+        var monday_out;
+        if ($("#mondayout").prop("checked") == true) { monday_out = 1; }
+        else { monday_out = 0; }
+        var tuesday_out;
+        if ($("#tuesdayout").prop("checked") == true) { tuesday_out = 1; }
+        else { tuesday_out = 0; }
+        var wednesday_out;
+        if ($("#wednesdayout").prop("checked") == true) { wednesday_out = 1; }
+        else { wednesday_out = 0; }
+        var thursday_out;
+        if ($("#thursdayout").prop("checked") == true) { thursday_out = 1; }
+        else { thursday_out = 0; }
+        var friday_out;
+        if ($("#fridayout").prop("checked") == true) { friday_out = 1; }
+        else { friday_out = 0; }
+        var saturday_out;
+        if ($("#saturdayout").prop("checked") == true) { saturday_out = 1; }
+        else { saturday_out = 0; }
+        var sunday_out;
+        if ($("#sundayout").prop("checked") == true) { sunday_out = 1; }
+        else { sunday_out = 0; }
+        var holiday_out1;
+        if ($("#holidayout1").prop("checked") == true) { holiday_out1 = 1; }
+        else { holiday_out1 = 0; }
+        var holiday_out2;
+        if ($("#holidayout2").prop("checked") == true) { holiday_out2 = 1; }
+        else { holiday_out2 = 0; }
+        var holiday_out3;
+        if ($("#holidayout3").prop("checked") == true) { holiday_out3 = 1; }
+        else { holiday_out3 = 0; }
+        var holiday_out4;
+        if ($("#holidayout4").prop("checked") == true) { holiday_out4 = 1; }
+        else { holiday_out4 = 0; }
+        var holiday_out5;
+        if ($("#holidayout5").prop("checked") == true) { holiday_out5 = 1; }
+        else { holiday_out5 = 0; }
+        var holiday_out6;
+        if ($("#holidayout6").prop("checked") == true) { holiday_out6 = 1; }
+        else { holiday_out6 = 0; }
+        var holiday_out7;
+        if ($("#holidayout7").prop("checked") == true) { holiday_out7 = 1; }
+        else { holiday_out7 = 0; }
+        var holiday_out8;
+        if ($("#holidayout8").prop("checked") == true) { holiday_out8 = 1; }
+        else { holiday_out8 = 0; }
+        Ajax(true, mj["UpdateMjRightGroup"], { LoginID: LocalID, id: id, name: name, monday_time: monday_time, tuesday_time: tuesday_time, wednesday_time: wednesday_time, thursday_time: thursday_time, friday_time: friday_time, saturday_time: saturday_time, sunday_time: sunday_time, monday_out: monday_out, tuesday_out: tuesday_out, wednesday_out: wednesday_out, thursday_out: thursday_out, friday_out: friday_out, saturday_out: saturday_out, sunday_out: sunday_out, holiday_time1: holiday_time1, holiday_time2: holiday_time2, holiday_time3: holiday_time3, holiday_time4: holiday_time4, holiday_time5: holiday_time5, holiday_time6: holiday_time6, holiday_time7: holiday_time7, holiday_time8: holiday_time8, holiday_out1: holiday_out1, holiday_out2: holiday_out2, holiday_out3: holiday_out3, holiday_out4: holiday_out4, holiday_out5: holiday_out5, holiday_out6: holiday_out6, holiday_out7: holiday_out7, holiday_out8: holiday_out8, security_door: security_door, psw_door: psw_door, next_group: next_group }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $.messager.alert("提示", "保存成功", "info");
+            //            loadright(data);
+            //            loaddata();
+            $("#mondaytime").val();
+            $("#securitydoor").val();
+            $("#tuesdaytime").val();
+            $("#pswdoor").val();
+            $("#wednesdaytime").val();
+            if ($("#nextgroup").val() == 00) { $("#nextgroup").combobox("setValue", "无"); }
+            else { $("#nextgroup").val() }
+            $("#thursdaytime").val();
+            $("#fridaytime").val();
+            $("#saturdaytime").val();
+            $("#sundaytime").val();
+            $("#holidaytime1").val();
+            $("#holidaytime2").val();
+            $("#holidaytime3").val();
+            $("#holidaytime4").val();
+            $("#holidaytime5").val();
+            $("#holidaytime6").val();
+            $("#holidaytime7").val();
+            $("#holidaytime8").val();
+            if (monday_out == 1) { $("#mondayout").prop("checked", true); }
+            else { $("#mondayout").prop("checked", false); }
+            if (tuesday_out == 1) { $("#tuesdayout").prop("checked", true); }
+            else { $("#tuesdayout").prop("checked", false); }
+            if (wednesday_out == 1) { $("#wednesdayout").prop("checked", true); }
+            else { $("#wednesdayout").prop("checked", false); }
+            if (thursday_out == 1) { $("#thursdayout").prop("checked", true); }
+            else { $("#thursdayout").prop("checked", false); }
+            if (friday_out == 1) { $("#fridayout").prop("checked", true); }
+            else { $("#fridayout").prop("checked", false); }
+            if (saturday_out == 1) { $("#saturdayout").prop("checked", true); }
+            else { $("#saturdayout").prop("checked", false); }
+            if (sunday_out == 1) { $("#sundayout").prop("checked", true); }
+            else { $("#sundayout").prop("checked", false); }
+            if (holiday_out1 == 1) { $("#holidayout1").prop("checked", true); }
+            else { $("#holidayout1").prop("checked", false); }
+            if (holiday_out2 == 1) { $("#holidayout2").prop("checked", true); }
+            else { $("#holidayout2").prop("checked", false); }
+            if (holiday_out3 == 1) { $("#holidayout3").prop("checked", true); }
+            else { $("#holidayout3").prop("checked", false); }
+            if (holiday_out4 == 1) { $("#holidayout4").prop("checked", true); }
+            else { $("#holidayout4").prop("checked", false); }
+            if (holiday_out5 == 1) { $("#holidayout5").prop("checked", true); }
+            else { $("#holidayout5").prop("checked", false); }
+            if (holiday_out6 == 1) { $("#holidayout6").prop("checked", true); }
+            else { $("#holidayout6").prop("checked", false); }
+            if (holiday_out7 == 1) { $("#holidayout7").prop("checked", true); }
+            else { $("#holidayout7").prop("checked", false); }
+            if (holiday_out8 == 1) { $("#holidayout8").prop("checked", true); }
+            else { $("#holidayout8").prop("checked", false); }
+        });
+    });
+
+});
+function loaddata() {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, mj["GetMjRightGroupList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+
+}
+function loadright() {
+    var row = datagrid.datagrid('getSelected');
+
+        $("#mondaytime").combobox("setValue", row.monday_time);
+        $("#securitydoor").combobox("setValue", row.security_door);
+        $("#tuesdaytime").combobox("setValue", row.tuesday_time);
+        $("#pswdoor").combobox("setValue", row.psw_door);
+        $("#wednesdaytime").combobox("setValue", row.wednesday_time);
+        if (row.next_group==00) {  $("#nextgroup").combobox("setValue", "无");}
+        $("#thursdaytime").combobox("setValue", row.thursday_time);
+        $("#fridaytime").combobox("setValue", row.friday_time);
+        $("#saturdaytime").combobox("setValue", row.saturday_time);
+        $("#sundaytime").combobox("setValue", row.sunday_time);
+        $("#holidaytime1").combobox("setValue", row.holiday_time1);
+        $("#holidaytime2").combobox("setValue", row.holiday_time2);
+        $("#holidaytime3").combobox("setValue", row.holiday_time3);
+        $("#holidaytime4").combobox("setValue", row.holiday_time4);
+        $("#holidaytime5").combobox("setValue", row.holiday_time5);
+        $("#holidaytime6").combobox("setValue", row.holiday_time6);
+        $("#holidaytime7").combobox("setValue", row.holiday_time7);
+        $("#holidaytime8").combobox("setValue", row.holiday_time8);
+        if (row.monday_out == 1) { $("#mondayout").prop("checked", true); }
+        else { $("#mondayout").prop("checked", false); }
+        if (row.tuesday_out == 1) { $("#tuesdayout").prop("checked", true); }
+        else { $("#tuesdayout").prop("checked", false); }
+        if (row.wednesday_out == 1) { $("#wednesdayout").prop("checked", true); }
+        else { $("#wednesdayout").prop("checked", false); }
+        if (row.thursday_out == 1) { $("#thursdayout").prop("checked", true); }
+        else { $("#thursdayout").prop("checked", false); }
+        if (row.friday_out == 1) { $("#fridayout").prop("checked", true); }
+        else { $("#fridayout").prop("checked", false); }
+        if (row.saturday_out == 1) { $("#saturdayout").prop("checked", true); }
+        else { $("#saturdayout").prop("checked", false); }
+        if (row.sunday_out == 1) { $("#sundayout").prop("checked", true); }
+        else { $("#sundayout").prop("checked", false); }
+        if (row.holiday_out1 == 1) { $("#holidayout1").prop("checked", true); }
+        else { $("#holidayout1").prop("checked", false); }
+        if (row.holiday_out2 == 1) { $("#holidayout2").prop("checked", true); }
+        else { $("#holidayout2").prop("checked", false); }
+        if (row.holiday_out3 == 1) { $("#holidayout3").prop("checked", true); }
+        else { $("#holidayout3").prop("checked", false); }
+        if (row.holiday_out4 == 1) { $("#holidayout4").prop("checked", true); }
+        else { $("#holidayout4").prop("checked", false); }
+        if (row.holiday_out5 == 1) { $("#holidayout5").prop("checked", true); }
+        else { $("#holidayout5").prop("checked", false); }
+        if (row.holiday_out6 == 1) { $("#holidayout6").prop("checked", true); }
+        else { $("#holidayout6").prop("checked", false); }
+        if (row.holiday_out7 == 1) { $("#holidayout7").prop("checked", true); }
+        else { $("#holidayout7").prop("checked", false); }
+        if (row.holiday_out8 == 1) { $("#holidayout8").prop("checked", true); }
+        else { $("#holidayout8").prop("checked", false); }
+}
+</script>
+    </head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'west',collapsible:false,iconCls:'icon-search'" title=""style="padding:2px;width:150px; ">
+		<table id="dg"style="width:127px; " ></table>
+	</div>
+<div data-options="region:'center'" style="width:60px">
+<div style="padding:5px;">
+	<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px;" id="save" >提交</a></div>
+   <div class="right">
+	<table>
+		<tr>
+			<td class="blank"></td>
+			<td class="title">周通行时区</td>
+			<td class="title">外出</td>
+			<td class="title"></td>
+			<td class="title"></td>
+		</tr>
+		<tr>
+			<td class="time">星期一:</td>
+			<td class="drop"><select id="mondaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="mondayout" /></td>
+			<td class="drop">安全密码时区：</td>
+			<td class="drop"><select id="securitydoor" class="easyui-combobox"  style="width:100px;"></select></td>
+		</tr>
+        <tr>
+			<td class="time">星期二:</td>
+			<td class="drop"><select id="tuesdaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="tuesdayout" /></td>
+			<td class="drop">个人密码时区：</td>
+			<td class="drop"><select id="pswdoor" class="easyui-combobox"  style="width:100px;"></select></td>
+		</tr>
+        <tr>
+			<td class="time">星期三:</td>
+			<td class="drop"><select id="wednesdaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="wednesdayout" /></td>
+			<td class="drop">下一链接群组：</td>
+			<td class="drop"><select id="nextgroup" class="easyui-combobox"  style="width:100px;"></select></td>
+		</tr>
+        <tr>
+			<td class="time">星期四:</td>
+			<td class="drop"><select id="thursdaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="thursdayout" /></td>
+			<td class="drop"></td>
+			<td class="drop"></td>
+		</tr>
+        <tr>
+			<td class="time">星期五:</td>
+			<td class="drop"><select id="fridaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="fridayout" /></td>
+			<td class="drop"></td>
+			<td class="drop"></td>
+		</tr>
+        <tr>
+			<td class="time">星期六:</td>
+			<td class="drop"><select id="saturdaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="saturdayout" /></td>
+			<td class="drop"></td>
+			<td class="drop"></td>
+		</tr>
+        <tr>
+			<td class="time">星期日:</td>
+			<td class="drop"><select id="sundaytime" class="easyui-combobox"  style="width:100px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="sundayout" /></td>
+			<td class="drop"></td>
+			<td class="drop"></td>
+		</tr>
+	</table>
+</div>
+<div class="right1">
+	<table>
+		<tr>
+			<td class="title">种类</td>
+			<td class="title">假日当天时区</td>
+			<td class="title">外出</td>
+		</tr>
+		<tr>
+			<td class="drop">1#</td>
+			<td class="drop"><select id="holidaytime1" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout1" /></td>
+		</tr>
+        <tr>
+			<td class="drop">2#</td>
+			<td class="drop"><select id="holidaytime2" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout2" /></td>
+		</tr>
+        <tr>
+			<td class="drop">3#</td>
+			<td class="drop"><select id="holidaytime3" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout3" /></td>
+		</tr>
+        <tr>
+			<td class="drop">4#</td>
+			<td class="drop"><select id="holidaytime4" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout4" /></td>
+		</tr>
+        <tr>
+			<td class="drop">5#</td>
+			<td class="drop"><select id="holidaytime5" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout5" /></td>
+		</tr>
+        <tr>
+			<td class="drop">6#</td>
+			<td class="drop"><select id="holidaytime6" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout6" /></td>
+		</tr>
+       <tr>
+			<td class="drop">7#</td>
+			<td class="drop"><select id="holidaytime7" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout7" /></td>
+		</tr>
+        <tr>
+			<td class="drop">8#</td>
+			<td class="drop"><select id="holidaytime8" class="easyui-combobox"  style="width:200px;">  </select> </td>
+			<td class="drop"><input type="checkbox" id="holidayout8" /></td>
+		</tr>
+        </table>
+</div>
+</div>
+</div>
+<div id="win" class="easyui-window" title="应用群组" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:200px;height:120px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'north'" style="padding:10px;">
+        群组名：<input id="text" class="easyui-validatebox textbox" style="width:70px"" />
+	
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A1" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

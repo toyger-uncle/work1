@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="js/MJCardMake.js" type="text/javascript"></script>
+</head>
+<body class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',collapsible:false" title="提示" style="padding: 5px 0 0;
+        height: 80px">
+        <div id="tou" style="width: 600px; text-align: left; color: Blue; font-weight: bold;
+            font-size: large;">
+            手动操作中……</div>
+        <div id="info" style="width: 800px; text-align: left; color: Blue; font-weight: bold;
+            font-size: large;">
+            请把卡片放到读卡器上</div>
+    </div>
+    <div data-options="region:'center',collapsible:false" title='操作'>
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north',collapsible:false" style='height: 132px;'>
+                <table style="padding: 5px 0 0;">
+                    <tr>
+                        <th>
+                            制卡方式:
+                        </th>
+                        <td>
+                            <input id="reader" style="width: 106px" class="easyui-combobox" data-options="valueField: 'value',textField: 'text',data: [{
+			text: '无读卡器',
+			value: '0'
+		},{
+			text: '普通读卡器',
+			value: '1'
+		}],onChange:function(newValue, oldValue){setReader(newValue)}" />
+                        </td>
+                        <th>
+                            档案号:
+                        </th>
+                        <td>
+                            <input id="id" class="easyui-validatebox textbox" data-options="prompt:'档案号'" style="width: 100px;"
+                                readonly />
+                        </td>
+                        <th>
+                            持卡人:
+                        </th>
+                        <td>
+                            <input id="user_name" class="easyui-validatebox textbox" data-options="prompt:'持卡人'"
+                                style="width: 100px;" readonly />
+                        </td>
+                        <th>
+                            制卡模式:
+                        </th>
+                        <td>
+                            <input id="used_mode" class="easyui-combobox" data-options="valueField: 'value',textField: 'text',data: [{
+			text: '车辆卡',
+			value: '1'
+		},{
+			text: '人员卡',
+			value: '0'
+		}] " style="width: 100px;" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            部门:
+                        </th>
+                        <td>
+                            <select id="depart_id" class="easyui-combobox" data-options="prompt:'部门'" style="width: 106px;"
+                                readonly>
+                            </select>
+                        </td>
+                        <th>
+                            卡号:
+                        </th>
+                        <td>
+                            <input id="card_id" class="easyui-validatebox textbox" data-options="prompt:'卡号'"
+                                style="width: 100px;" />
+                        </td>
+                        <th>
+                            巡检卡:
+                        </th>
+                        <td>
+                            <input id='xunjian' class="easyui-switchbutton" unchecked />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            生效日期:
+                        </th>
+                        <td>
+                            <input id="BeginTime" class="easyui-datebox" style="width: 106px" />
+                        </td>
+                        <th>
+                            失效日期:
+                        </th>
+                        <td>
+                            <input id="EndTime" class="easyui-datebox" style="width: 106px" />
+                        </td>
+                        <th>
+                            卡面编号:
+                        </th>
+                        <td>
+                            <input id="inNum" class="easyui-validatebox textbox" style="width: 100px" />
+                        </td>
+                    </tr>
+                </table>
+                <table class='button' cellpadding='5px'>
+                    <tr>
+                        <td align="center">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="make" onclick='cardMake()'>
+                                制卡</a>
+                        </td>
+                        <td align="center">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="recy" onclick='cardRecycle()'>
+                                退卡</a>
+                        </td>
+                        <td align="center">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="A2" onclick='CardUpdateEndDate()'>
+                                改失效期</a>
+                        </td>
+                        <td align="center">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="A6" onclick='openGMM()'>开门密码</a>
+                        </td>
+                        <td align="center">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="A4" onclick='tbUserClearData()'>
+                                重置</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'center'" style='padding: 5px;'>
+                <div id='barUser' style='padding: 5px;'>
+                    <div style='margin-bottom: 5px'>
+                        姓名:<input id='user_name1' class='easyui-validatebox textbox' style='width: 60px' />
+                        工号:<input id='userid_num1' class='easyui-validatebox textbox' style='width: 60px' />
+                        选择部门:<input id='depart_id1' class='easyui-combobox' style='width: 60px' />
+                        用户类型:<input id='user_kind1' class='easyui-combobox' style='width: 60px' />
+                        未作卡:<input id='notMake' class="easyui-switchbutton" checked="checked" style='width: 60px' />
+                        已做卡:<input id='maked' class="easyui-switchbutton" checked="checked" style='width: 60px' />
+                        &nbsp <a href="#" class="easyui-linkbutton" iconcls="icon-search" plain="true" onclick='iniSearchUser()'>
+                            查询用户</a>
+                    </div>
+                </div>
+                <!--设置用户datagrid-->
+                <table id='tb_user' class='easyui-datagrid' title="用户信息" toolbar='#barUser'>
+                </table>
+            </div>
+            <div data-options="region:'south',collapsible:false">
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'west'" style="width: 50%">
+                        <div id='barRight' style='padding: 5px;'>
+                            <div style='margin-bottom: 5px'>
+                                区域:<input id='area1' class='easyui-combobox' style='width: 100px' />
+                                &nbsp <a href="#" class="easyui-linkbutton" iconcls="icon-add" plain="true" onclick='toolAddClick()'>
+                                    新增</a> <a href="#" class="easyui-linkbutton" iconcls="icon-remove" plain="true" onclick='toolRemoveClick()'>
+                                        删除</a>
+                            </div>
+                        </div>
+                        <!--设置用户datagrid-->
+                        <table id='tbRightUser' class='easyui-datagrid' data-options="rownumbers:true,singleSelect:true,fitColumns:true,striped:true,pagination:true,iconCls:'icon-search'"
+                            title="有线权限" toolbar='#barRight'>
+                            <thead>
+                                <tr>
+                                    <th data-options="field:'door_name',width:100,align:'center'">
+                                        门
+                                    </th>
+                                    <th data-options="field:'group_name',width:100,align:'center'">
+                                        群组名
+                                    </th>
+                                    <th data-options="field:'apb',width:100,align:'center',formatter:  getColumZX">
+                                        门层次管制
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                    <div data-options="region:'center'">
+                        <div id='barRightW' style='padding: 5px;'>
+                            <div style='margin-bottom: 5px'>
+                                区域:<input id='areaWX' class='easyui-combobox' style='width: 100px' />
+                                &nbsp <a href="#" class="easyui-linkbutton" iconcls="icon-add" plain="true" onclick='toolAddClickWX()'>
+                                    新增</a> <a href="#" class="easyui-linkbutton" iconcls="icon-remove" plain="true" onclick='toolRemoveClickWX()'>
+                                        删除</a>
+                            </div>
+                        </div>
+                        <!--设置用户datagrid-->
+                        <table id='tbRightUserWX' class='easyui-datagrid' data-options="rownumbers:true,singleSelect:true,fitColumns:true,striped:true,pagination:true,iconCls:'icon-search'"
+                            title="无线权限" toolbar='#barRightW'>
+                            <thead>
+                                <tr>
+                                    <th data-options="field:'door_name',width:100,align:'center'">
+                                        门
+                                    </th>
+                                    <th data-options="field:'group_name',width:100,align:'center'">
+                                        群组名
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06"
+        style="width: 0px; height: 0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+    <div id="win" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'"
+        style="width: 260px; height: 220px; padding: 10px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 10px 10px 10px 10px;">
+                <table cellspacing="5px">
+                    <tr>
+                        <th>
+                            门：
+                        </th>
+                        <td>
+                            <input id="door_id" class="easyui-combobox" style="width: 120px" data-options="prompt:'请选择门',required:true,validType:'length[1,30]'" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            群组名:
+                        </th>
+                        <td>
+                            <input id="group_name" class="easyui-combobox" style="width: 120px" data-options="prompt:'请选择群组名',required:true,validType:'length[1,30]'" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            门层次管制：
+                        </th>
+                        <td>
+                            <input id="apb" class="easyui-combobox" style="width: 120px" data-options="prompt:'请选择门层次管制',required:true,validType:'length[1,30]'" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; margin: 5 0 5;
+                padding: 5 0 5;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close" onclick='CloseForm()' style="width: 80px">关闭</a> <a class="easyui-linkbutton"
+                        data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" onclick='clickSave()'
+                        style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="winWX" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'"
+        style="width: 260px; height: 180px; padding: 10px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 10px 10px 10px 10px;">
+                <table cellspacing="5px">
+                    <tr>
+                        <th>
+                            门：
+                        </th>
+                        <td>
+                            <input id="door_idWX" class="easyui-combobox" style="width: 120px" data-options="prompt:'请选择门',required:true,validType:'length[1,30]'" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            群组名:
+                        </th>
+                        <td>
+                            <input id="group_nameWX" class="easyui-combobox" style="width: 120px" data-options="prompt:'请选择群组名',required:true,validType:'length[1,30]'" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; margin: 5 0 5;
+                padding: 5 0 5;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="A7" onclick='CloseFormWX()' style="width: 80px">关闭</a> <a class="easyui-linkbutton"
+                        data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A8" onclick='clickSaveWX()'
+                        style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="winPsw" class="easyui-window" title="开门密码设置" data-options="iconCls:'icon-save'"
+        style="width: 280px; height: 180px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 10px 0 0; height: 80px;">
+                <table cellpadding='1px'>
+                    <tr>
+                        <th style="width: 80px;">
+                            &nbsp; 旧密码：
+                        </th>
+                        <td>
+                            &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+                            <input id="pswOld" class="easyui-numberbox" style="width: 100px" type='password'
+                                data-options="min:00000001,max:99999999,precision:0" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="width: 80px;">
+                            新密码:
+                        </th>
+                        <td>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+                            <input id="pswNew1" class="easyui-numberbox" style="width: 100px" type='password' />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="width: 80px;">
+                            确认密码：
+                        </th>
+                        <td>
+                            &nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+                            <input id="pswNew2" class="easyui-numberbox" style="width: 100px" type='password' />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="padding: 5px;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="A1" onclick='pswDelete()' style="width: 80px">删除</a> <a class="easyui-linkbutton"
+                        data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A3" onclick='pswUpdate()'
+                        style="width: 80px">提交</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                            href="javascript:void(0)" id="A5" onclick='CloseForm()' style="width: 80px">取消</a>
+            </div>
+        </div>
+    </div>
+    <div id="winShowCard" class="easyui-window" title="卡选择" data-options="iconCls:'icon-save'"
+        style="width: 650px; height: 220px;">
+        <table id="tbCardUsing" class="easyui-datagrid" data-options="rownumbers:true,singleSelect:true,fitColumns:true,striped:true,pagination:true,pageSize:5,pageList:[5],selectOnCheck:false,onClickRow:SelectCard">
+            <thead>
+                <tr>
+                    <th data-options="field:'card_id',align:'center'" width="80">
+                        卡号
+                    </th>
+                    <th data-options="field:'num_incard',align:'center'" width="80">
+                        卡面编号
+                    </th>
+                    <th data-options="field:'card_kind',align:'center',formatter:getCardKind" width="80">
+                        卡种类
+                    </th>
+                    <th data-options="field:'begin_date',align:'center'" width="100">
+                        开始时间
+                    </th>
+                    <th data-options="field:'end_date',align:'center'" width="80">
+                        结束时间
+                    </th>
+                    <th data-options="field:'work_status',align:'center',formatter:getCardState" width="80">
+                        工作状态
+                    </th>
+                    <th data-options="field:'issue_date',align:'center'" width="150">
+                        制卡时间
+                    </th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</body>
+</html>

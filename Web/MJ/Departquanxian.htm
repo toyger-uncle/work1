@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        //实例树
+        var iniDepTree = function () {
+            $("#tDep").tree({
+                checkbox: true,
+                cascadeCheck: false,
+                animate: true //动画效果
+
+            });
+        };
+        //有线树
+        var iniYXTree = function () {
+            $("#tYX").tree({
+                checkbox: true,
+                animate: true //动画效果
+
+            });
+        };
+        //实例树
+        var iniWXTree = function () {
+            $("#tWX").tree({
+                checkbox: true,
+                animate: true //动画效果
+            });
+        };
+
+        //获取所有部门树数据
+        function loadDepData() {
+            Ajax(true, global.sys["GetAllDepartTree"], { LoginID: LocalID, iconCls: 'exicon-house', state: 'closed' }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var jsondata = { "total": 0, "rows": [] };
+                jsondata.total = data.Data.length;
+                jsondata.rows = JSON2.parse(data.Data);
+
+                var treeDep = $('#tDep');
+                treeDep.tree('loadData', jsondata.rows);
+                if (data.Data.length > 0) {
+                    if (treeDep.tree('getSelected') == null) {
+                        var root = treeDep.tree("getRoot");
+                        if (root != null) {
+                            treeDep.tree('select', root.target);
+                        }
+                    }
+                }
+            });
+        };
+
+        //获取有线门树数据
+        function loadYXdata() {
+            Ajax(true, global.mj["GetAreaAllWhereDoorTree"], { LoginID: LocalID, state: 'closed' }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var jsonTreeData = { "total": 0, "rows": [] };
+                jsonTreeData.total = data.Data.length;
+                jsonTreeData.rows = JSON2.parse(data.Data);
+
+                var tree = $('#tYX');
+                tree.tree('loadData', jsonTreeData.rows);
+                if (data.Data.length > 0) {
+                    if (tree.tree('getSelected') == null) {
+                        var root = tree.tree("getRoot");
+                        if (root != null) {
+                            tree.tree('select', root.target);
+                        }
+                    }
+                }
+            });
+        }
+
+
+        //重置按钮
+        var toolResetClick = function () {
+            var depSelected = $('#tDep').tree("getChecked", "checked");
+            if (depSelected) {
+                for (var i in depSelected) {
+                    $('#tDep').tree("uncheck", depSelected[i].target);
+                }
+            }
+            var YXSelected = $('#tYX').tree("getChecked", "checked");
+            if (YXSelected) {
+                for (var o in YXSelected) {
+                    $('#tYX').tree("uncheck", YXSelected[o].target);
+                }
+            }
+        };
+        //增加按钮
+        var toolAddClick = function () {
+            var depSelected = $('#tDep').tree("getChecked", "checked");
+            if (depSelected.length == 0) {
+                $.messager.alert("提示", "部门未选择", "error");
+                return;
+            };
+            var YXSelected = $('#tYX').tree("getChecked", "checked");
+            if (YXSelected.length == 0) {
+                $.messager.alert("提示", "权限未选择", "error");
+                return;
+            };
+            var dQZ = "00";
+
+            var deps = "";
+            for (var i in depSelected) {
+                deps += depSelected[i].id + "|";
+            }
+            deps = deps.substring(0, deps.length - 1);
+            var YXs = "";
+            for (var i in YXSelected) {
+                if (YXSelected[i].attributes.kind == "D") {
+                    YXs += YXSelected[i].id + "|";
+                }
+            }
+            if (YXs.length != 0) {
+                YXs = YXs.slice(0, YXs.length - 1);
+            } else {
+                $.messager.alert("提示", "<p class='infoReport'>该区域下无门</p>", "error");
+                return;
+            }
+            var data = {
+                LoginID: LocalID,
+                door_id: YXs,
+                depart_id: deps,
+                apply_group: dQZ
+            };
+            Ajax(true, global.mj["QuickSetMjDepartApplyGroup"], data, function (data) {
+                if (!data.Success) {
+                    $.messager.alert("提示", "<p class='infoReport'>已有该权限,请勿重复添加</p>", "info");
+                    return;
+                }
+                $.messager.alert('提示', "<p class='infoReport'>保存成功!</p>", "info");
+                toolResetClick();
+            });
+        };
+        //删除按钮
+        var shanchu = function () {
+            var depSelected = $('#tDep').tree("getChecked", "checked");
+            if (depSelected.length == 0) {
+                $.messager.alert("提示", "部门未选择", "error");
+                return;
+            };
+            var YXSelected = $('#tYX').tree("getChecked", "checked");
+            if (YXSelected.length == 0) {
+                $.messager.alert("提示", "权限未选择", "error");
+                return;
+            };
+            var dQZ = "";
+
+            var deps = "";
+            for (var i in depSelected) {
+                deps += depSelected[i].id + "|";
+            }
+            deps = deps.substring(0, deps.length - 1);
+            var YXs = "";
+            for (var i in YXSelected) {
+                if (YXSelected[i].attributes.kind == "D") {
+                    YXs += YXSelected[i].id + "|";
+                }
+            }
+            YXs = YXs.substring(0, YXs.length - 1);
+            var data = {
+                LoginID: LocalID,
+                door_id: YXs,
+                depart_id: deps,
+                apply_group: dQZ
+            };
+            Ajax(true, global.mj["QuickSetMjDepartApplyGroup"], data, function (data) {
+                if (!data.Success) {
+                    $.messager.alert("提示", "<p class='infoReport'>已有该权限,请勿重复添加</p>", "info");
+                    return;
+                }
+                $.messager.alert('提示', "<p class='infoReport'>保存成功!</p>", "info");
+                toolResetClick();
+            });
+        };
+    </script>
+</head>
+<script>
+    var LocalID = $.cookie("LocalID");
+</script>
+<body class="easyui-layout">
+    <div data-options="region:'north',iconCls:'icon-ok',split:true" title="设置" style="height: 100px;">
+        <center>
+            <a id='barAdd' href="#" class="easyui-linkbutton" iconcls="icon-add" plain="true"
+                onclick='toolAddClick()' style="width: 60px;">提交</a> &nbsp;&nbsp;&nbsp;<a id='delete' href="#" class="easyui-linkbutton" iconcls="icon-remove" plain="true"style="width: 60px;"
+                onclick='shanchu()'>删除</a> &nbsp;&nbsp;&nbsp; <a id='clear' href="#" class="easyui-linkbutton"
+                    iconcls="icon-clear"style="width: 60px;" plain="true" onclick='toolResetClick()'>重置</a>
+            <br />
+            <br />
+        </center>
+    </div>
+    <div data-options="region:'west',split:true" title="部门" style="width: 50%;">
+        <ul id='tDep'>
+        </ul>
+    </div>
+    <div data-options="region:'center',split:true" title="区域门树">
+        <ul id='tYX'>
+        </ul>
+    </div>
+    <script type="text/javascript">
+        iniDepTree();
+        loadDepData();
+        iniYXTree();
+        loadYXdata();
+        XCommon.IniMM();
+    </script>
+
+</body>
+</html>

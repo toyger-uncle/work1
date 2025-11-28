@@ -1,0 +1,2145 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var vs;
+    var tp;
+    var ac;
+    var ab;
+  var datagrid;
+  var datagrid1;
+  var datagrid3;
+   var jsondata = { "total": 0, "rows": [] };
+   var jsondata1 = { "total": 0, "rows": [] };
+   var jsondata3 = { "total": 0, "rows": [] };
+   $(function () {
+       $('#apb').combobox({
+           onChange: function (newValue, oldValue) {
+               if (newValue == 6) {
+                   $("#dktime").validatebox({ disabled: false });
+                   $("#dknum").validatebox({ disabled: false });
+               }
+               if (newValue == 0) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+               if (newValue == 1) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+               if (newValue == 2) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+               if (newValue == 3) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+               if (newValue == 4) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+               if (newValue == 5) {
+                   $("#dktime").validatebox({ disabled: true });
+                   $("#dknum").validatebox({ disabled: true });
+               }
+           }
+       });
+       $("#dktime1").validatebox({ disabled: true });
+       $("#password1").validatebox({ disabled: true });
+       $('#km').combobox({
+           onChange: function (newValue, oldValue) {
+               if (newValue == 0) {
+                   $("#dktime1").validatebox({ disabled: true });
+                   $("#password1").validatebox({ disabled: true });
+               }
+               if (newValue == 10) {
+                   $("#dktime1").validatebox({ disabled: false });
+                   $("#password1").validatebox({ disabled: false });
+               }
+               if (newValue == 11) {
+                   $("#dktime1").validatebox({ disabled: false });
+                   $("#password1").validatebox({ disabled: false });
+               }
+               if (newValue == 12) {
+                   $("#dktime1").validatebox({ disabled: false });
+                   $("#password1").validatebox({ disabled: false });
+               }
+           }
+       });
+       $('#doortype').combobox({
+           data: doortype,
+           valueField: 'value',
+           textField: 'text',
+           onChange: function (newValue, oldValue) {
+               if (newValue == "01") {
+                   $("#ip").val("127.0.0.1");
+                   $("#port").val("43339");
+                   $("#ip").validatebox({ disabled: false });
+                   $("#port").validatebox({ disabled: false });
+               }
+               if (newValue == "00") {
+                   $("#ip").val("");
+                   $("#port").val("");
+                   $("#ip").validatebox({ disabled: true });
+                   $("#port").validatebox({ disabled: true });
+               }
+           }
+       });
+       Ajax(true, global.mj["GetMJWhereGroupList"], { LoginID: LocalID }, function (data) {
+           if (!data.Success) {
+               alert(data.Message);
+               return;
+           }
+           $('#addressgroupid').combobox({
+               data: data.Data,
+               valueField: 'address_group_id',
+               textField: 'address_group'
+           });
+           $('#addressgroupid1').combobox({
+               data: data.Data,
+               valueField: 'address_group_id',
+               textField: 'address_group'
+           });
+       });
+       Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID, flag: "0" }, function (data) {
+           if (!data.Success) {
+               alert(data.Message);
+               return;
+           }
+           $('#select2').combobox({
+               data: data.Data,
+               valueField: 'id',
+               textField: 'control_name',
+               onLoadSuccess: function () {
+                   var data = $('#select2').combobox('getData');
+                   if (data.length > 0) {
+                       $("#select2").combobox('select', data[0].id);
+                       loaddata1();
+                       loaddata();
+                       loaddata3();
+                   }
+               },
+               onChange: function (newValue, oldValue) {
+                   loaddata1();
+                   loaddata();
+                   loaddata3();
+               }
+           });
+       });
+       $('#select1').combobox({
+           //            onLoadSuccess: function () {
+           //                var da = $('#select1').combobox('getData');
+           //                $("#select1").combobox('select', da[0].value);
+           //            },
+           onChange: function (newValue, oldValue) {
+               Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID, flag: newValue }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+                   if (newValue == "0") {
+                       $('#dg').datagrid('hideColumn', 'modular_name');
+                       $('#dg').datagrid('hideColumn', 'modular_num');
+                       $('#dg').datagrid('showColumn', 'comm_address');
+                       $('#dg').datagrid('showColumn', 'modular_kind');
+                       $('#dg').datagrid('showColumn', 'modular_special');
+                       $("#dg").datagrid({title: '模组'});
+                   }
+                   if (newValue == "1") {
+                       $('#dg').datagrid('showColumn', 'modular_name');
+                       $('#dg').datagrid('showColumn', 'modular_num');
+                       $('#dg').datagrid('hideColumn', 'comm_address');
+                       $('#dg').datagrid('hideColumn', 'modular_kind');
+                       $('#dg').datagrid('hideColumn', 'modular_special');
+                       $("#dg").datagrid({title: '扩展模块'});
+                   }
+                   $('#select2').combobox({
+                       data: data.Data,
+                       valueField: 'id',
+                       textField: 'control_name',
+                       onLoadSuccess: function () {
+                           var data = $('#select2').combobox('getData');
+                           if (data.length > 0) {
+                               $("#select2").combobox('select', data[0].id);
+                           }
+                       },
+                       onChange: function (newValue, oldValue) {
+                           loaddata1();
+                           loaddata();
+                           loaddata3();
+                       }
+                   });
+               });
+           }
+       });
+       Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID, flag: "1" }, function (data) {
+           if (!data.Success) {
+               alert(data.Message);
+               return;
+           }
+           $('#cid').combobox({
+               data: data.Data,
+               valueField: 'id',
+               textField: 'control_name'
+           });
+       });
+       datagrid = $("#dg").datagrid({
+           idField: "id",
+           fitColumns: true,
+           striped: true,
+           title: "模组",
+           collapsible: true,
+           remotesort: false,
+           rownumbers: true,
+           singleSelect: true,
+           columns: [[{
+               field: 'id',
+               title: '编号',
+               width: 80
+
+           }, {
+               field: 'control_id',
+               title: '控制器号',
+               width: 80
+           }, {
+               field: 'modular_name',
+               title: '扩展模块名',
+               width: 80
+           }, {
+               field: 'modular_num',
+               title: '第几扩展模块',
+               width: 80
+           }, {
+               field: 'comm_address',
+               title: '读头号',
+               width: 80
+           }, {
+               field: 'modular_kind',
+               title: '模组类型',
+               width: 80,
+               formatter: function (value, row) {
+                   if (value == "A") {
+                       return '只读型读卡机(A)';
+                   }
+                   if (value == "B") {
+                       return 'DI/DO模组(B)';
+                   }
+                   if (value == "H") {
+                       return '带键盘读卡器(H)';
+                   }
+                   if (value == "L") {
+                       return '带液晶的读卡器(L)';
+                   }
+               }
+
+           }, {
+               field: 'modular_special',
+               title: '模组特性',
+               width: 80,
+               formatter: function (value, row) {
+                   if (value == 001) {
+                       return '卡片24-64位元';
+                   }
+                   if (value == 002) {
+                       return 'DI4点,DO4点';
+                   }
+                   if (value == 003) {
+                       return 'DI8点,DO8点';
+                   }
+                   if (value == 004) {
+                       return 'DI16点';
+                   }
+                   if (value == 005) {
+                       return 'DO16点';
+                   }
+               }
+           }
+            ]],
+           toolbar: [{
+               text: "删除", iconCls: "icon-remove", handler: function () {
+                   var rowData = datagrid.datagrid('getSelections');
+                   var ids = "";
+                   for (var i = 0; i < rowData.length; i++) {
+                       if (i != 0) {
+                           ids += "|";
+                       }
+                       ids += rowData[i].id;
+                   }
+                   if (rowData == null || rowData.length == 0) {
+                       $.messager.alert("提示", "未选择项", "error");
+                       return;
+                   }
+                   $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                       if (data) {
+                           if ($('#select1').combobox('getValue') == "0") {
+                               Ajax(true, global.mj["RemoveMJControlModular"], { LoginID: LocalID, id: ids }, function (data) {
+                                   if (!data.Success) {
+                                       alert(data.Message);
+                                       return;
+                                   }
+                                   $.messager.alert("提示", "删除成功", "info");
+                                   loaddata();
+                               });
+                           }
+                           if ($('#select1').combobox('getValue') == "1") {
+                               Ajax(true, global.yj["RemoveMjExpandModular"], { LoginID: LocalID, id: ids }, function (data) {
+                                   if (!data.Success) {
+                                       alert(data.Message);
+                                       return;
+                                   }
+                                   $.messager.alert("提示", "删除成功", "info");
+                                   loaddata3();
+                               });
+                           }
+                       }
+                   });
+               }
+           }, {
+               text: "修改", iconCls: "icon-edit", handler: function () {
+                   var rows = datagrid.datagrid('getSelected');
+                   var tx = $('#select2').combobox('getValue');
+                   if (rows == null) {
+                       $.messager.alert("提示", "未选择项", "error");
+                       return;
+                   }
+                   if ($('#select1').combobox('getValue') == "0") {
+                       $('#modularkind').combobox({
+                           data: modularkind,
+                           valueField: 'value',
+                           textField: 'text',
+                           onChange: function (newValue, oldValue) {
+                               if ($('#modularkind').combobox('getValue') == "B") {
+                                   $('#modularspecial').combobox({
+                                       data: modularspecial2,
+                                       valueField: 'value',
+                                       textField: 'text',
+                                       onLoadSuccess: function () {
+                                           var data = $('#modularspecial').combobox('getData');
+                                           $("#modularspecial").combobox('select', data[0].value);
+                                       },
+                                       onChange: function (newValue, oldValue) {
+                                           for (var b = 0; b < $('#modularspecial').combobox('getValue'); b++) {
+                                               var DO = $("#DO").find("input:checkbox");
+                                               DO.prop("disabled", false);
+
+                                               var DI = $("#DI").find("input:checkbox");
+                                               DI.prop("disabled", false);
+                                               if (newValue == "001") {
+                                                   var DO = $("#DO").find("input:checkbox");
+                                                   DO.prop("disabled", true);
+
+                                                   var DI = $("#DI").find("input:checkbox");
+                                                   DI.prop("disabled", true);
+                                               }
+                                               if (newValue == "002") {
+                                                   var do2 = $("#DO2").find("input:checkbox");
+                                                   do2.prop("disabled", true);
+                                                   var do3 = $("#DO3").find("input:checkbox");
+                                                   do3.prop("disabled", true);
+                                                   var do4 = $("#DO4").find("input:checkbox");
+                                                   do4.prop("disabled", true);
+                                                   var di2 = $("#DI2").find("input:checkbox");
+                                                   di2.prop("disabled", true);
+                                                   var di3 = $("#DI3").find("input:checkbox");
+                                                   di3.prop("disabled", true);
+                                                   var di4 = $("#DI4").find("input:checkbox");
+                                                   di4.prop("disabled", true);
+                                               }
+                                               else if (newValue == "003") {
+                                                   var do3 = $("#DO3").find("input:checkbox");
+                                                   do3.prop("disabled", true);
+                                                   var do4 = $("#DO4").find("input:checkbox");
+                                                   do4.prop("disabled", true);
+                                                   var di3 = $("#DI3").find("input:checkbox");
+                                                   di3.prop("disabled", true);
+                                                   var di4 = $("#DI4").find("input:checkbox");
+                                                   di4.prop("disabled", true);
+                                               }
+                                               else if (newValue == "004") {
+                                                   var do1 = $("#DO1").find("input:checkbox");
+                                                   do1.prop("disabled", true);
+                                                   var do2 = $("#DO2").find("input:checkbox");
+                                                   do2.prop("disabled", true);
+                                                   var do3 = $("#DO3").find("input:checkbox");
+                                                   do3.prop("disabled", true);
+                                                   var do4 = $("#DO4").find("input:checkbox");
+                                                   do4.prop("disabled", true);
+                                               }
+                                               else if (newValue == "005") {
+                                                   var di1 = $("#DI1").find("input:checkbox");
+                                                   di1.prop("disabled", true);
+                                                   var di2 = $("#DI2").find("input:checkbox");
+                                                   di2.prop("disabled", true);
+                                                   var di3 = $("#DI3").find("input:checkbox");
+                                                   di3.prop("disabled", true);
+                                                   var di4 = $("#DI4").find("input:checkbox");
+                                                   di4.prop("disabled", true);
+                                               }
+                                           }
+                                       }
+                                   });
+                               }
+                               else {
+                                   $('#modularspecial').combobox({
+                                       data: modularspecial1,
+                                       valueField: 'value',
+                                       textField: 'text'
+                                   });
+                                   var do1 = $("#DO1").find("input:checkbox");
+                                   do1.prop("disabled", true);
+                                   var do2 = $("#DO2").find("input:checkbox");
+                                   do2.prop("disabled", true);
+                                   var do3 = $("#DO3").find("input:checkbox");
+                                   do3.prop("disabled", true);
+                                   var do4 = $("#DO4").find("input:checkbox");
+                                   do4.prop("disabled", true);
+                                   var di1 = $("#DI1").find("input:checkbox");
+                                   di1.prop("disabled", true);
+                                   var di2 = $("#DI2").find("input:checkbox");
+                                   di2.prop("disabled", true);
+                                   var di3 = $("#DI3").find("input:checkbox");
+                                   di3.prop("disabled", true);
+                                   var di4 = $("#DI4").find("input:checkbox");
+                                   di4.prop("disabled", true);
+                               }
+                           }
+
+                       });
+                       Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                           $('#controlid').combobox({
+                               data: data.Data,
+                               valueField: 'id',
+                               textField: 'control_name'
+                           });
+                           $("#controlid").combobox("setValue", tx);
+                           $("#controlid").combobox("disable");
+                       });
+                       $('#win1').window('open');
+
+                       $("#modularkind").combobox("setValue", rows.modular_kind);
+                       $("#commaddress").combobox("setValue", rows.comm_address);
+                       $("#modularspecial").combobox("setValue", rows.modular_special);
+                       var donum = rows.do_modular;
+                       var dinum = rows.di;
+                       var numi = document.getElementsByName("di");
+                       var you = "";
+                       if ($('#modularkind').combobox('getValue') == "B") {
+                           for (var i = 0; i < donum.length; i++) {
+                               if (donum[i] == "1") {
+                                   var num = $("#DO").find("[value=" + (i + 1) + "]");
+                                   num.prop("checked", true);
+                               }
+                           }
+                           for (var v = 0; v < dinum.length; v++) {
+                               if (dinum[v] == "1") {
+                                   var numi = $("#DI").find("[value=" + (v + 1) + "]");
+                                   numi.prop("checked", true);
+                               }
+                           }
+
+                       }
+                   }
+                   if ($('#select1').combobox('getValue') == "1") {
+
+                       $('#win3').window('open');
+                       $('#bh').val(rows.id);
+                       $('#mc').val(rows.modular_name);
+                       $('#kz').val(rows.modular_num);
+                       $('#bz').val(rows.memo);
+                       $('#jk').combobox("setValue", rows.port);
+                       $('#cid').combobox("setValue", rows.control_id);
+                   }
+                   vs = 1;
+               }
+           }, {
+               text: "增加", iconCls: "icon-add", handler: function () {
+                   var data = $('#dg').datagrid('getData');
+                   if (data.rows.length > 7) {
+                       alert("控制器读头不能超过8个");
+                       return;
+                   }
+                   if ($('#select1').combobox('getValue') == "0") {
+                       if ($('#select2').combobox('getValue') != "") {
+                           $('#win1').window('open');
+                           $('#modularkind').combobox({
+                               data: modularkind,
+                               valueField: 'value',
+                               textField: 'text',
+                               onChange: function (newValue, oldValue) {
+                                   if ($('#modularkind').combobox('getValue') == "B") {
+                                       $('#modularspecial').combobox({
+                                           data: modularspecial2,
+                                           valueField: 'value',
+                                           textField: 'text',
+                                           onLoadSuccess: function () {
+                                               var data = $('#modularspecial').combobox('getData');
+                                               $("#modularspecial").combobox('select', data[0].value);
+                                           },
+                                           onChange: function (newValue, oldValue) {
+                                               for (var b = 0; b < $('#modularspecial').combobox('getValue'); b++) {
+                                                   var DO = $("#DO").find("input:checkbox");
+                                                   DO.prop("disabled", false);
+
+                                                   var DI = $("#DI").find("input:checkbox");
+                                                   DI.prop("disabled", false);
+                                                   if (newValue == "001") {
+                                                       var DO = $("#DO").find("input:checkbox");
+                                                       DO.prop("disabled", true);
+
+                                                       var DI = $("#DI").find("input:checkbox");
+                                                       DI.prop("disabled", true);
+                                                   }
+                                                   if (newValue == "002") {
+                                                       var do2 = $("#DO2").find("input:checkbox");
+                                                       do2.prop("disabled", true);
+                                                       var do3 = $("#DO3").find("input:checkbox");
+                                                       do3.prop("disabled", true);
+                                                       var do4 = $("#DO4").find("input:checkbox");
+                                                       do4.prop("disabled", true);
+                                                       var di2 = $("#DI2").find("input:checkbox");
+                                                       di2.prop("disabled", true);
+                                                       var di3 = $("#DI3").find("input:checkbox");
+                                                       di3.prop("disabled", true);
+                                                       var di4 = $("#DI4").find("input:checkbox");
+                                                       di4.prop("disabled", true);
+                                                   }
+                                                   else if (newValue == "003") {
+                                                       var do3 = $("#DO3").find("input:checkbox");
+                                                       do3.prop("disabled", true);
+                                                       var do4 = $("#DO4").find("input:checkbox");
+                                                       do4.prop("disabled", true);
+                                                       var di3 = $("#DI3").find("input:checkbox");
+                                                       di3.prop("disabled", true);
+                                                       var di4 = $("#DI4").find("input:checkbox");
+                                                       di4.prop("disabled", true);
+                                                   }
+                                                   else if (newValue == "004") {
+                                                       var do1 = $("#DO1").find("input:checkbox");
+                                                       do1.prop("disabled", true);
+                                                       var do2 = $("#DO2").find("input:checkbox");
+                                                       do2.prop("disabled", true);
+                                                       var do3 = $("#DO3").find("input:checkbox");
+                                                       do3.prop("disabled", true);
+                                                       var do4 = $("#DO4").find("input:checkbox");
+                                                       do4.prop("disabled", true);
+                                                   }
+                                                   else if (newValue == "005") {
+                                                       var di1 = $("#DI1").find("input:checkbox");
+                                                       di1.prop("disabled", true);
+                                                       var di2 = $("#DI2").find("input:checkbox");
+                                                       di2.prop("disabled", true);
+                                                       var di3 = $("#DI3").find("input:checkbox");
+                                                       di3.prop("disabled", true);
+                                                       var di4 = $("#DI4").find("input:checkbox");
+                                                       di4.prop("disabled", true);
+                                                   }
+                                               }
+                                           }
+                                       });
+                                   }
+                                   else {
+                                       $('#modularspecial').combobox({
+                                           data: modularspecial1,
+                                           valueField: 'value',
+                                           textField: 'text'
+                                       });
+                                       var do1 = $("#DO1").find("input:checkbox");
+                                       do1.prop("disabled", true);
+                                       var do2 = $("#DO2").find("input:checkbox");
+                                       do2.prop("disabled", true);
+                                       var do3 = $("#DO3").find("input:checkbox");
+                                       do3.prop("disabled", true);
+                                       var do4 = $("#DO4").find("input:checkbox");
+                                       do4.prop("disabled", true);
+                                       var di1 = $("#DI1").find("input:checkbox");
+                                       di1.prop("disabled", true);
+                                       var di2 = $("#DI2").find("input:checkbox");
+                                       di2.prop("disabled", true);
+                                       var di3 = $("#DI3").find("input:checkbox");
+                                       di3.prop("disabled", true);
+                                       var di4 = $("#DI4").find("input:checkbox");
+                                       di4.prop("disabled", true);
+                                   }
+                               }
+
+                           });
+                           a = $('#select2').combobox('getValue');
+                           Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $('#controlid').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'control_name'
+                               });
+                               $("#controlid").combobox("setValue", a);
+                               $("#controlid").combobox("enable");
+                           });
+                       }
+                       else {
+                           alert("未选择控制器");
+                       }
+                   }
+                   if ($('#select1').combobox('getValue') == "1") {
+
+                       $('#win3').window('open');
+                       Ajax(true, global.yj["GetMjExpandModularMaxID"], { LoginID: LocalID }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                           $('#bh').val(data.Data);
+                       });
+                       Ajax(true, global.yj["GetMjExpandModularModularNumMaxID"], { LoginID: LocalID }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                           $('#kz').val(data.Data);
+                       });
+                   }
+                   vs = 0;
+               }
+           }],
+           onSelect: function (rowIndex, rowData) {
+               loaddata1(rowData.id);
+           },
+           onDblClickRow: function (rowIndex, rowData) {
+               var rows = datagrid.datagrid('getSelected');
+               var tx = $('#select2').combobox('getValue');
+               if ($('#select1').combobox('getValue') == "1") {
+                   $('#win3').window('open');
+                   $('#bh').val(rowData.id);
+                   $('#mc').val(rowData.modular_name);
+                   $('#kz').val(rowData.modular_num);
+                   $('#bz').val(rowData.memo);
+                   $('#jk').combobox("setValue", rowData.port);
+                   $('#cid').combobox("setValue", rowData.control_id);
+                   $("#cid").combobox("disable");
+               }
+               if ($('#select1').combobox('getValue') == "0") {
+                   $('#modularkind').combobox({
+                       data: modularkind,
+                       valueField: 'value',
+                       textField: 'text',
+                       onChange: function (newValue, oldValue) {
+                           if ($('#modularkind').combobox('getValue') == "B") {
+                               $('#modularspecial').combobox({
+                                   data: modularspecial2,
+                                   valueField: 'value',
+                                   textField: 'text',
+                                   onLoadSuccess: function () {
+                                       var data = $('#modularspecial').combobox('getData');
+                                       $("#modularspecial").combobox('select', data[0].value);
+                                   },
+                                   onChange: function (newValue, oldValue) {
+                                       for (var b = 0; b < $('#modularspecial').combobox('getValue'); b++) {
+                                           var DO = $("#DO").find("input:checkbox");
+                                           DO.prop("disabled", false);
+
+                                           var DI = $("#DI").find("input:checkbox");
+                                           DI.prop("disabled", false);
+                                           if (newValue == "001") {
+                                               var DO = $("#DO").find("input:checkbox");
+                                               DO.prop("disabled", true);
+
+                                               var DI = $("#DI").find("input:checkbox");
+                                               DI.prop("disabled", true);
+                                           }
+                                           if (newValue == "002") {
+                                               var do2 = $("#DO2").find("input:checkbox");
+                                               do2.prop("disabled", true);
+                                               var do3 = $("#DO3").find("input:checkbox");
+                                               do3.prop("disabled", true);
+                                               var do4 = $("#DO4").find("input:checkbox");
+                                               do4.prop("disabled", true);
+                                               var di2 = $("#DI2").find("input:checkbox");
+                                               di2.prop("disabled", true);
+                                               var di3 = $("#DI3").find("input:checkbox");
+                                               di3.prop("disabled", true);
+                                               var di4 = $("#DI4").find("input:checkbox");
+                                               di4.prop("disabled", true);
+                                           }
+                                           else if (newValue == "003") {
+                                               var do3 = $("#DO3").find("input:checkbox");
+                                               do3.prop("disabled", true);
+                                               var do4 = $("#DO4").find("input:checkbox");
+                                               do4.prop("disabled", true);
+                                               var di3 = $("#DI3").find("input:checkbox");
+                                               di3.prop("disabled", true);
+                                               var di4 = $("#DI4").find("input:checkbox");
+                                               di4.prop("disabled", true);
+                                           }
+                                           else if (newValue == "004") {
+                                               var do1 = $("#DO1").find("input:checkbox");
+                                               do1.prop("disabled", true);
+                                               var do2 = $("#DO2").find("input:checkbox");
+                                               do2.prop("disabled", true);
+                                               var do3 = $("#DO3").find("input:checkbox");
+                                               do3.prop("disabled", true);
+                                               var do4 = $("#DO4").find("input:checkbox");
+                                               do4.prop("disabled", true);
+                                           }
+                                           else if (newValue == "005") {
+                                               var di1 = $("#DI1").find("input:checkbox");
+                                               di1.prop("disabled", true);
+                                               var di2 = $("#DI2").find("input:checkbox");
+                                               di2.prop("disabled", true);
+                                               var di3 = $("#DI3").find("input:checkbox");
+                                               di3.prop("disabled", true);
+                                               var di4 = $("#DI4").find("input:checkbox");
+                                               di4.prop("disabled", true);
+                                           }
+                                       }
+                                   }
+                               });
+                           }
+                           else {
+                               $('#modularspecial').combobox({
+                                   data: modularspecial1,
+                                   valueField: 'value',
+                                   textField: 'text'
+                               });
+                               var do1 = $("#DO1").find("input:checkbox");
+                               do1.prop("disabled", true);
+                               var do2 = $("#DO2").find("input:checkbox");
+                               do2.prop("disabled", true);
+                               var do3 = $("#DO3").find("input:checkbox");
+                               do3.prop("disabled", true);
+                               var do4 = $("#DO4").find("input:checkbox");
+                               do4.prop("disabled", true);
+                               var di1 = $("#DI1").find("input:checkbox");
+                               di1.prop("disabled", true);
+                               var di2 = $("#DI2").find("input:checkbox");
+                               di2.prop("disabled", true);
+                               var di3 = $("#DI3").find("input:checkbox");
+                               di3.prop("disabled", true);
+                               var di4 = $("#DI4").find("input:checkbox");
+                               di4.prop("disabled", true);
+                           }
+                       }
+
+                   });
+                   Ajax(true, global.mj["GetMJControlMachList"], { LoginID: LocalID }, function (data) {
+                       if (!data.Success) {
+                           alert(data.Message);
+                           return;
+                       }
+                       $('#controlid').combobox({
+                           data: data.Data,
+                           valueField: 'id',
+                           textField: 'control_name'
+                       });
+                       $("#controlid").combobox("setValue", tx);
+                   });
+                   $('#win1').window('open');
+
+                   $("#modularkind").combobox("setValue", rows.modular_kind);
+                   $("#commaddress").combobox("setValue", rows.comm_address);
+                   $("#modularspecial").combobox("setValue", rows.modular_special);
+                   var donum = rows.do_modular;
+                   var dinum = rows.di;
+                   var numi = document.getElementsByName("di");
+                   var you = "";
+                   if ($('#modularkind').combobox('getValue') == "B") {
+                       for (var i = 0; i < donum.length; i++) {
+                           if (donum[i] == "1") {
+                               var num = $("#DO").find("[value=" + (i + 1) + "]");
+                               num.prop("checked", true);
+                           }
+                       }
+                       for (var v = 0; v < dinum.length; v++) {
+                           if (dinum[v] == "1") {
+                               var numi = $("#DI").find("[value=" + (v + 1) + "]");
+                               numi.prop("checked", true);
+                           }
+                       }
+                   }
+               }
+               vs = 1;
+           }
+       });
+       datagrid1 = $("#dg1").datagrid({
+           idField: "id",
+           fitColumns: true,
+           striped: true,
+           title: "门区",
+           collapsible: true,
+           remotesort: false,
+           rownumbers: true,
+           singleSelect: true,
+
+           columns: [[{
+               field: 'id',
+               title: '门号',
+               width: 80
+
+           }, {
+               field: 'door_name',
+               title: '门名',
+               width: 80
+           }, {
+               field: 'address_group',
+               title: '所属区域',
+               width: 80
+           }
+            ]],
+           toolbar: [{
+               text: "删除", iconCls: "icon-remove", handler: function () {
+                   var rowData = datagrid1.datagrid('getSelected');
+                   var ids = rowData.id;
+
+                   $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                       if (data) {
+                           Ajax(true, global.mj["RemoveMJControlDoor"], { LoginID: LocalID, id: ids }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $.messager.alert("提示", "删除成功", "info");
+                               loaddata1();
+                           });
+                       }
+                   });
+               }
+           }, {
+               text: "修改", iconCls: "icon-edit", handler: function () {
+                   var rows = datagrid1.datagrid('getSelected');
+                   if (rows == null) {
+                       $.messager.alert("提示", "未选择项", "error");
+                       return;
+                   }
+                   if ($('#select1').combobox('getValue') == "0") {
+                       if ($('#select2').combobox('getValue') != "") {
+                           $('#win2').window('open');
+                           $("#id2").val(rows.id);
+                           $("#dktime").validatebox({ disabled: true });
+                           $("#dknum").validatebox({ disabled: true });
+                           $('#doornum').val(rows.door_num);
+                           ab = (parseInt(rows.door_num)).toString();
+                           ac = (parseInt(rows.door_num) + 4).toString();
+                           $("#inreadcard").val(ab + "号读头");
+                           $("#outreadcard").val(ac + "号读头");
+                           $('#doorname').val(rows.door_name);
+                           $('#password').val(rows.password);
+                           $("#dotime").val(rows.do_time);
+                           $('#superpsw').val(rows.super_psw);
+                           $('#dknum').val(rows.dk_num);
+                           $("#xppsw").val(rows.xp_psw);
+                           $('#dktime').val(rows.dk_time);
+                           $('#alarmtime').val(rows.alarm_time);
+                           $('#lyh').val(rows.yj_string);
+                           $("#kqflag").combobox("setValue", rows.kq_flag);
+                           $("#addressgroupid").combobox("setValue", rows.address_group_id);
+                           $("#use").combobox("setValue", rows.control_status);
+                           $("#apb").combobox("setValue", rows.apb);
+                           $("#doorbj").combobox("setValue", rows.door_bj);
+                           $("#xjflag").combobox("setValue", rows.xj_flag);
+                           $('#doortype').combobox("setValue", rows.door_type);
+                           if (rows.door_type == "01") {
+                               $("#ip").validatebox({ disabled: false });
+                               $("#port").validatebox({ disabled: false });
+                               //                        $('#doortype').combobox("setValue", "01");
+                               $('#ip').val(rows.ip);
+                               $("#port").val(rows.port);
+                           }
+                           if (rows.door_type == "00") {
+                               $("#ip").validatebox({ disabled: true });
+                               $("#port").validatebox({ disabled: true });
+                               $('#ip').val(rows.ip);
+                               $("#port").val(rows.port);
+                           }
+                           var a = $('#select2').combobox('getValue');
+                           Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID,jk_type:"03" }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                                var temp = { 'id': '', 'jk_name': '无' };
+                               data.Data.push(temp);
+                               $('#display').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display0').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display0').combobox("setValue", rows.sencond_id);
+                               $('#display').combobox("setValue", rows.master_id);
+                           });
+                           $("#doornum").validatebox({ disabled: true });
+                           $("#inreadcard").validatebox({ disabled: true });
+                           $("#outreadcard").validatebox({ disabled: true });
+                       }
+                   }
+                   if ($('#select1').combobox('getValue') == "1") {
+                       if ($('#select2').combobox('getValue') != "") {
+                           $('#win4').window('open');
+                           $("#id21").val(rows.id);
+                           $('#doornum1').val(rows.door_num);
+                           $("#dotime1").val(rows.do_time);
+                           $('#doorname1').val(rows.door_name);
+                           $('#password1').val(rows.password);
+                           $('#dktime1').val(rows.dk_time);
+                           $('#txh').val(rows.yj_string);
+                           $("#addressgroupid1").combobox("setValue", rows.address_group_id);
+                           $("#xjflag1").combobox("setValue", rows.xj_flag);
+                           $("#kqflag1").combobox("setValue", rows.kq_flag);
+                           $("#use1").combobox("setValue", rows.control_status);
+                           $("#km").combobox("setValue", rows.open_kind);
+                           $("#kzmk").combobox("setValue", rows.expand_module);
+                           $("#ck").combobox("setValue", rows.ck_flag);
+                           Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID, jk_type: "03" }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                                var temp = { 'id': '', 'jk_name': '无' };
+                               data.Data.push(temp);
+                               $('#display1').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display2').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display2').combobox("setValue", rows.sencond_id);
+                               $('#display1').combobox("setValue", rows.master_id);
+                           });
+                           if (rows.dhcp == 1) {
+                               $("#idhcpch").prop("checked", true);
+                           }
+                           else {
+                               $("#idhcpch").prop("checked", false);
+                           }
+                       }
+                   }
+                   tp = 1;
+               }
+           }, {
+               text: "增加", iconCls: "icon-add", handler: function () {
+                   if ($('#select1').combobox('getValue') == "0") {
+                       var data1 = $('#dg1').datagrid('getData');
+                       if ($('#select2').combobox('getValue') != "") {
+                           $('#win2').window('open');
+                           $("#dktime").validatebox({ disabled: true });
+                           $("#dknum").validatebox({ disabled: true });
+                           $('#doortype').combobox("setValue", "00");
+                           $("#ip").validatebox({ disabled: true });
+                           $("#port").validatebox({ disabled: true });
+                           $('#doortype').combobox({
+                               onChange: function (newValue, oldValue) {
+                                   if (newValue == "01") {
+                                       $("#ip").val("127.0.0.1");
+                                       $("#port").val("43339");
+                                       $("#ip").validatebox({ disabled: false });
+                                       $("#port").validatebox({ disabled: false });
+                                   }
+                                   if (newValue == "00") {
+                                       $("#ip").val("127.0.0.1");
+                                       $("#port").val("43339");
+                                       $("#ip").validatebox({ disabled: true });
+                                       $("#port").validatebox({ disabled: true });
+                                   }
+                               }
+                           });
+                           var k = $('#select2').combobox('getValue');
+                           Ajax(true, global.mj["GetMJControlDoorMaxID"], { LoginID: LocalID }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $('#id2').val(data.Data);
+                           });
+                           Ajax(true, global.mj["GetMJControlDoorDoorNumMaxID"], { LoginID: LocalID, control_id: k }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $('#doornum').val(data.Data);
+                               ab = (parseInt(data.Data)).toString();
+                               ac = (parseInt(data.Data) + 4).toString();
+                               if (data.Data == "" || data.Data == null) {
+                                   $('#inreadcard').val("读头号已满");
+                                   $('#outreadcard').val("读头号已满");
+                               }
+                               else {
+                                   $('#inreadcard').val(ab + "号读头");
+                                   $('#outreadcard').val(ac + "号读头");
+                               }
+                               $('#domodular').combobox("setValue", data.Data);
+                               $('#di1').combobox("setValue", data.Data);
+                               $("#doornum").validatebox({ disabled: true });
+                               $("#inreadcard").validatebox({ disabled: true });
+                               $("#outreadcard").validatebox({ disabled: true });
+                           });
+                           Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID, jk_type: "03" }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               var temp = { 'id': '', 'jk_name': '无' };
+                               data.Data.push(temp);
+                               $('#display').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display0').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                           });
+                           $('#doorname').val("");
+                           $("#use").combobox("setValue", 0);
+                           $('#password').val("");
+                           $("#dotime").val("5");
+                           $('#superpsw').val("");
+                           $('#dknum').val("1");
+                           $("#xppsw").val("");
+                           $('#dktime').val("15");
+                           $('#alarmtime').val("60");
+                       }
+                       else {
+                           alert("未选择控制器");
+                       }
+                   }
+
+                   if ($('#select1').combobox('getValue') == "1") {
+                       if ($('#select2').combobox('getValue') != "") {
+                           $('#win4').window('open');
+                           var k = $('#select2').combobox('getValue');
+                           Ajax(true, global.mj["GetMJControlDoorMaxID"], { LoginID: LocalID }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $('#id21').val(data.Data);
+                           });
+                           Ajax(true, global.mj["GetMJControlDoorDoorNumMaxID"], { LoginID: LocalID, control_id: k }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               $('#doornum1').val(data.Data);
+                           });
+                           Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID, jk_type: "03" }, function (data) {
+                               if (!data.Success) {
+                                   alert(data.Message);
+                                   return;
+                               }
+                               var temp = { 'id': '', 'jk_name': '无' };
+                               data.Data.push(temp);
+                               $('#display1').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                               $('#display2').combobox({
+                                   data: data.Data,
+                                   valueField: 'id',
+                                   textField: 'jk_name'
+                               });
+                           });
+                           $("#use1").combobox("setValue", 0);
+                       }
+                   }
+                   tp = 0;
+               }
+
+           }],
+           onDblClickRow: function (rowIndex, rowData) {
+               if ($('#select1').combobox('getValue') == "0") {
+                   if ($('#select2').combobox('getValue') != "") {
+                       $('#win2').window('open');
+                       $("#id2").val(rowData.id);
+                       $("#dktime").validatebox({ disabled: true });
+                       $("#dknum").validatebox({ disabled: true });
+                       $('#doornum').val(rowData.door_num);
+                       ab = (parseInt(rowData.door_num)).toString();
+                       ac = (parseInt(rowData.door_num) + 4).toString();
+                       $("#inreadcard").val(ab + "号读头");
+                       $("#outreadcard").val(ac + "号读头");
+                       $('#doortype').combobox("setValue", rowData.door_type);
+                       if (rowData.door_type == "01") {
+                           $("#ip").validatebox({ disabled: false });
+                           $("#port").validatebox({ disabled: false });
+                           $('#ip').val(rowData.ip);
+                           $("#port").val(rowData.port);
+                       }
+                       if (rowData.door_type == "00") {
+                           $("#ip").validatebox({ disabled: true });
+                           $("#port").validatebox({ disabled: true });
+                           $('#ip').val(rowData.ip);
+                           $("#port").val(rowData.port);
+                           //                    $('#doortype').combobox("setValue", rowData.door_type);
+                       }
+                       $('#apb').combobox({
+                           onChange: function (newValue, oldValue) {
+                               if (newValue == 6) {
+                                   $("#dktime").validatebox({ disabled: false });
+                                   $("#dknum").validatebox({ disabled: false });
+                               }
+                               if (newValue == 0) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                               if (newValue == 1) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                               if (newValue == 2) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                               if (newValue == 3) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                               if (newValue == 4) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                               if (newValue == 5) {
+                                   $("#dktime").validatebox({ disabled: true });
+                                   $("#dknum").validatebox({ disabled: true });
+                               }
+                           }
+                       });
+                       Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID, jk_type: "03" }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                            var temp = { 'id': '', 'jk_name': '无' };
+                           data.Data.push(temp);
+                           $('#display').combobox({
+                               data: data.Data,
+                               valueField: 'id',
+                               textField: 'jk_name'
+                           });
+                           $('#display0').combobox({
+                               data: data.Data,
+                               valueField: 'id',
+                               textField: 'jk_name'
+                           });
+                           $('#display0').combobox("setValue", rowData.sencond_id);
+                           $('#display').combobox("setValue", rowData.master_id);
+                       });
+                       var a = $('#select2').combobox('getValue');
+                       Ajax(true, global.mj["GetMJControlDoorList"], { LoginID: LocalID, control_id: a }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                           $('#lyh').val(rowData.yj_string);
+                           $('#doorname').val(rowData.door_name);
+                           $('#password').val(rowData.password);
+                           $("#dotime").val(rowData.do_time);
+                           $('#superpsw').val(rowData.super_psw);
+                           $('#dknum').val(rowData.dk_num);
+                           $("#xppsw").val(rowData.xp_psw);
+                           $('#dktime').val(rowData.dk_time);
+                           $('#alarmtime').val(rowData.alarm_time);
+                           $("#kqflag").combobox("setValue", rowData.kq_flag);
+                           $("#addressgroupid").combobox("setValue", rowData.address_group_id);
+                           $("#use").combobox("setValue", rowData.control_status);
+                           $("#apb").combobox("setValue", rowData.apb);
+                           $("#doorbj").combobox("setValue", rowData.door_bj);
+                           $("#xjflag").combobox("setValue", rowData.xj_flag);
+                       });
+                   }
+               }
+               if ($('#select1').combobox('getValue') == "1") {
+                   if ($('#select2').combobox('getValue') != "") {
+                       $('#win4').window('open');
+                       $("#id21").val(rowData.id);
+                       $('#doornum1').val(rowData.door_num);
+                       $("#dotime1").val(rowData.do_time);
+                       $('#doorname1').val(rowData.door_name);
+                       $('#password1').val(rowData.password);
+                       $('#dktime1').val(rowData.dk_time);
+                       $('#txh').val(rowData.yj_string);
+                       $("#addressgroupid1").combobox("setValue", rowData.address_group_id);
+                       $("#xjflag1").combobox("setValue", rowData.xj_flag);
+                       $("#kqflag1").combobox("setValue", rowData.kq_flag);
+                       $("#use1").combobox("setValue", rowData.control_status);
+                       $("#km").combobox("setValue", rowData.open_kind);
+                       $("#kzmk").combobox("setValue", rowData.expand_module);
+                       $("#ck").combobox("setValue", rowData.ck_flag);
+                       Ajax(true, global.pk["GetPKJkInfoList"], { LoginID: LocalID, jk_type: "03" }, function (data) {
+                           if (!data.Success) {
+                               alert(data.Message);
+                               return;
+                           }
+                            var temp = { 'id': '', 'jk_name': '无' };
+                           data.Data.push(temp);
+                           $('#display1').combobox({
+                               data: data.Data,
+                               valueField: 'id',
+                               textField: 'jk_name'
+                           });
+                           $('#display2').combobox({
+                               data: data.Data,
+                               valueField: 'id',
+                               textField: 'jk_name'
+                           });
+                           $('#display1').combobox("setValue", rowData.master_id);
+                           $('#display2').combobox("setValue", rowData.sencond_id);
+                       });
+                       if (rowData.dhcp == 1) {
+                           $("#idhcpch").prop("checked", true);
+                       }
+                       else {
+                           $("#idhcpch").prop("checked", false);
+                       }
+                   }
+               }
+               tp = 1;
+           }
+       });
+       $('#dg').datagrid('hideColumn', 'modular_name');
+       $('#dg').datagrid('hideColumn', 'modular_num');
+       $('#dg').datagrid('showColumn', 'id');
+       $('#dg').datagrid('showColumn', 'comm_address');
+       $('#dg').datagrid('showColumn', 'modular_kind');
+       $('#dg').datagrid('showColumn', 'modular_special');
+       $('#win1').window('close');
+       $('#win2').window('close');
+       $('#win3').window('close');
+       $('#win4').window('close');
+       $("#close").click(function () {
+           $('#win1').window('close');
+       });
+
+       $("#save").click(function () {
+           if (vs == 0) {
+               var num = document.getElementsByName("do");
+               var numi = document.getElementsByName("di");
+               var onum = "";
+               var a;
+               var b;
+               var inum = "";
+               if ($('#modularkind').combobox('getValue') == "B") {
+                   for (var i = 0; i < num.length; i++) {
+                       if (num[i].checked == true) { a = 1; }
+                       else { a = 0; }
+                       onum += a.toString();
+                   }
+                   for (var v = 0; v < numi.length; v++) {
+                       if (numi[v].checked == true) { b = 1; }
+                       else { b = 0; }
+                       inum += b.toString();
+                   }
+               }
+               var kind = $('#select1').combobox('getValue');
+               var controlid = $('#controlid').combobox('getValue');
+               var modularkind = $('#modularkind').combobox('getValue');
+               var commaddress = $('#commaddress').combobox('getValue');
+               var modularspecial = $('#modularspecial').combobox('getValue');
+               Ajax(true, global.mj["NewMJControlModular"], { LoginID: LocalID, control_id: controlid, comm_address: commaddress, modular_kind: modularkind, modular_special: modularspecial, do_modular: onum, di: inum }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "添加成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "添加失败！", "error");
+                   }
+                   $('#win1').window('close');
+                   loaddata();
+               });
+           }
+           if (vs == 1) {
+               var num = document.getElementsByName("do");
+               var numi = document.getElementsByName("di");
+               var onum = "";
+               var a;
+               var b;
+               var inum = "";
+               var rows = datagrid.datagrid('getSelected');
+               var ids = rows.id;
+               if ($('#modularkind').combobox('getValue') == "B") {
+                   for (var i = 0; i < num.length; i++) {
+                       if (num[i].checked == true) { a = 1; }
+                       else { a = 0; }
+                       onum += a.toString();
+                   }
+                   for (var v = 0; v < numi.length; v++) {
+                       if (numi[v].checked == true) { b = 1; }
+                       else { b = 0; }
+                       inum += b.toString();
+                   }
+               }
+               var kind = $('#select1').combobox('getValue');
+               var controlid = $('#controlid').combobox('getValue');
+               var modularkind = $('#modularkind').combobox('getValue');
+               var commaddress = $('#commaddress').combobox('getValue');
+               var modularspecial = $('#modularspecial').combobox('getValue');
+               Ajax(true, global.mj["UpdateMJControlModular"], { LoginID: LocalID, id: ids, control_id: controlid, comm_address: commaddress, modular_kind: modularkind, modular_special: modularspecial, do_modular: onum, di: inum }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "修改成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "修改失败！", "error");
+                   }
+                   $('#win1').window('close');
+                   loaddata();
+               });
+           }
+       });
+
+       $("#close1").click(function () {
+           $('#win2').window('close');
+           $('#doornum').val("");
+       });
+
+       $("#close3").click(function () {
+           $('#win4').window('close');
+       });
+
+       $("#save3").click(function () {
+           var tx = $('#select2').combobox('getValue');
+           var id = $("#id21").val();
+           var dhcp;
+           var doornum = $('#doornum1').val();
+           var dotime = $("#dotime1").val();
+           var doorname = $('#doorname1').val();
+           var password = $('#password1').val();
+           var dktime = $('#dktime1').val();
+           var txh = $('#txh').val();
+           var addressgroupid = $("#addressgroupid1").combobox('getValue');
+           var master_id = $("#display1").combobox('getValue');
+           var sencond_id = $("#display2").combobox('getValue');
+           var xjflag = $("#xjflag1").combobox('getValue');
+           var kqflag = $("#kqflag1").combobox('getValue');
+           var use = $("#use1").combobox('getValue');
+           var km = $("#km").combobox('getValue');
+           var kzmk = $("#kzmk").combobox('getValue');
+           var ck = $("#ck").combobox('getValue');
+           if ($('#idhcpch').is(":checked")) {
+               dhcp = 1;
+           }
+           else {
+               dhcp = 0;
+           }
+           if (id == "") {
+               alert("编号不能为空！");
+               return;
+           }
+           if (id.length != 5) {
+               alert("编号长度必须为5！");
+               return;
+           }
+           if (dotime && /^[0-9]+.?[0-9]*$/.test(dotime)) {
+
+           } else {
+               $.messager.alert("提示", "开门延时格式不正确！", "error");
+               $("#dotime").select();
+               return;
+           }
+           if (doorname == "") {
+               alert("门名不能为空！");
+               return;
+           }
+           if (doorname.length > 20) {
+               alert("门名长度不能超过20！");
+               return;
+           }
+           if (addressgroupid == "") {
+               alert("所属区域不能为空！");
+               return;
+           }
+           if (tp == 0) {
+               Ajax(true, global.mj["NewMJControlDoor"], { LoginID: LocalID, control_id: tx, id: id, door_name: doorname, door_num: doornum, password: password, do_time: dotime, dk_time: dktime, kq_flag: kqflag,
+                   address_group_id: addressgroupid, control_status: use, xj_flag: xjflag, open_kind: km, expand_module: kzmk, dhcp: dhcp, ck_flag: ck, yj_string: txh, master_id: master_id, sencond_id: sencond_id
+               }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "添加成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "添加失败！", "error");
+                   }
+                   $('#win4').window('close');
+                   loaddata1();
+                   ab = "";
+                   ac = "";
+               });
+           }
+           if (tp == 1) {
+               var rows = datagrid1.datagrid('getSelected');
+               var ids = rows.id;
+               Ajax(true, global.mj["UpdateMJControlDoor"], { LoginID: LocalID, control_id: tx, oldid: ids, id: id, door_name: doorname, door_num: doornum, password: password, do_time: dotime, dk_time: dktime, kq_flag: kqflag,
+                   address_group_id: addressgroupid, control_status: use, xj_flag: xjflag, open_kind: km, expand_module: kzmk, dhcp: dhcp, ck_flag: ck, yj_string: txh, master_id: master_id, sencond_id: sencond_id
+               }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "修改成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "修改失败！", "error");
+                   }
+                   $('#win4').window('close');
+                   loaddata1();
+                   ab = "";
+                   ac = "";
+               });
+           }
+       });
+       $("#close2").click(function () {
+           $('#win3').window('close');
+       });
+       $("#save2").click(function () {
+           var bh = $('#bh').val();
+           var mc = $('#mc').val();
+           var kz = $('#kz').val();
+           var bz = $('#bz').val();
+           var jk = $('#jk').combobox("getValue");
+           var cid = $('#cid').combobox("getValue");
+           if (vs == 0) {
+               Ajax(true, global.yj["NewMjExpandModular"], { LoginID: LocalID, id: bh, control_id: cid, modular_name: mc, modular_num: kz, memo: bz, port: jk }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "添加成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "添加失败！", "error");
+                   }
+                   $('#win3').window('close');
+                   loaddata3();
+               });
+           }
+           if (vs == 1) {
+               var rows = datagrid.datagrid('getSelected');
+               var ids = rows.id;
+               Ajax(true, global.yj["UpdateMjExpandModular"], { LoginID: LocalID, id: bh, control_id: cid, modular_name: mc, modular_num: kz, memo: bz, port: jk, oldid: ids }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "修改成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "修改失败！", "error");
+                   }
+                   $('#win3').window('close');
+                   loaddata3();
+               });
+           }
+       });
+       $("#save1").click(function () {
+           if (tp == 0) {
+               var tx = $('#select2').combobox('getValue');
+               var id = $("#id2").val();
+               var doornum = $('#doornum').val();
+               var doorname = $('#doorname').val();
+               var ip = $('#ip').val();
+               var port = $('#port').val();
+               var password = $('#password').val();
+               var dotime = $("#dotime").val();
+               var dknum = $('#dknum').val();
+               var xppsw = $("#xppsw").val();
+               var dktime = $('#dktime').val();
+               var alarmtime = $('#alarmtime').val();
+               var lyh = $('#lyh').val();
+               var inreadcard = ab;
+               var kqflag = $("#kqflag").combobox('getValue');
+               var addressgroupid = $("#addressgroupid").combobox('getValue');
+               var master_id = $("#display").combobox('getValue');
+               var sencond_id = $("#display0").combobox('getValue');
+               var outreadcard = ac;
+               var use = $("#use").combobox('getValue');
+               var apb = $("#apb").combobox('getValue');
+               var doorbj = $("#doorbj").combobox('getValue');
+               var xjflag = $("#xjflag").combobox('getValue');
+               var doortype = $("#doortype").combobox('getValue');
+               if (id == "") {
+                   alert("编号不能为空！");
+                   return;
+               }
+               if (id.length != 5) {
+                   alert("编号长度必须为5！");
+                   return;
+               }
+               if (doortype == "") {
+                   alert("门类型不能为空！");
+                   return;
+               }
+               if (doortype == "01") {
+                   if (ip == "") {
+                       alert("IP不能为空！");
+                       return;
+                   }
+                   if (port == "") {
+                       alert("端口不能为空！");
+                       return;
+                   }
+               }
+               if (alarmtime && /^[0-9]+.?[0-9]*$/.test(alarmtime)) {
+
+               } else {
+                   $.messager.alert("提示", "关门报警格式不正确！", "error");
+                   $("#alarmtime").select();
+                   return;
+               }
+               //                if (id2 && /^[0-9]+.?[0-9]*$/.test(id2)) {
+
+               //                } else {
+               //                    $.messager.alert("提示", "编号格式不正确！", "error");
+               //                    $("#id2").select();
+               //                    return;
+               //                }
+               if (dotime && /^[0-9]+.?[0-9]*$/.test(dotime)) {
+
+               } else {
+                   $.messager.alert("提示", "开门延时格式不正确！", "error");
+                   $("#dotime").select();
+                   return;
+               }
+               if (dknum && /^[0-9]+.?[0-9]*$/.test(dknum)) {
+
+               } else {
+                   $.messager.alert("提示", "认证卡数格式不正确！", "error");
+                   $("#dknum").select();
+                   return;
+               }
+               if (dktime && /^[0-9]+.?[0-9]*$/.test(dktime)) {
+
+               } else {
+                   $.messager.alert("提示", "认证间隔格式不正确！", "error");
+                   $("#dktime").select();
+                   return;
+               }
+               if (doorname == "") {
+                   alert("门名不能为空！");
+                   return;
+               }
+               if (doorname.length > 20) {
+                   alert("门名长度不能超过20！");
+                   return;
+               }
+               if (addressgroupid == "") {
+                   alert("所属区域不能为空！");
+                   return;
+               }
+               Ajax(true, global.mj["NewMJControlDoor"], { LoginID: LocalID, control_id: tx, id: id, door_name: doorname, door_num: doornum, password: password, do_time: dotime, dk_num: dknum,
+                   xp_psw: xppsw, dk_time: dktime, alarm_time: alarmtime, in_readcard: inreadcard, out_readcard: outreadcard, apb: apb, kq_flag: kqflag, address_group_id: addressgroupid,
+                   control_status: use, door_bj: doorbj, xj_flag: xjflag, door_type: doortype, ip: ip, port: port, yj_string: lyh, master_id: master_id, sencond_id: sencond_id
+               }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "添加成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "添加失败！", "error");
+                   }
+                   $('#win2').window('close');
+                   loaddata1();
+                   ab = "";
+                   ac = "";
+               });
+           }
+           if (tp == 1) {
+               var tx = $('#select2').combobox('getValue');
+               var rows = datagrid1.datagrid('getSelected');
+               var ids = rows.id;
+               var id = $("#id2").val();
+               var doornum = $('#doornum').val();
+               var doorname = $('#doorname').val();
+               var password = $('#password').val();
+               var dotime = $("#dotime").val();
+               var dknum = $('#dknum').val();
+               var xppsw = $("#xppsw").val();
+               var dktime = $('#dktime').val();
+               var alarmtime = $('#alarmtime').val();
+               var inreadcard = ab;
+               var kqflag = $("#kqflag").combobox('getValue');
+               var addressgroupid = $("#addressgroupid").combobox('getValue');
+               var master_id = $("#display").combobox('getValue');
+               var sencond_id = $("#display0").combobox('getValue');
+               var outreadcard = ac;
+               var use = $("#use").combobox('getValue');
+               var apb = $("#apb").combobox('getValue');
+               var doorbj = $("#doorbj").combobox('getValue');
+               var xjflag = $("#xjflag").combobox('getValue');
+               var doortype = $("#doortype").combobox('getValue');
+               var ip = $('#ip').val();
+               var port = $('#port').val();
+               if (id == "") {
+                   alert("编号不能为空！");
+                   return;
+               }
+
+               if (id.length != 5) {
+                   alert("编号长度必须为5！");
+                   return;
+               }
+               if (doortype == "") {
+                   alert("门类型不能为空！");
+                   return;
+               }
+               if (doortype == "01") {
+                   if (ip == "") {
+                       alert("IP不能为空！");
+                       return;
+                   }
+                   if (port == "") {
+                       alert("端口不能为空！");
+                       return;
+                   }
+               }
+               if (alarmtime && /^[0-9]+.?[0-9]*$/.test(alarmtime)) {
+
+               } else {
+                   $.messager.alert("提示", "关门报警格式不正确！", "error");
+                   $("#alarmtime").select();
+                   return;
+               }
+               //                if (id2 && /^[0-9]+.?[0-9]*$/.test(id2)) {
+
+               //                } else {
+               //                    $.messager.alert("提示", "编号格式不正确！", "error");
+               //                    $("#id2").select();
+               //                    return;
+               //                }
+               if (dotime && /^[0-9]+.?[0-9]*$/.test(dotime)) {
+
+               } else {
+                   $.messager.alert("提示", "开门延时格式不正确！", "error");
+                   $("#dotime").select();
+                   return;
+               }
+               if (dknum && /^[0-9]+.?[0-9]*$/.test(dknum)) {
+
+               } else {
+                   $.messager.alert("提示", "认证卡数格式不正确！", "error");
+                   $("#dknum").select();
+                   return;
+               }
+               if (dktime && /^[0-9]+.?[0-9]*$/.test(dktime)) {
+
+               } else {
+                   $.messager.alert("提示", "认证间隔格式不正确！", "error");
+                   $("#dktime").select();
+                   return;
+               }
+               if (addressgroupid == "") {
+                   alert("所属区域不能为空！");
+                   return;
+               }
+               if (doorname == "") {
+                   alert("门名不能为空！");
+                   return;
+               }
+               if (doorname.length > 20) {
+                   alert("门名长度不能超过20！");
+                   return;
+               }
+               Ajax(true, global.mj["UpdateMJControlDoor"], { LoginID: LocalID, control_id: tx, oldid: ids, id: id, door_name: doorname, door_num: doornum, password: password, do_time: dotime,
+                   dk_num: dknum, xp_psw: xppsw, dk_time: dktime, alarm_time: alarmtime, in_readcard: inreadcard, out_readcard: outreadcard, apb: apb, kq_flag: kqflag, address_group_id: addressgroupid,
+                   control_status: use, door_bj: doorbj, xj_flag: xjflag, door_type: doortype, ip: ip, port: port, yj_string: lyh, master_id: master_id, sencond_id: sencond_id
+               }, function (data) {
+                   if (!data.Success) {
+                       alert(data.Message);
+                       return;
+                   }
+                   if (data.Success == true) {
+                       $.messager.alert("提示", "修改成功！", "info");
+                   }
+                   if (data.Success == false) {
+                       $.messager.alert("提示", "修改失败！", "error");
+                   }
+                   $('#win2').window('close');
+                   loaddata1();
+
+                   $('#doornum').val("");
+               });
+           }
+       });
+   });
+    function loaddata() {
+       var a = $('#select2').combobox('getValue');
+       if ($('#select1').combobox('getValue')=="0") {
+           Ajax(true, global.mj["GetMJControlModularList"], { LoginID: LocalID, control_id: a }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+}
+function loaddata3() {
+    var a = $('#select2').combobox('getValue');
+    if ($('#select1').combobox('getValue') == "1") {
+        Ajax(true, global.yj["GetMjExpandModularList"], { LoginID: LocalID, control_id: a }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata3.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata3);
+            $('#kzmk').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'modular_name'
+            });
+        });
+    }
+}
+function loaddata1(eid) {
+    var a = $('#select2').combobox('getValue');
+    if ($('#select1').combobox('getValue') == "0") {
+        Ajax(true, global.mj["GetMJControlDoorList"], { LoginID: LocalID, control_id: a }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+        });
+    }
+    if ($('#select1').combobox('getValue') == "1") {
+        Ajax(true, global.mj["GetMJControlDoorList"], { LoginID: LocalID, control_id: a,expand_module:eid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+        });
+    }
+}
+
+</script>
+
+    </head>
+<body>
+<div class="easyui-panel" title="" data-options="collapsible:false,maximized:true" >
+<div data-options="region:'north',collapsible:false,border:false" style="width:100%;height:220px; ">
+<div  style="padding:2px;">
+    类型：<select id="select1" class="easyui-combobox"  style="width:100px;height:20px"><option value="0">有线</option> <option value="1">无线</option> </select> 
+    控制器名：<select id="select2" class="easyui-combobox"  style="width:100px;height:20px">  </select> 
+</div>
+ <table id="dg1"style="padding: 2px;"></table>
+ </div>
+ <div data-options="region:'south',collapsible:false,border:false" style="" >
+ 
+ <table id="dg"style=""></table>
+ </div>
+ </div>
+
+ <div id="win1" class="easyui-window" title="有线控制器模组" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:370px;height:260px;padding:2px;">
+	<div class="easyui-layout" data-options="fit:true">
+       <div data-options="region:'center'" style="width:480px;">
+       <table cellpadding="5">
+			<tr>
+     <td>控制器号：<select id="controlid" class="easyui-combobox"  style="width:100px;">  </select></td>
+     <td>读&nbsp;头&nbsp;号：<select id="commaddress" class="easyui-combobox"  style="width:100px;"> 
+<option value="1">1</option>
+<option value="2">2</option>
+<option value="3">3</option> 
+<option value="4">4</option>
+<option value="5">5</option>
+<option value="6">6</option>
+<option value="7">7</option>
+<option value="8">8</option> </select></td>
+     </tr> 
+     <tr>
+     <td>模组类型：<select id="modularkind" class="easyui-combobox"  style="width:100px;"> </select> </td>
+<td>模组特性：<select id="modularspecial" class="easyui-combobox"  style="width:100px;"> 
+</select> </td>
+</tr>
+<tr>
+     <td>DO通道初始状态:</td>
+<td>DI通道初始状态:</td></tr>
+    <tr> <td>
+     <div id ="DO">
+     <div id ="DO1">
+                <input type="checkbox" name="do" value="1"   />01
+                <input type="checkbox" name="do" value="2"  />02
+                <input type="checkbox" name="do" value="3" />03
+                <input type="checkbox" name="do" value="4"  />04</div>
+<div id ="DO2">
+                <input type="checkbox" name="do" value="5"  />05
+                <input type="checkbox" name="do" value="6"  />06
+                <input type="checkbox" name="do" value="7"   />07
+                <input type="checkbox" name="do" value="8"  />08</div>
+                <div id ="DO3">
+                <input type="checkbox" name="do" value="9" />09
+                <input type="checkbox" name="do" value="10"  />10
+                <input type="checkbox" name="do" value="11"  />11
+                <input type="checkbox" name="do" value="12"  />12</div>
+                <div id ="DO4">
+                <input type="checkbox" name="do" value="13" />13
+                <input type="checkbox" name="do" value="14"  />14
+                <input type="checkbox" name="do" value="15"  />15
+                <input type="checkbox" name="do" value="16"  />16
+                </div>
+                </div>
+                </td>
+<td>
+<div id ="DI">
+<div id="DI1">
+<input type="checkbox" name="di" value="1"   />01
+<input type="checkbox" name="di" value="2"  />02
+<input type="checkbox" name="di" value="3" />03
+<input type="checkbox" name="di" value="4"  />04</div>
+<div id ="DI2">
+<input type="checkbox" name="di" value="5"  />05
+<input type="checkbox" name="di" value="6"  />06
+<input type="checkbox" name="di" value="7"   />07
+<input type="checkbox" name="di" value="8"  />08</div>
+<div id ="DI3">
+<input type="checkbox" name="di" value="9" />09
+<input type="checkbox" name="di" value="10"  />10
+<input type="checkbox" name="di" value="11"  />11
+<input type="checkbox" name="di" value="12"  />12</div>
+<div id ="DI4">
+<input type="checkbox" name="di" value="13" />13
+<input type="checkbox" name="di" value="14"  />14
+<input type="checkbox" name="di" value="15"  />15
+<input type="checkbox" name="di" value="16"  />16
+</div>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			
+</div>
+</div>
+</div>
+<div id="win2" class="easyui-window" title="有线门区" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:450px;height:500px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+       <div data-options="region:'west'" style="width:195px;">
+       <table cellpadding="5">
+       <tr>
+		<td>编号:</td>
+		<td><input id="id2" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="validType:'length[1,5]'" maxlength="5"/></td>
+        </tr>
+     <tr>
+		<td>第几扇门：</td>
+		<td><input id="doornum" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="" readonly/></td>
+    </tr>
+<tr>
+		<td>进读头号：</td>
+		<td><input id="inreadcard" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="" /></td>
+</tr>      
+        <tr>
+		<td>安全密码：</td>
+		<td><input id="password" type="password" class="easyui-validatebox"style="width:80px;height:18px" data-options="validType: 'length[1,8]'"maxlength="8" /></td>
+        </tr>
+<tr>
+		<td>做考勤否：</td>
+		<td><select id="kqflag" class="easyui-combobox"  style="width:80px;height:20px"> 
+         <option value="0">否</option>
+        <option value="1">是</option></select> </td>
+        </tr>
+        <tr>
+		<td>所属区域：</td>
+		<td><select id="addressgroupid" class="easyui-combobox"  style="width:80px;height:20px"> </select>
+ </td>
+ </tr>
+
+  <tr>
+		<td>开门延时：</td>
+		<td><input id="dotime" class="easyui-validatebox textbox"value="5"style="width:80px;height:20px" data-options="required:true" />s 
+ </td>
+ </tr>
+
+<tr>
+		<td>认证卡数：</td>
+		<td><input id="dknum" class="easyui-validatebox textbox"value="1" style="width:80px;height:20px"data-options="required:true" /></td>
+        </tr>
+<tr>
+		<td>使用类型：</td>
+		<td><select id="use" class="easyui-combobox"  style="width:80px;height:20px">
+        <option value="0">普通</option>
+        <option value="1">浴室</option> 
+        <option value="2">访客签离</option></select>
+ </td>
+ </tr>
+<tr>
+		<td>门类型：</td>
+		<td><select id="doortype" class="easyui-combobox"  style="width:80px;height:20px"></select>
+ </td>
+ </tr>
+<tr>
+		<td>蓝牙号：</td>
+		<td><input id="lyh" class="easyui-validatebox textbox"maxlength="6"style="width:80px;height:20px"data-options="required:true" />
+ </td>
+ </tr>
+ </table>
+</div>
+
+<div data-options="region:'center'"style="width:185px;">
+<table cellpadding="5">
+ <tr>
+		<td>门名：</td>
+		<td><input id="doorname" class="easyui-validatebox textbox" data-options="required:true,validType: 'length[1,20]', prompt: '长度不能超过20'"style="width:80px;height:20px"maxlength="20" /></td>
+        </tr>
+<tr>
+		<td>出读头号：</td>
+		<td><input id="outreadcard" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="" /></td> 
+</tr> 
+<tr>
+		<td>APB阶层：</td>
+		<td><select id="apb" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">普通</option>
+        <option value="1">第一层反潜回</option>
+        <option value="2">第二层反潜回</option>
+        <option value="3">第三层反潜回</option>
+        <option value="4">互锁</option>
+        <option value="5">AB门</option>
+        <option value="6">多卡认证</option></select> </td>
+</tr>
+<tr>
+		<td>门磁报警：</td>
+		<td><select id="doorbj" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">否</option>
+        <option value="1">是</option>  </select> </td>
+</tr>
+<tr>
+		<td>巡检点：</td>
+		<td><select id="xjflag" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">否</option>
+        <option value="1">是</option> </select> </td>
+</tr>
+
+<tr>
+		<td>摄像头（进）：</td>
+		<td><select id="display" class="easyui-combobox"  style="width:80px;height:20px"> </select> </td>
+</tr>
+<tr>
+		<td>摄像头（出）：</td>
+		<td><select id="display0" class="easyui-combobox"  style="width:80px;height:20px"> </select> </td>
+</tr>
+<tr>
+		<td>胁迫密码：</td>
+		<td><input id="xppsw" type="password" class="easyui-validatebox" data-options="validType: 'length[1,4]'"style="width:80px;height:18px" /></td>
+        </tr>
+<tr>
+		<td>认证间隔：</td>
+		<td><input id="dktime" class="easyui-validatebox textbox"value="15" data-options="required:true"style="width:80px;height:20px" />s</td>
+        </tr>
+<tr>
+		<td>关门告警：</td>
+		<td><input id="alarmtime" class="easyui-validatebox textbox"value="60" data-options="required:true"style="width:80px;height:20px" />s</td>
+        </tr>
+<tr>
+		<td>IP：</td>
+		<td><input id="ip" class="easyui-validatebox textbox"value="" data-options="required:true"style="width:80px;height:20px" /></td>
+        </tr>
+<tr>
+		<td>端口：</td>
+		<td><input id="port" class="easyui-validatebox textbox"value="" data-options="required:true"style="width:80px;height:20px" /></td>
+        </tr>
+</table>
+</div>
+
+<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close1" style="width:80px">关闭</a>
+<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save1" style="width:80px">提交</a>
+</div>			
+</div>
+</div>
+<div id="win3" class="easyui-window" title="无线控制器模组" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:400px;height:200px;padding:2px;">
+	<div class="easyui-layout" data-options="fit:true">
+       <div data-options="region:'center'" style="width:480px;">
+       <table cellpadding="5">
+			<tr>
+     <td>编号：</td><td><input id="bh"  class="easyui-validatebox textbox" data-options="validType: 'length[1,5]'"data-options="required:true"style="width:100px;height:18px" /></td>
+     <td>名称：</td><td><input id="mc"  class="easyui-validatebox textbox" data-options="validType: 'length[1,5]'"data-options="required:true"style="width:100px;height:18px" /></td>
+     </tr> 
+     <tr>
+     <td>控制器号：</td><td><select id="cid" class="easyui-combobox"  style="width:100px;"> </select> </td>
+     <td>第几扩展模块：</td><td><input id="kz"  class="easyui-validatebox textbox" data-options="validType: 'length[1,5]'"data-options="required:true"style="width:100px;height:18px" readonly/></td>
+</tr>
+<tr>
+     <td>备注:</td>
+<td><input id="bz"  class="easyui-validatebox textbox" data-options="validType: 'length[1,5]'"data-options="required:true"style="width:100px;height:18px" /></td>
+    <td>接口：</td><td><select id="jk" class="easyui-combobox"  style="width:100px;"> 
+        <option value="1">1</option>
+        <option value="2">2</option> 
+        <option value="3">3</option>
+</select> </td></tr>
+</table>
+</div>
+<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close2" style="width:80px">关闭</a>
+<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save2" style="width:80px">提交</a>
+			
+</div>
+</div>
+
+
+</div>
+<div id="win4" class="easyui-window" title="无线门区" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:415px;height:450px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+       <div data-options="region:'west'" style="width:195px;">
+       <table cellpadding="5">
+       <tr>
+		<td>编号:</td>
+		<td><input id="id21" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="validType:'length[1,5]'" maxlength="5"/></td>
+        </tr>
+     <tr>
+		<td>第几扇门：</td>
+		<td><input id="doornum1" class="easyui-validatebox textbox"style="width:80px;height:20px"  data-options="" readonly/></td>
+    </tr>  
+        <tr>
+		<td>所属区域：</td>
+		<td><select id="addressgroupid1" class="easyui-combobox"  style="width:80px;height:20px"> </select>
+ </td>
+ </tr>
+        <tr>
+		<td>扩展模块：</td>
+		<td><select id="kzmk" class="easyui-combobox"  style="width:80px;height:20px"> </select>
+ </td>
+ </tr>
+  <tr>
+		<td>开门延时：</td>
+		<td><input id="dotime1" class="easyui-validatebox textbox"value="5"style="width:80px;height:20px" data-options="required:true" />s 
+ </td>
+ </tr>
+<tr>
+		<td>常开：</td>
+		<td><select id="ck" class="easyui-combobox"  style="width:80px;height:20px"> 
+         <option value="0">否</option>
+        <option value="1">是</option></select> </td>
+        </tr>
+<tr>
+		<td>使用类型：</td>
+		<td><select id="use1" class="easyui-combobox"  style="width:80px;height:20px">
+        <option value="0">普通</option>
+        <option value="1">浴室</option> </select>
+ </td>
+ </tr>
+ 
+<tr>
+		<td>通讯号：</td>
+		<td><input id="txh" class="easyui-validatebox textbox"maxlength="6"style="width:80px;height:20px"data-options="required:true" />
+ </td>
+ </tr>
+ </table>
+</div>
+
+<div data-options="region:'center'"style="width:185px;">
+<table cellpadding="5">
+ <tr>
+		<td>门名：</td>
+		<td><input id="doorname1" class="easyui-validatebox textbox" data-options="required:true,validType: 'length[1,20]', prompt: '长度不能超过20'"style="width:80px;height:20px"maxlength="20" /></td>
+        </tr>
+<tr>
+		<td>做考勤否：</td>
+		<td><select id="kqflag1" class="easyui-combobox"  style="width:80px;height:20px"> 
+         <option value="0">否</option>
+        <option value="1">是</option></select> </td>
+        </tr>
+<tr>
+		<td>开门模式：</td>
+		<td><select id="km" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value='0' selected>刷卡</option><option value='10'>密码</option><option value='11'>刷卡加密码</option><option value='12'>刷卡或密码</option>  </select> </td>
+</tr>
+<tr>
+		<td>摄像头（进）：</td>
+		<td><select id="display1" class="easyui-combobox"  style="width:80px;height:20px"> </select> </td>
+</tr>
+<tr>
+		<td>摄像头（出）：</td>
+		<td><select id="display2" class="easyui-combobox"  style="width:80px;height:20px"> </select> </td>
+</tr>
+        <tr>
+		<td>开门密码：</td>
+		<td><input id="password1" type="password" class="easyui-validatebox"style="width:80px;height:18px" data-options="validType: 'length[1,4]'"maxlength="4" /></td>
+        </tr>
+<tr>
+		<td>巡检点：</td>
+		<td><select id="xjflag1" class="easyui-combobox"  style="width:80px;height:20px"> 
+        <option value="0">否</option>
+        <option value="1">是</option> </select> </td>
+</tr>
+<tr>
+		<td>有效时间：</td>
+		<td><input id="dktime1" class="easyui-validatebox textbox"value="15" data-options="required:true"style="width:80px;height:20px" />s</td>
+        </tr>
+<tr>
+		<td><input id='idhcpch' name='idhcpbox' class='check' type='checkbox' checked/>DHCP</td>
+		<td></td>
+        </tr>
+</table>
+</div>
+
+<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close3" style="width:80px">关闭</a>
+<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save3" style="width:80px">提交</a>
+</div>			
+</div>
+</div>
+</body>
+</html>
