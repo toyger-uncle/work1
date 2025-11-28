@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var rolejsondata = { "total": 0, "rows": [] };
+    $(function () {
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            //pagination: true, //显示分页  
+            //pageSize: 10, //分页大小  
+            //pageList: [10, 50, 100], //每页的个数  
+            //fit: true, //自动补全  
+            fitColumns: true,
+            striped: true,
+            iconCls: "icon-search", //图标  
+            title: "角色列表",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            //sortName:"id",
+            //sortOrder: 'desc',
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //sortable: true,
+                width: 50
+            }, {
+                field: 'rolename',
+                title: '角色',
+                //sortable: true,
+                width: 100
+            }, {
+                field: 'level',
+                title: '等级',
+                //sortable: true,
+                width: 100
+            }]],
+            onSelect: function (rowIndex, rowData) {
+                if (rowData == null) {
+                    datagrid.datagrid('selectRow', 0);
+                    var datarow = datagrid.datagrid('getSelected');
+                    roleid = datarow.id;
+                    loaddata(roleid);
+                }
+                loaddata(rowData.id);
+            }
+        });
+        tree = $("#tt").tree({
+            //idField: "id",
+            checkbox: true,
+            cascadeCheck: false,
+            onSelect: function (node) {
+                if (node.checked) {
+                    tree.tree('uncheck', node.target);
+                }
+                else {
+                    tree.tree('check', node.target);
+                }
+            },
+            //            onLoadSuccess: function () {
+            //                $(this).find('span.tree-checkbox').unbind().click(function () {
+            //                    return false;
+            //                });
+            //            },
+            onCheck: function (node, checked) {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                var roleid = rowData.id
+                var kind = node.attributes.kind;
+                if (kind == "P") {
+                    if (checked) {
+                        Ajax(true, sys["NewPZProrGroup"], { LoginID: LocalID, roleid: roleid, projectid: node.id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                        });
+                    }
+                    else {
+                        Ajax(true, sys["RemovePZProrGroup"], { LoginID: LocalID, roleid: roleid, projectid: node.id }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                        });
+                    }
+                }
+                else if (kind == "M") {
+                    var size = node.attributes.size;
+                    var parentnode = node;
+                    while (true) {
+                        parentnode = tree.tree('getParent', parentnode.target);
+                        kind = parentnode.attributes.kind;
+                        //                        if (kind == "G") {
+                        //                            if (checked) {
+                        //                                if (!parentnode.checked) {
+                        //                                    parentnode.checked = true;
+                        //                                }
+                        //                            }
+                        //                        }else 
+                        if (kind == "P") {
+                            if (checked) {
+                                if (!parentnode.checked) {
+                                    tree.tree('check', parentnode.target);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (checked) {
+                        Ajax(true, sys["NewPZModrGroup"], { LoginID: LocalID, roleid: roleid, moduleid: node.id, size: size }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                        });
+                    }
+                    else {
+                        Ajax(true, sys["RemovePZModrGroup"], { LoginID: LocalID, roleid: roleid, moduleid: node.id, size: size }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                        });
+                    }
+                }
+                else if (kind == "G") {
+                    var childrennodes = tree.tree('getChildren', node.target);
+                    if (checked) {
+                        for (var i = 0; i < childrennodes.length; i++) {
+                            if (!childrennodes[i].checked) {
+                                tree.tree('check', childrennodes[i].target);
+                            }
+                        }
+                    }
+//                    else {
+//                        for (var i = 0; i < childrennodes.length; i++) {
+//                            if (childrennodes[i].checked) {
+//                                tree.tree('uncheck', childrennodes[i].target);
+//                            }
+//                        }
+//                    }
+                }
+            }
+        });
+        Ajax(true, sys["GetPZUserRoleList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            rolejsondata.total = data.Data.length;
+            rolejsondata.rows = data.Data;
+            datagrid.datagrid('loadData', rolejsondata);
+            if (datagrid.datagrid('getSelected') == null) {
+                datagrid.datagrid('selectRow', 0);
+            }
+        });
+    });
+    function loaddata(roleid) {
+        Ajax(true, sys["GetSystemTree"], { LoginID: LocalID, roleid: roleid, iconCls: 'icon-tool' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = JSON2.parse(data.Data);
+            tree.tree('loadData', jsondata.rows);
+        });
+    }
+</script>
+
+    </head>
+<body>
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'west',collapsible:false" style="width:300px; ">
+		    <table id="dg"> </table>  
+		</div>
+		<div data-options="region:'center',iconCls:'icon-search'" title="系统树" style="padding:2px; width:250px;">
+		    <ul id="tt"></ul>
+		</div>
+	</div>
+</body>
+</html>

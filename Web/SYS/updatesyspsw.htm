@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    $(function () {
+        $('input.easyui-validatebox').validatebox({
+            tipOptions: {	// the options to create tooltip
+                showEvent: 'mouseenter',
+                hideEvent: 'mouseleave',
+                showDelay: 0,
+                hideDelay: 0,
+                zIndex: '',
+                onShow: function () {
+                    if (!$(this).hasClass('validatebox-invalid')) {
+                        if ($(this).tooltip('options').prompt) {
+                            $(this).tooltip('update', $(this).tooltip('options').prompt);
+                        } else {
+                            $(this).tooltip('tip').hide();
+                        }
+                    } else {
+                        $(this).tooltip('tip').css({
+                            color: '#000',
+                            borderColor: '#CC9933',
+                            backgroundColor: '#FFFFCC'
+                        });
+                    }
+                },
+                onHide: function () {
+                    if (!$(this).tooltip('options').prompt) {
+                        $(this).tooltip('destroy');
+                    }
+                }
+            }
+        }).tooltip({
+            position: 'right',
+            content: function () {
+                var opts = $(this).validatebox('options');
+                return opts.prompt;
+            },
+            onShow: function () {
+                $(this).tooltip('tip').css({
+                    color: '#000',
+                    borderColor: '#CC9933',
+                    backgroundColor: '#FFFFCC'
+                });
+            }
+        });
+        $.extend($.fn.validatebox.defaults.rules, {
+            /*必须和某个字段相等*/
+            equalTo: {
+                validator: function (value, param) {
+                    return $(param[0]).val() == value;
+                },
+                message: '字段不匹配'
+            }
+
+        });
+        $("#clear").click(function () {
+            $('#oldpsw').val("");
+            $('#newpsw').val("");
+            $('#psw').val("");
+            $('#oldpsw').select();
+        });
+        $("#save").click(function () {
+            var oldpsw = $('#oldpsw').val();
+            var newpsw = $('#newpsw').val();
+            var psw = $('#psw').val();
+            if (oldpsw.length != 6) {
+                $.messager.alert("提示", "老密码长度必须为6", "error", function () {
+                    $('#oldpsw').select();
+                });
+                return;
+            }
+            if (newpsw.length != 6) {
+                $.messager.alert("提示", "新密码长度必须为6", "error", function () {
+                    $('#newpsw').select();
+                });
+                return;
+            }
+            if (psw.length != newpsw.length) {
+                $.messager.alert("提示", "新密码和确认密码不一致", "error", function () {
+                    $('#psw').select();
+                });
+                return;
+            }
+            Ajax(true, sys["UpdateSysPlaintext"], { LoginID: LocalID, OldSysPlaintext: oldpsw, NewSysPlaintext: newpsw }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#oldpsw').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+            });
+        });
+        $('#oldpsw').select();
+    });
+</script>
+
+    </head>
+<body>
+  	<div ></div>
+	<div style="width:400px;text-align:left;">
+		<table cellpadding="5">
+			<tr>
+				<td>老密钥:</td>
+				<td><input id="oldpsw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter Old System Password.',required:true,validType:'length[6,6]'" /></td>
+			</tr>
+			<tr>
+				<td>新密钥:</td>
+				<td><input id="newpsw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter New System Password.',required:true,validType:'length[6,6]'" /></td>
+			</tr>
+			<tr>
+				<td>确认密钥:</td>
+				<td><input id="psw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter Confirm New System Password.',required:true,validType:'equalTo[\'#newpsw\']',invalidMessage:'两次输入密码不匹配'" /></td>
+			</tr>
+			<tr>
+				<td><a href="javascript:void(0)" class="easyui-linkbutton" id="clear" iconcls="icon-clear">重置</a> </td>
+				<td><a href="javascript:void(0)" class="easyui-linkbutton" id="save" iconcls="icon-save">保存</a> </td>
+			</tr>
+		</table>
+	</div>
+</body>
+</html>

@@ -1,0 +1,319 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var cardsnr = "";
+    var SysOriginalCiphertext = "";
+    var TKPlaintext = "";
+    var SysCiphertext = "";
+    var mstext = "";
+    var rooltime = 500;
+    var cot = 0;
+    var maxcot = 12000;
+    $(function () {
+        while (true) {
+            var ActiveX;
+            var ret;
+            try {
+                ActiveX = $("#ActiveX")[0];
+                ret = ActiveX.GetVersion();
+            }
+            catch (e) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请安装做卡插件，重试！");
+                return;
+                continue;
+            }
+            if (ret != "1.0") {
+                $("#info").css("color", "Red");
+                $("#info").html("做卡插件版本不匹配，请重新安装对应版本，重试！" + "(当前" + ret + "软件需要1.0)");
+                return;
+                continue;
+            }
+            ret = ActiveX.OpenCom();
+            if (ret != 0) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请插好读卡器，重试！");
+                return;
+                continue;
+            }
+            break;
+        }
+        $("#info").html("获取出厂密钥……");
+        Ajax(true, sys["GetSysOriginalCiphertext"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            SysOriginalCiphertext = data.Data;
+            $("#info").html("获取出厂密钥成功");
+            $("#info").html("获取梯控密钥……");
+            Ajax(true, tk["GetTKPlaintext"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                TKPlaintext = data.Data.variablechar;
+                $("#tk").prop('checked', true);
+                $("#info").html("获取梯控密钥成功");
+                display();
+            });
+            $("#info").html("获取消费密钥……");
+            Ajax(true, sys["GetSysCiphertext"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                SysCiphertext = data.Data;
+                $("#xf").prop('checked', true);
+                $("#ms").prop('checked', true);
+                $("#xq").prop('checked', true);
+                $("#info").html("获取消费密钥成功");
+                display();
+            });
+            readcard();
+        });
+    });
+    function display() {
+        var x = "";
+        if ($("#tk").is(":checked")) {
+            x += "梯控，";
+        }
+        if ($("#xf").is(":checked")) {
+            x += "消费，";
+        }
+        if ($("#ms").is(":checked")) {
+            x += "门锁，";
+        }
+        if ($("#xq").is(":checked")) {
+            x += "小区，";
+        }
+        x += "初始化中……";
+        $("#tou").html(x); 
+    }
+    function readcard() {
+        if (!($("#tk").is(":checked")) && !($("#xf").is(":checked")) && !($("#ms").is(":checked")) && !($("#xq").is(":checked"))) {
+            $("#info").html("没有要做的事");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        var currentcardsnr = ActiveX.RFMifare_GetSnr();
+        if (currentcardsnr == "") {
+            $("#info").css("color", "Blue");
+            $("#info").html("读卡中，请放上新卡进行初始化……");
+            cot++;
+            if (cot > maxcot) {
+                $("#info").css("color", "Red");
+                $("#info").html("长时间未读到卡，已停止工作，要继续请刷新页面");
+                return;
+            }
+        }
+        else {
+            cot = 0;
+        }
+        if (currentcardsnr == "" || currentcardsnr == cardsnr) {
+            cardsnr = currentcardsnr;
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        cardsnr = currentcardsnr;
+        $("#info").html("读卡成功，卡号：" + cardsnr);
+        var keys = "";
+        if ($("#tk").is(":checked")) {
+            var datax = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"FFFFFFFFFFFF\"}";
+            var data = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysOriginalCiphertext + "\"}";
+            keys = "{\"Key\":9,\"Value\":\"" + TKPlaintext + "\"},{\"Key\":10,\"Value\":\"" + TKPlaintext + "\"}";
+            keys = "[" + keys + "]";
+            var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+            data = JSON2.parse(ret);
+            if (!data.Success) {
+                ret = ActiveX.RFMifare_AllInitCard(datax, keys, "");
+                data = JSON2.parse(ret);
+                if (!data.Success) {
+                    var cardinfo = "";
+                    cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + TKPlaintext + "\",\"blockdatas\":[{\"Key\":36,\"Value\":\"\"},{\"Key\":40,\"Value\":\"\"}]}";
+                    cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+                    var cardinfojson = JSON2.parse(cardinfo);
+                    if (!cardinfojson.Success) {
+                        $("#info").html("梯控初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+                        $("#info").css("color", "Red");
+                        setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                }
+            }
+        }
+            if ($("#xf").is(":checked")) {
+            var datax = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"FFFFFFFFFFFF\"}";
+            var data = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysOriginalCiphertext + "\"}";
+            keys = "{\"Key\":1,\"Value\":\"" + SysCiphertext + "\"},{\"Key\":2,\"Value\":\"" + SysCiphertext + "\"}";
+            keys = "[" + keys + "]";
+            var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+            data = JSON2.parse(ret);
+            if (!data.Success) {
+                var cardinfo = "";
+                cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysCiphertext + "\",\"blockdatas\":[{\"Key\":4,\"Value\":\"\"},{\"Key\":8,\"Value\":\"\"}]}";
+                cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+                var cardinfojson = JSON2.parse(cardinfo);
+                if (!cardinfojson.Success) {
+                    $("#info").html("消费初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+                    $("#info").css("color", "Red");
+                    setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+            }
+        }
+            if ($("#ms").is(":checked")) {
+            var datax = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"FFFFFFFFFFFF\"}";
+            var data = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysOriginalCiphertext + "\"}";
+            keys = "{\"Key\":13,\"Value\":\"" + SysCiphertext + "\"}";
+            keys = "[" + keys + "]";
+            var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+            data = JSON2.parse(ret);
+            if (!data.Success) {
+                ret = ActiveX.RFMifare_AllInitCard(datax, keys, "");
+                data = JSON2.parse(ret);
+                if (!data.Success) {
+                    var cardinfo = "";
+                    cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysCiphertext + "\",\"blockdatas\":[{\"Key\":52,\"Value\":\"\"}]}";
+                    cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+                    var cardinfojson = JSON2.parse(cardinfo);
+                    if (!cardinfojson.Success) {
+                        $("#info").html("门锁初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+                        $("#info").css("color", "Red");
+                        setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                }
+            }
+            }
+            if ($("#xq").is(":checked")) {
+                var datax = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"FFFFFFFFFFFF\"}";
+                data = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysOriginalCiphertext + "\"}";
+                keys = "{\"Key\":7,\"Value\":\"" + SysCiphertext + "\"}";
+                keys = "[" + keys + "]";
+                var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+                data = JSON2.parse(ret);
+                if (!data.Success) {
+                    ret = ActiveX.RFMifare_AllInitCard(datax, keys, "");
+                    data = JSON2.parse(ret);
+                    if (!data.Success) {
+                        var cardinfo = "";
+                        cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysCiphertext + "\",\"blockdatas\":[{\"Key\":29,\"Value\":\"\"}]}";
+                        cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+                        var cardinfojson = JSON2.parse(cardinfo);
+                        if (!cardinfojson.Success) {
+                            $("#info").html("小区初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+                            $("#info").css("color", "Red");
+                            setTimeout(function () { readcard() }, rooltime);
+                            return;
+                        }
+                    }
+                }
+            }
+        if(keys==""){
+            $("#info").html("没有要做的事");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+//        keys = "[" + keys + "]";
+//        var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+//        data = JSON2.parse(ret);
+//        if (!data.Success) {
+//            var cardinfo = "";
+//            if ($("#tk").is(":checked")) {
+//                cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + TKPlaintext + "\",\"blockdatas\":[{\"Key\":36,\"Value\":\"\"},{\"Key\":40,\"Value\":\"\"}]}";
+//                cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+//                var cardinfojson = JSON2.parse(cardinfo);
+//                if (!cardinfojson.Success) {
+//                    $("#info").html("梯控初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+//                    $("#info").css("color", "Red");
+//                    setTimeout(function () { readcard() }, rooltime);
+//                    return;
+//                }
+//            }
+//            if ($("#xf").is(":checked")) {
+//                cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysCiphertext + "\",\"blockdatas\":[{\"Key\":4,\"Value\":\"\"},{\"Key\":8,\"Value\":\"\"}]}";
+//                cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+//                var cardinfojson = JSON2.parse(cardinfo);
+//                if (!cardinfojson.Success) {
+//                    $("#info").html("消费初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+//                    $("#info").css("color", "Red");
+//                    setTimeout(function () { readcard() }, rooltime);
+//                    return;
+//                }
+//            }
+//            if ($("#ms").is(":checked")) {
+//                cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + SysCiphertext + "\",\"blockdatas\":[{\"Key\":52,\"Value\":\"\"}]}";
+//                cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+//                var cardinfojson = JSON2.parse(cardinfo);
+//                if (!cardinfojson.Success) {
+//                    $("#info").html("门锁初始化卡片失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+//                    $("#info").css("color", "Red");
+//                    setTimeout(function () { readcard() }, rooltime);
+//                    return;
+//                }
+//            }
+//            $("#info").html("卡片已初始化，卡号：" + cardsnr);
+//            $("#info").css("color", "Red");
+//            ActiveX.RFMifare_Alarm(4, 20, 0, 1);
+//            setTimeout(function () { readcard() }, rooltime);
+//            return;
+//        }
+        $("#info").css("color", "Green");
+        $("#info").html("初始化卡片成功，卡号：" + cardsnr);
+        ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+        setTimeout(function () { readcard() }, rooltime);
+    }
+</script>
+
+</head>
+<body>
+  	<div><input id="tk" type="checkbox" name="lang" value="0"  onclick="display()"/>梯控<input id="xf" type="checkbox" name="lang" value="1" onclick="display()"/>消费<input id="ms" type="checkbox" name="lang" value="2" onclick="display()"/>门锁<input id="xq" type="checkbox" name="lang" value="3" onclick="display()"/>小区</div>
+  	<div id="tou" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;"></div>
+	<div id="info" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;">
+
+	</div> 
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06" style="width:0px; height:0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+</body>
+</html>

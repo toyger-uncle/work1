@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title></title>	
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+<script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+<script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+<script src="../../Scripts/json2.js" type="text/javascript"></script>
+<script src="../../Scripts/global.js" type="text/javascript"></script>
+<script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+.style6
+{
+    width: 207px;
+}
+.style8
+{
+    width: 73px;
+}
+.style9
+{
+    width: 100%;
+}
+.style10
+{
+    width: 188px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var treet;
+    var jsondata = { "total": 0, "rows": [] };
+    var Ljsondata = { "total": 0, "rows": [] };
+    var Rjsondata = { "total": 0, "rows": [] };
+    var flag;
+    $(function () {
+        $('#select').combobox({
+            onChange: function (newValue, oldValue) {
+                Rloaddata();
+            }
+        });
+        tree = $("#tt").tree({
+            animate: true,
+            checkbox: true,
+            onSelect: function (node) {
+                //添加clickState属性
+                node.attributes["clickState"] = "1";
+                if (node.attributes.kind == "U") {
+                }
+                else if (node.attributes && node.attributes.kind && node.attributes.kind == "D") {
+                    var target = node.children || undefined;
+                    if (target && target.length && target.length != 0) {
+                        for (var i = 0; i < target.length; i++) {
+                            if (target[i].attributes.kind == "U") {
+                                $('#tt').tree('toggle', node.target);
+                                return;
+                            }
+                        }
+                    }
+                    treeEvent(node);
+                }
+            }
+        });
+        treet = $("#ttt").tree({
+            animate: true,
+            checkbox: true,
+            onSelect: function (node) {
+                //添加clickState属性
+                node.attributes["clickState"] = "1";
+                if (node.attributes.kind == "U") {
+                }
+                else if (node.attributes && node.attributes.kind && node.attributes.kind == "D") {
+                    var target = node.children || undefined;
+                    if (target && target.length && target.length != 0) {
+                        for (var i = 0; i < target.length; i++) {
+                            if (target[i].attributes.kind == "U") {
+                                $('#ttt').tree('toggle', node.target);
+                                return;
+                            }
+                        }
+                    }
+                    var id = $("#select").combobox("getValue");
+                    treeEvents(node, id);
+                }
+            }
+        });
+        Lloaddata();
+        Rloaddata();
+        $("#moveIn").click(function () {
+            var nodes = tree.tree('getChecked');
+            var id = $("#select").combobox("getValue");
+            var name = $("#select").combobox("getText");
+            if ($("#select").combobox("getValue") == "") {
+                $.messager.alert("提示", "类型不能为空", "error");
+                return;
+            }
+            if (nodes.length == 0) {
+                $.messager.alert("提示", "未选中项", "error");
+                return;
+            }
+            $.messager.confirm("提示", "确定分配所选用户" + '<font color="red">' + name + '</font>' + "权限", function (data) {
+                if (data) {
+                    var userfile = "";
+                    var j = 0;
+                    for (var i = 0; i < nodes.length; i++) {
+                        if (nodes[i].attributes.kind == "U") {
+                            userfile = nodes[i].id;
+                            Ajax(true, global.sys["UpdateUserFileMode"], { LoginID: LocalID, mode: id, id: userfile }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                Lloaddata();
+                                Rloaddata();
+                                j = j + 1;
+                                if (j == nodes.length-1) {
+                                    $.messager.alert("提示", "移入成功", "info");
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        });
+        $("#moveOut").click(function () {
+            var nodes = treet.tree('getChecked');
+            var id = $("#select").combobox("getValue");
+            if ($("#select").combobox("getValue") == "") {
+                $.messager.alert("提示", "验证方式不能为空", "error");
+                return;
+            }
+            if (nodes.length == 0) {
+                $.messager.alert("提示", "未选中项", "error");
+                return;
+            }
+            var j = 0;
+            for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].attributes.kind == "U") {
+                    userfile = nodes[i].id;
+                    Ajax(true, global.sys["UpdateUserFileMode"], { LoginID: LocalID, mode: "", id: userfile }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        Lloaddata();
+                        Rloaddata();
+                        j = j + 1;
+                        if (j == nodes.length-1) {
+                            $.messager.alert("提示", "移出成功", "info");
+                        }
+                    });
+                }
+            }
+        });
+        $("#search").click(function () {
+            var text = $("#text").val();
+        });
+    });
+    function Lloaddata() {
+        Ajax(true, global.sys.GetAllDepartTree, { LoginID: LocalID, iconCls: 'exicon-house', state: 'closed' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Ljsondata.total = data.Data.length;
+            Ljsondata.rows = JSON2.parse(data.Data);
+            tree.tree('loadData', Ljsondata.rows);
+//            if (data.Data.length > 0) {
+//                if (tree.tree('getSelected') == null) {
+//                    var root = tree.tree("getRoot");
+//                    tree.tree('select', root.target);
+//                }
+//            }
+        });
+    }
+    function Rloaddata() {
+        Ajax(true, global.sys.GetAllDepartTree, { LoginID: LocalID, iconCls: 'exicon-house', state: 'closed' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Rjsondata.total = data.Data.length;
+            Rjsondata.rows = JSON2.parse(data.Data);
+            treet.tree('loadData', Rjsondata.rows);
+//            if (data.Data.length > 0) {
+//                if (treet.tree('getSelected') == null) {
+//                    var roots = treet.tree("getRoot");
+//                    treet.tree('select', roots.target);
+//                }
+//            }
+        });
+    }
+    function treeEvent(node) {
+        Ajax(false, global.sys["GetUserTreeNullModeOfDepart"], { LoginID: LocalID, depart_id: node.id,work_type:"01", iconCls: 'icon-man' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var da = JSON2.parse(data.Data);
+            $('#tt').tree('append', {
+                parent: node.target,
+                data: da
+            });
+            $('#tt').tree('toggle', node.target);
+        });
+    }
+    function treeEvents(node, id) {
+        Ajax(false, global.sys["GetUserTreeModeOfDepart"], { LoginID: LocalID, depart_id: node.id, work_type: "01",mode:id, iconCls: 'icon-man' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var da = JSON2.parse(data.Data);
+            $('#ttt').tree('append', {
+                parent: node.target,
+                data: da
+            });
+            $('#ttt').tree('toggle', node.target);
+        });
+    }
+    function loaddata(username) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.tk["GetTkNullOrIsRoomUserList"], { LoginID: LocalID, user_name: username }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+
+    }	
+</script>
+
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false,border:false" style="padding:2px;height:30px; " >
+验证方式：<select id="select" class="easyui-combobox"  style="width:120px;">  
+                <option value="128">指纹或人脸或卡</option>
+                <option value="129">指纹</option>
+                <option value="130">密码</option> 
+                <option value="131">人脸</option>
+                <option value="132">卡</option>
+                <option value="133">指纹加卡</option>
+                <option value="134">指纹或人脸</option>
+                <option value="135">指纹或卡</option>
+                <option value="136">人脸或卡</option>
+                <option value="137">指纹加密码</option>
+                <option value="138">指纹加人脸</option>
+                <option value="139">人脸加卡</option> 
+                <option value="140">指纹加人脸加卡</option>
+                <option value="141">指纹加人脸加密码</option>
+                <option value="142">指纹加(卡或密码)</option></select> 
+<!--人员：<input id="text" class="easyui-validatebox textbox"style="width:100px;height:20px;"  data-options="" />
+<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>-->
+<div id="info" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;"></div>
+</div>
+    <div data-options="region:'west',collapsible:false,iconCls:'icon-search'" title="无验证方式人员树"style="padding:2px;width:250px; ">
+		<ul id="tt"></ul>
+	</div>
+<div data-options="region:'center'" style="padding-top:30px; padding-left:12px;width:60px">
+<div>
+	<a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px; margin-bottom:20px;" id="moveOut" >《 移出</a></div>
+	<div><a href="javascript:void(0)" class="easyui-linkbutton" style="width:60px"  id="moveIn">移入 》</a></div>
+</div>
+<div data-options="region:'east',split:true,collapsible:false" title="有验证方式人员树"style="width:240px;">
+	<ul id="ttt"></ul>
+</div>
+</div>
+</body>
+
+</html>

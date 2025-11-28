@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script src="../../Scripts/jquery-easyui/jquery.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_lang_ch.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 9px;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script type="text/javascript">
+        var CheckProMJ = function (id) {
+            Ajax(true, global.sys.ExistProject, { LoginID: LocalID, project_id: "4" }, function (data) {
+                if (data.Data) {
+                    $('#acc').accordion('add', {
+                        title: '门禁实时信息',
+                        href: "../MJ/MJInfoRealTime.htm",
+                        selected: false
+                    });
+                }
+                $('#acc').accordion('add', {
+                    title: '通讯信息',
+                    href: "../MJ/mjInfoTXRealTime.html",
+                    selected: true
+                });
+            });
+        };
+        var CheckProTK = function (id) {
+            Ajax(true, global.sys.ExistProject, { LoginID: LocalID, project_id: "3" }, function (data) {
+                if (data.Data) {
+                    $('#acc').accordion('add', {
+                        title: 'T控实时信息',
+                        href: "../TK/tkInfoRealTime.htm",
+                        selected: false
+                    });
+                };
+            });
+        };
+        var checkProPK = function (id) {
+            Ajax(true, global.sys.ExistProject, { LoginID: LocalID, project_id: "9" }, function (data) {
+                if (data.Data) {
+                    $('#acc').accordion('add', {
+                        title: '实时进出记录',
+                        href: "../PK/PKRecordInOutRealTime.htm",
+                        selected: false
+                    });
+                    $('#acc').accordion('add', {
+                        title: '实时收费记录',
+                        href: "../PK/PKRealTimeCharging.htm",
+                        selected: false
+                    });
+                };
+            });
+        };
+        var ppOnSelect = function (title, index) {
+            var pp = $('#acc').accordion('getSelected'); // 获取选中的面板（panel）
+            title = title.trim();
+            if (pp) {
+                if (title == '门禁实时信息') {
+                    //停止
+                    //                    XCommon.intervalOpt.isWork = false;
+                    //                    XCommon.intervalOpt.isWork = true;
+                    //                    XCommon.intervalOpt.interval(fmj.loaddata, 10000);
+                } else if (title == 'T控实时信息') {
+                    //停止
+                    //                    XCommon.intervalOpt.isWork = false;
+                    //                    XCommon.intervalOpt.isWork = true;
+                    //                    XCommon.intervalOpt.interval(ftk.loaddata, 10000);
+                } else if (title == '通讯信息') {
+                    //                    XCommon.intervalOpt.isWork = false;
+                    //                    XCommon.intervalOpt.isWork = true;
+                    //                    XCommon.intervalOpt.interval(ftx.loaddata, 10000);
+                } else {
+                    return;
+                }
+            }
+        };
+    </script>
+</head>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+</script>
+<body style="width: 250px; height: 480px;">
+    <div id='acc' class="easyui-accordion" data-options='fit:true,onSelect:ppOnSelect'>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            CheckProMJ();
+            CheckProTK();
+            checkProPK();
+        })
+
+        //        CheckProTX(LocalID);
+          
+    </script>
+</body>
+</html>

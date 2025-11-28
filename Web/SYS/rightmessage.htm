@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>实时信息</title>     
+   <link href="../../Scripts/ligerUI/skins/Aqua/css/ligerui-all.css" rel="stylesheet" type="text/css">
+    <link href="css/rightmessage.css" rel="stylesheet" type="text/css" />
+    <script src="../../Scripts/ligerUI/js/ligerui.all.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerTab.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="js/rightmessage.js" type="text/javascript"></script>
+   
+</head>
+<body>
+  <div id="rightmessage">
+     <div class="right_bt" title="双击放大实时开门信息" ondblclick="FangDa();"><span>实时信息</span></div>
+     <div id="userinfodiv" style= "width:248px;border-top:1px #b4c2cf solid;border-bottom:1px #b4c2cf solid;color:#263457; top:0px; left:0px; margin:0px">
+       <div style="height:30px;">
+           <img style="width:10%;float:left; cursor:pointer;" id="userinfoimg" onclick="Chang();" src="../imgs/user_info_close.gif" title="折叠"  
+                onmouseover="if(this.title=='折叠'){this.src='../imgs/user_info_closex.gif';}else{this.src='../imgs/user_info_openx.gif';}" 
+                onmouseout="if(this.title=='折叠'){this.src='../imgs/user_info_close.gif';}else{this.src='../imgs/user_info_open.gif';}"//>
+           <a>人员信息</a>
+          <img id="Img2" style="width:10%;float:right; cursor:pointer;" onclick="Changx();" src="../imgs/user_to_comm.gif" title="转到通讯信息"  
+                onmouseover="this.src='../imgs/user_to_commx.gif';" 
+                onmouseout="this.src='../imgs/user_to_comm.gif';"/>
+       </div>
+       <div  id="userinfotb">
+       <div class="left">
+            <div>
+                <a>门点：</a>
+                <input type="text" class="r-input"/>
+            </div>
+            <div>
+                <a>姓名：</a>
+                <input type="text" class="r-input"/>
+            </div>
+            <div>
+
+                <a>部门：</a>
+                <input type="text" class="r-input"/>
+            </div>
+            <div>
+                <a>工号：</a>
+                <input type="text"  class="r-input"/>
+            </div>
+       </div>
+       <div id="right"> 
+            <img id="Img1" src="http://localhost:51839/Images/topicon.gif"  class="r-img" alt="个人相片"/>
+       </div> 
+       </div>
+       <div title="双击放大实时开门信息" ondblclick="FangDa();">
+            <img src="http://localhost:51839/Images/topicon.gif" class="a-down-img" />
+            <a class="a-down1">姓名</a>
+            <a class="a-down2">门名</a>
+            <a class="a-down3">时间</a>
+       </div>
+        </div>
+
+      <div id="commdiv" style= "width:248px;border-top:1px #b4c2cf solid;border-bottom:1px #b4c2cf solid;color:#263457;display:none;">
+        <div style= "width:248px;" cellpadding="0px" cellspacing="0px">
+           
+                <a style= "width:90%;">通讯信息</a>
+               <img style= "width:10%;cursor:pointer;" onclick="Changx(1);" id="Img3" src="../imgs/user_to_comm.gif" title="转到人员信息"  
+                onmouseover="this.src='../imgs/user_to_commx.gif';" 
+                onmouseout="this.src='../imgs/user_to_comm.gif';"/>
+           
+        </div>
+    </div>
+    <div id="contentright">
+        <div id="viewindow">
+        </div>
+    </div>
+    <div style="display:none">
+     <object id="Player" classid="clsid:6BF52A52-394A-11d3-B153-00C04F79FAA6"> 
+     <param name="URL" value="../sound/1.wav" />
+      <param name="AutoStart" value="false" /> 
+      <param name="playcount" value="9999" />
+     </object>
+    </div>
+</body>
+</html>

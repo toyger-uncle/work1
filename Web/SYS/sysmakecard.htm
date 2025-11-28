@@ -1,0 +1,1586 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var cardsnr = "";
+    var TKPlaintext = "";
+    var rooltime = 1000;
+    var cot = 0;
+    var maxcot = 12000;
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 5;
+    var PageNum = 1;
+    var datagrid1;
+    var jsondata1 = { "total": 0, "rows": [] };
+    var sortName1 = "card_id";
+    var sortOrder1 = "asc";
+    var PageSize1 = 5;
+    var PageNum1 = 1;
+    var datagrid2;
+    var jsondata2 = { "total": 0, "rows": [] };
+    var sortName2 = "zw_id";
+    var sortOrder2 = "asc";
+    var doordivHTML = "";
+    var rool;
+    var rools;
+    //工作状态标识
+    var workStatus;
+    //是否有硬件插件
+    var isReader;
+    $(function () {
+        Ajax(true, global.sys["GetSysCiphertext"], {}, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            my = data.Data;
+        });
+        Ajax(true, global.ms.GetMngHouseInfoList, { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#zhuang').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'house_num',
+                onChange: function (newValue, oldValue) {
+                    Ajax(true, global.ms.GetMngLayerInfoList, { LoginID: LocalID, in_house_id: newValue }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#ceng').combobox({
+                            data: data.Data,
+                            valueField: 'id',
+                            textField: 'layer_num',
+                            onChange: function (newValue, oldValue) {
+                                Ajax(true, global.ms.GetMngRoomInfoList, { LoginID: LocalID, in_layer_id: newValue }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    $('#fang').combogrid({
+                                        panelWidth: 300,
+                                        data: data.Data,
+                                        idField: 'id',
+                                        valueField: 'id',
+                                        textField: 'room_num',
+                                        columns: [[{
+                                            field: 'id',
+                                            title: '编号',
+                                            width: 80
+                                        }, {
+                                            field: 'room_num',
+                                            title: '房号',
+                                            width: 50
+
+                                        }]]
+                                    });
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        });
+        Ajax(true, global.sys.ExistProject, { LoginID: LocalID, project_id: "3" }, function (data) {
+            var divHTML = "";
+            divHTML = "卡种类:";
+            if (data.Data) {
+                divHTML += "<input type='checkbox' id='tikong' checked/> 梯控卡"
+            }
+            Ajax(true, global.sys.ExistProject, { LoginID: LocalID, project_id: "4" }, function (data) {
+                if (data.Data) {
+                    divHTML += "<input type='checkbox' id='menjin' checked/> 门禁卡"
+                    divHTML += "<input type='checkbox' id='xunjian' unchecked/> 巡检卡"
+                }
+                if (divHTML != doordivHTML) {
+                    doordivHTML = divHTML;
+                    var doordiv = document.getElementById("ka");
+                    doordiv.innerHTML = doordivHTML;
+                }
+            });
+        });
+        datagrid2 = $("#tbZWInfo").datagrid({
+            idField: "zw_id",
+            //fit: true, //自动补全  
+            fitColumns: true,
+            striped: true,
+            iconCls: "icon-search", //图标  
+            collapsible: true,
+            remotesort: false,
+            singleSelect: true,
+            //rownumbers:true,
+            columns: [[{
+                field: 'zw_id',
+                title: '卡号',
+                //                sortable: true,
+                width: 50
+            }, {
+                field: 'xh',
+                title: '序号',
+                //                sortable: true,
+                width: 50
+            }, {
+                field: 'zw_name',
+                title: '指纹名',
+                //                sortable: true,
+                width: 50
+            }]]
+        });
+        datagrid1 = $("#tbRightUser").datagrid({
+            idField: "id",
+            pagination: true, //显示分页  
+            pageSize: PageSize1, //分页大小  
+            pageList: [5, 10, 20, 50, 100], //每页的个数  
+            //fit: true, //自动补全  
+            fitColumns: true,
+            striped: true,
+            iconCls: "icon-search", //图标  
+            collapsible: true,
+            remotesort: false,
+            singleSelect: true,
+            rownumbers: true,
+            sortName: sortName1,
+            sortOrder: sortOrder1,
+            columns: [[{
+                field: 'user_file_id',
+                title: '编号',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'user_name',
+                title: '用户',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'card_id',
+                title: '卡号',
+                sortable: true,
+                width: 50
+            }]],
+            onSortColumn: function (sort, order) {
+                if (datagrid.datagrid('getSelected') != null) {
+                    sortName1 = sort;
+                    sortOrder1 = order;
+                    loaddata1(datagrid.datagrid('getSelected').id);
+                }
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            pagination: true, //显示分页  
+            pageSize: PageSize, //分页大小  
+            pageList: [10, 20, 50, 100], //每页的个数  
+            //fit: true, //自动补全  
+            fitColumns: true,
+            striped: true,
+            iconCls: "icon-search", //图标  
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            singleSelect: true,
+            //rownumbers:true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'user_name',
+                title: '用户',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'depart_name',
+                title: '部门',
+                sortable: true,
+                width: 80
+            }, {
+                field: 'kind_name',
+                title: '类型',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'userid_num',
+                title: '工号',
+                sortable: true,
+                width: 50
+            }, {
+                field: 'role_name',
+                title: '角色',
+                sortable: true,
+                width: 80
+            }, {
+                field: 'room_name',
+                title: '房间',
+                sortable: true,
+                width: 80
+            }]],
+            onSelect: function (rowIndex, rowData) {
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $("#depart").val(rowData.depart_name);
+                $("#text").val(rowData.user_name);
+                $("#room").val(rowData.room_name);
+                loaddata1(rowData.id);
+                loaddata2(rowData.id);
+            },
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+            }
+        });
+        displaynone();
+        $("#info").html("获取梯控密钥……");
+        Ajax(true, global.tk["GetTKPlaintext"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            TKPlaintext = data.Data.variablechar;
+            //            $("#info").html("获取梯控密钥成功");
+            readcard();
+        });
+        loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+        readcard();
+        iniCardRead();
+        inipageSet();
+        ComInt();
+        $("#search").click(function () {
+            loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+        });
+        $("#recy").click(function () {
+            if ($('#tikong').prop("checked")) {
+                tkrecycle();
+            }
+            if ($('#menjin').prop("checked")) {
+                if ($('#xunjian').prop("checked")) {
+                    cardRecycle();
+                }
+                else {
+                    cardRecycle();
+                }
+            }
+            if ($('#mensuo').prop("checked")) {
+                msrecycle();
+            }
+            //            if ($('#mensuo').prop("checked", false) && $('#menjin').prop("checked", false) && $('#tikong').prop("checked", false) && $('#xunjian').prop("checked", false)) {
+            //                alert("未选择卡种类");
+            //            }
+        });
+        $("#make").click(function () {
+            if (ext) {
+                $.messager.alert("提示", "卡已存在", "error", function () { });
+                return;
+            }
+            else {
+                if ($('#tikong').prop("checked")) {
+                    tkcard();
+                }
+                if ($('#menjin').prop("checked")) {
+                    if ($('#xunjian').prop("checked")) {
+                        xjcard();
+                    }
+                    else {
+                        mjcard();
+                    }
+                }
+                if ($('#mensuo').prop("checked")) {
+                    mscard();
+                }
+                //                if ($('#mensuo').prop("checked", false) && $('#menjin').prop("checked", false) && $('#tikong').prop("checked", false) && $('#xunjian').prop("checked", false)) {
+                //                    alert("未选择卡种类");
+                //                }
+            }
+        });
+    });
+
+    function loaddata2(id) {
+        datagrid2.datagrid('unselectAll');
+        Ajax(true, global.zw["GetZwInfoList"], { LoginID: LocalID, user_id: id, lsenabled: '1'
+        }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata2.total = data.Ex;
+            jsondata2.rows = data.Data;
+            datagrid2.datagrid('loadData', jsondata2);
+        });
+    }                
+    function loaddata1(id) {
+        datagrid1.datagrid('unselectAll');
+        Ajax(true, global.mj["GetMjCardUsingPageList"], { LoginID: LocalID, user_file_id: id, sortName: sortName1, sortOrder: (sortOrder1 == "asc" ? false : true), pageSize: PageSize1, pageNum: PageNum1
+        }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata1.total = data.Ex;
+            jsondata1.rows = data.Data;
+            datagrid1.datagrid('loadData', jsondata1);
+            if (jsondata1.total == 0) {
+                PageNum1 = 1;
+            }
+            var p = datagrid1.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata1.total / PageSize1) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize1 * (PageNum1 - 1) + (jsondata1.total == 0 ? 0 : 1)) + ' - ' + (PageSize1 * (PageNum1 - 1) + data.Data.length) + ' 条记录   共 ' + jsondata1.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize1 = pageSize;
+                    PageNum1 = pageNumber;
+                    if (PageNum1 < 1) {
+                        PageNum1 = 1;
+                    }
+                    loaddata1(datagrid.datagrid('getSelected').id);
+                }
+            });
+        });
+    }                
+    function loaddata(depart, kind, room, username, useridnum) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.sys["GetUserFilePageListOfTK"], { LoginID: LocalID, user_name: username, kind_name: kind, depart_name: depart, room_name: room, userid_num: useridnum,
+            sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+        }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata($("#departname").val(), $("#kindname").val(), $("#roomname").val(), $("#username").val(), $("#useridnum").val());
+                }
+            });
+        });
+    }
+   function inipageSet() {
+        var pager = $("#tbRightUser").datagrid("getPager");
+        pager.pagination({
+            total: jsondata1.total,
+            onSelectPage: function (pageNo, pageSize) {
+                var start = (pageNo - 1) * pageSize;
+                var end = start + pageSize;
+                //本地分页
+                $("#tbRightUser").datagrid("loadData", jsondata1.rows.slice(start, end));
+                pager.pagination('refresh', {
+                    total: jsondata.total,
+                    pageNumber: pageNo
+                });
+            }
+        });
+    };
+  function  setReader(temp) {
+        if (temp == 0) {
+            isReader = false;
+            $('#card').validatebox('readonly', false);
+            workStatus = 'noDevice';
+            if (rool != null) {
+                clearTimeout(rool);
+            }
+        } else if (temp == 1) {
+            if (isReader) {
+                return;
+            }
+            isReader = true;
+            if (rool != null) {
+                clearTimeout(rool);
+            }
+            iniCardRead();
+            readcard();
+        }
+    }
+   function iniCardRead() {
+//        $("#used_mode").combobox('setValue', 0);
+        while (true) {
+            var ActiveX;
+            var ret;
+            try {
+                ActiveX = $("#ActiveX")[0];
+                ret = ActiveX.GetVersion();
+            }
+            catch (e) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请安装做卡插件，重试！");
+                isReader = false;
+                $('#reader').combobox('setValue', 0);
+                $('#card').validatebox('readonly', false);
+                $('#zczw').hide();
+                workStatus = 'noDevice';
+                return;
+                continue;
+            }
+            if (ret != "1.0") {
+                $("#info").css("color", "Red");
+                $("#info").html("做卡插件版本不匹配，请重新安装对应版本，重试！" + "(当前" + ret + "软件需要1.0)");
+                isReader = false;
+                $('#reader').combobox('setValue', 0);
+                $('#card').validatebox('readonly', false);
+                $('#zczw').hide();
+                workStatus = 'noDevice';
+                return;
+                continue;
+            }
+            ret = ActiveX.OpenCom();
+            if (ret != 0) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请插好读卡器，重试！");
+                isReader = false;
+                $('#reader').combobox('setValue', 0);
+                $('#card').validatebox('readonly', false);
+                $('#zczw').hide();
+                workStatus = 'noDevice';
+                return;
+                continue;
+            } else {
+                isReader = true;
+                $('#reader').combobox('setValue', 1);
+                $('#card').validatebox('readonly', true);
+                $('#zczw').show();
+            }
+            break;
+        }
+    }
+    function ComInt() {
+        var test;
+        try {
+            test = ActiveXPZ.Zw_Int();
+        }
+        catch (e) {
+            $.messager.alert("提示", "<p class='infoReport'>请安装指纹驱动</p>", "error");
+            $('#zczw').hide();
+            return;
+        }
+        if (test != 0) {
+            if ($('#errorInfo').length) {
+                $(".messager-body").window('close');
+                $('#zczw').show();
+            }
+            $('#zczw').hide();
+            $.messager.show({
+                id: 'errorInfo',
+                title: '提示',
+                msg: "<center>初始化失败，请接指纹仪！<br /><br /><a href='#' onclick=ComInt()>重试<a></center>",
+                timeout: 0,
+                showType: 'fade',
+                style: {
+                    right: '',
+                    bottom: ''
+                },
+                width: 275,
+                height: 140
+            });
+            return;
+        }
+    }
+    var ext = false;
+    function readcard() {
+        if (!isReader) {
+            return;
+        }
+        var currentcardsnr = ActiveX.RFMifare_GetSnr();
+        if (currentcardsnr == "") {
+            if (cardsnr != "") {
+                $("#card").val("");
+                $("#cardno").val("");
+                $("#depart").val("");
+                $("#text").val("");
+                $("#room").val("");
+                $("#wei").html("");
+            }
+            $("#info").css("color", "Blue");
+            $("#info").html("读卡中……");
+            cot++;
+            if (cot > maxcot) {
+                $("#info").css("color", "Red");
+                $("#info").html("长时间未读到卡，已停止工作，要继续请刷新页面");
+                return;
+            }
+        }
+        else {
+            cot = 0;
+        }
+        if (currentcardsnr == "" || currentcardsnr == cardsnr) {
+            cardsnr = currentcardsnr;
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        cardsnr = currentcardsnr;
+        $("#info").css("color", "Green");
+        $("#info").html("读卡成功，卡号为：" + cardsnr);
+        $("#card").val(cardsnr);
+        var TKMadeCard = { "lonSecNo": 9, "strCdsnr": cardsnr, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_ReadCardInfo(JSON2.stringify(TKMadeCard));
+        var cardinfojson = JSON2.parse(cardinfo);
+//        displaycardinfo(cardinfojson);
+        Ajax(true, global.tk["GetTkCard"], { LoginID: LocalID, card_id: cardsnr }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            ext = true;
+            if (data.Data.card_id != null) {
+                $("#select").combobox("setValue", data.Data.card_kind);
+                $("#cardno").val(data.Data.card_no);
+                $("#depart").val(data.Data.depart_name);
+                $("#text").val(data.Data.user_name);
+                $("#room").val(data.Data.room_name);
+                var hs = "";
+                if (data.Data.isused == "0") {
+                    hs = "，回收卡";
+                }
+                $("#info").css("color", "Green");
+                $("#info").html("读卡成功，卡号：" + cardsnr + hs);
+                if ($("#autorecy").is(":checked")) {
+                    //退卡
+                    recycard(data);
+                    return;
+                }
+                else {
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+            }
+            else if (data.Data.card_id == null) {
+                $("#cardno").val("");
+                $("#depart").val("");
+                $("#text").val("");
+                $("#room").val("");
+                $("#info").css("color", "Green");
+                $("#info").html("读卡成功，卡号：" + cardsnr + ",是否制卡");
+                ext = false;
+                if ($("#automake").is(":checked")) {
+                    makecard40();
+                    return;
+                }
+                else {
+                    if ($("#autorecy").is(":checked")) {
+                        $("#info").html("读卡成功，卡号：" + cardsnr + "，非本系统卡");
+                    }
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+            }
+            if (data.Data.isused == "0") {
+                $("#info").css("color", "Green");
+                $("#info").html("读卡成功，卡号：" + cardsnr + ",是否制卡");
+                ext = false;
+            }
+            else {
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+        });
+    }
+    function mscard() {
+        clearTimeout(rool);
+        var bl = true;
+        bl = ms40();
+        if (bl) {
+            rool = setTimeout(function () { readcard() }, rooltime);
+        }
+    }
+    function ms40() {
+        var card = $("#card").val();
+        var curr_time = new Date();
+        var cdid;
+        var bt = curr_time.getFullYear() + "-";
+        if (curr_time.getMonth() + 1 < 10) {
+            bt += "0" + (curr_time.getMonth() + 1).toString() + "-";
+        }
+        else { bt += (curr_time.getMonth() + 1).toString() + "-"; }
+        if (curr_time.getDate() < 10) {
+            bt += "0" + (curr_time.getDate()).toString();
+        }
+        else {
+            bt += (curr_time.getDate()).toString();
+        }
+
+        curr_time.setFullYear(curr_time.getFullYear(), curr_time.getMonth(), curr_time.getDate() + parseInt($('#ss').numberspinner('getValue')));
+        var et = curr_time.getFullYear() + "-";
+        if (curr_time.getMonth() + 1 < 10) {
+            et += "0" + (curr_time.getMonth() + 1).toString() + "-";
+        }
+        else { et += (curr_time.getMonth() + 1).toString() + "-"; }
+        if (curr_time.getDate() < 10) {
+            et += "0" + (curr_time.getDate()).toString();
+        }
+        else {
+            et += (curr_time.getDate()).toString();
+        }
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var level = "0";
+        Ajax(true, global.tk["GetTkUserRight"], { LoginID: LocalID, user_file: userid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var group_id = data.Data.group_id;
+            Ajax(true, global.tk["GetTkRight"], { LoginID: LocalID, id: group_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var r = data.Data;
+                //做卡
+                var tt = $('#tt').timespinner('getValue');
+                var zhuang = $('#zhuang').combobox('getText');
+                var ceng = $('#ceng').combobox('getText');
+                var ww = $('#fang').combogrid('grid');
+                var wwc = ww.datagrid('getSelected');
+                var fang = wwc.room_num;
+                wc = wwc.room_key;
+                if (zhuang == "") {
+                    $.messager.alert("提示", "请选择幢", "error", function () { });
+                    return true;
+                }
+                if (ceng == "") {
+                    $.messager.alert("提示", "请选择层", "error", function () { });
+                    return true;
+                }
+                if (fang == "") {
+                    $.messager.alert("提示", "请选择房间", "error", function () { });
+                    return true;
+                }
+                Ajax(true, global.tk["GetTKElevatorCardNo"], { LoginID: LocalID, elevator_id: r.elevator_id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    var lonElevatorNo = parseInt(r.elevator_id);
+                    var lonCardNo = data.Data;
+                    var strFloor = padLeft(parseInt(r.floor.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floor.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    var num = 0;
+                    for (var i = 0; i < r.floor.length && i < 56; i++) {
+                        if (r.floor.substr(i, 1) == "1") {
+                            num++;
+                        }
+                    }
+                    var lonCallType = 1;
+                    if (num > 1) {
+                        lonCallType = 0;
+                    }
+                    var bbt = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000";
+                    var eet = et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + tt.substr(0, 2) + tt.substr(3, 2);
+                    var strValidDate = bt.substr(2, 2) + bt.substr(5, 2) + bt.substr(8, 2) + "0000"
+        + et.substr(2, 2) + et.substr(5, 2) + et.substr(8, 2) + tt.substr(0, 2) + tt.substr(3, 2);
+                    var strAvailablePeriod = r.begin_time.substr(0, 2) + r.begin_time.substr(3, 2) + r.end_time.substr(0, 2) + r.end_time.substr(3, 2);
+                    var strAvailableDate = r.week;
+                    var lonMultiElevatorNo = 0;
+                    if (r.elevator_idex != "0" || r.elevator_idex2 != "0") {
+                        lonMultiElevatorNo = 1;
+                    }
+                    var lonElevatorNoex = parseInt(r.elevator_idex);
+                    var strFloorex = padLeft(parseInt(r.floorex.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floorex.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    var lonElevatorNoex2 = parseInt(r.elevator_idex2);
+                    var strFloorex2 = padLeft(parseInt(r.floorex2.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floorex2.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    if (lonCallType == 1) {
+                        num = 0;
+                        for (var i = 0; i < r.floorex.length && i < 56; i++) {
+                            if (r.floorex.substr(i, 1) == "1") {
+                                num++;
+                            }
+                        }
+                        if (num > 1) {
+                            lonCallType = 0;
+                        }
+                    }
+                    if (lonCallType == 1) {
+                        for (var i = 0; i < r.floorex2.length && i < 56; i++) {
+                            if (r.floorex2.substr(i, 1) == "1") {
+                                num++;
+                            }
+                        }
+                        if (num > 1) {
+                            lonCallType = 0;
+                        }
+                    }
+                    Ajax(true, global.ms["GetCardID"], { LoginID: LocalID }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        cdid = data.Data;
+                        var MSMakeCard = { "strHouseNum": zhuang, "strLayerNum": ceng, "strRoomNum": fang, "strRoomKey": wc };
+                        var TKMadeCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": my };
+                        var XFMSCardInfo = { "user_kind": "03", "card_kind": "03", "card_id": cdid, "begin_time": bbt, "end_time": eet };
+                        var TKMadeTimeCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": TKPlaintext, "lonElevatorNo": lonElevatorNo,
+                            "lonCardNo": lonCardNo, "strRoomNo": padLeft(rowData.room_id, 4), "lonCardType": level, "strFloor": strFloor, "lonCallType": lonCallType,
+                            "strValidDate": strValidDate, "strAvailablePeriod": strAvailablePeriod, "strAvailableDate": strAvailableDate, "lonMultiElevatorNo": lonMultiElevatorNo,
+                            "ElevatorFloor": []
+                        };
+                        if (r.elevator_idex != "0" && r.elevator_idex2 != "0") {
+                            TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex, "Value": strFloorex }, { "Key": lonElevatorNoex2, "Value": strFloorex2}];
+                        }
+                        else if (r.elevator_idex != "0") {
+                            TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex, "Value": strFloorex}];
+                        }
+                        else if (r.elevator_idex2 != "0") {
+                            TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex2, "Value": strFloorex2}];
+                        }
+                        var cardinfo = ActiveX.RFMifare_MadeTimeCard(JSON2.stringify(TKMadeTimeCard));
+                        var cardinfojson = JSON2.parse(cardinfo);
+                        if (!cardinfojson.Success) {
+                            $("#info").css("color", "Red");
+                            $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                            return;
+                        }
+                        else {
+                            var mscardinfo = ActiveX.RFMifare_MSWriteCard(JSON2.stringify(TKMadeCard), JSON2.stringify(XFMSCardInfo), JSON2.stringify(MSMakeCard));
+                            var mscardinfojson = JSON2.parse(mscardinfo);
+                            if (!mscardinfojson.Success) {
+                                alert("制卡失败，卡号：" + card + "，原因：错误信息：" + mscardinfojson.Message);
+                                return;
+                            }
+                            else {
+                                var yo = formatfloor(r.floor);
+                                var you = formatweek(r.week);
+                                var yoex = formatfloor(r.floorex);
+                                var yoex2 = formatfloor(r.floorex2);
+                                var demo = "梯号:" + lonElevatorNo + "梯卡号：" + lonCardNo + ",楼层：" + yo + "，级别：" + $("#levelsel").combobox("getText")
+            + "日期：" + bt + "~" + et + "时间：" + r.begin_time + "~" + r.end_time + "星期：" + you
+            + "梯号2：" + lonElevatorNoex + ",楼层2：" + yoex + "梯号3：" + lonElevatorNoex2 + ",楼层3：" + yoex2;
+                                if (ext) {
+                                    //                                    $.messager.alert("提示", "卡已存在", "error", function () { });
+                                    //                                    return;
+
+                                    Ajax(true, global.tk["NewTkMadeCardLog"], { LoginID: LocalID, card_id: card, elevator_id: r.elevator_id
+         , kind_name: $("#select").combobox("getText"), user_name: rowData.user_name, depart_name: rowData.depart_name
+         , room_name: rowData.room_name, elevator_name: r.elevator_name, demo: demo
+                                    }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            rool = setTimeout(function () { readcard() }, rooltime);
+                                            return;
+                                        }
+                                        $("#info").css("color", "Green");
+                                        $("#info").html("制卡成功，卡号：" + card + "," + demo);
+                                        ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                                        rool = setTimeout(function () { readcard() }, rooltime);
+                                    });
+                                    //                            Ajax(true, global.ms["NewCardUsing"], { LoginID: LocalID, card_snr: card, card_kind: "03", user_file_id: userid, card_id: cdid, num_incard: "1", begin_date: bt, end_date: et, work_status: "us"
+                                    //                            ,houseno:zhuang,layerno:ceng,roomno:fang  }, function (data) {
+                                    //                                if (!data.Success) {
+                                    //                                    alert(data.Message);
+                                    //                                    return;
+                                    //                                }
+
+                                    //                                $.messager.alert("提示", "门锁制卡成功", "info");
+                                    //                            });
+                                }
+                                else {
+                                    Ajax(true, global.tk["NewTkCard"], { LoginID: LocalID, card_id: card, card_kind: "40", elevator_id: r.elevator_id, card_no: lonCardNo, user_id: userid
+         , kind_name: $("#select").combobox("getText"), user_name: rowData.user_name, depart_name: rowData.depart_name
+         , room_name: rowData.room_name, elevator_name: r.elevator_name, demo: demo
+                                    }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            rool = setTimeout(function () { readcard() }, rooltime);
+                                            return;
+                                        }
+                                        $("#info").css("color", "Green");
+                                        $("#info").html("制卡成功，卡号：" + card + "," + demo);
+                                        ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                                        rool = setTimeout(function () { readcard() }, rooltime);
+                                    });
+                                    Ajax(true, global.ms["NewCardUsing"], { LoginID: LocalID, card_snr: card, card_kind: "03", user_file_id: userid, card_id: cdid, num_incard: "1", begin_date: bt, end_date: et,
+                                        work_status: "us", houseno: zhuang, layerno: ceng, roomno: fang
+                                    }, function (data) {
+                                        if (!data.Success) {
+                                            alert(data.Message);
+                                            return;
+                                        }
+
+                                        $.messager.alert("提示", "门锁制卡成功", "info");
+                                    });
+                                }
+                            }
+                        }
+                    });
+                });
+            });
+        });
+        return false;
+    }
+    function mjcard() {
+        var curr_time = new Date();
+        var bt = curr_time.getFullYear() + "-";
+        if (curr_time.getMonth() + 1 < 10) {
+            bt += "0" + (curr_time.getMonth() + 1).toString() + "-";
+        }
+        else { bt += (curr_time.getMonth() + 1).toString() + "-"; }
+        if (curr_time.getDate() < 10) {
+            bt += "0" + (curr_time.getDate()).toString();
+        }
+        else {
+            bt += (curr_time.getDate()).toString();
+        }
+        var begin_date = bt + " 00:00:00";
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData==null || rowData == "") {
+            $.messager.alert("提示", "<p class='infoReport'>请选择用户</p>", "error");
+            return;
+        }
+        var card_id = $('#card').val();
+        if (card_id == '' || card_id == null) {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return;
+        }
+        var reg = new RegExp(/^[0-9a-fA-F]{8}$/);
+        if (!card_id.match(reg)) {
+            $.messager.alert("提示", "<p class='infoReport'>卡号不正确,卡号为8位数字或字母</p>", "error");
+            return;
+        }
+        var userid = rowData.id;
+        var work_status = rowData.work_status;
+        var is_psw = '0'; // rowData.is_psw;
+        Ajax(false, global.mj["GetDefaultEndDate"], { LoginID: LocalID, user_id: userid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var end_date = data.Data;
+            Ajax(true, global.mj["NewMjCardUsing"], { LoginID: LocalID, card_id: card_id, user_file_id: userid, card_kind: "03", begin_date: begin_date, end_date: end_date, work_status: work_status, is_psw: is_psw }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $("#info").css("color", "Green");
+                $("#info").html("制卡成功，卡号：" + cardsnr);
+                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                $.messager.alert("提示", "<p class='infoReport'>制卡成功</p>", "success");
+            });
+
+        });
+    }
+    function tkcard() {
+        clearTimeout(rool);
+        var bl = true;
+        bl = make40();
+        if (bl) {
+            rool = setTimeout(function () { readcard() }, rooltime);
+        }
+    }
+    function xjcard() {
+        var curr_time = new Date();
+        var bt = curr_time.getFullYear() + "-";
+        if (curr_time.getMonth() + 1 < 10) {
+            bt += "0" + (curr_time.getMonth() + 1).toString() + "-";
+        }
+        else { bt += (curr_time.getMonth() + 1).toString() + "-"; }
+        if (curr_time.getDate() < 10) {
+            bt += "0" + (curr_time.getDate()).toString();
+        }
+        else {
+            bt += (curr_time.getDate()).toString();
+        }
+        var begin_date = bt + " 00:00:00";
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null || rowData == "") {
+            $.messager.alert("提示", "<p class='infoReport'>请选择用户</p>", "error");
+            return;
+        }
+        var card_id = $('#card').val();
+        if (card_id == '' || card_id == null) {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return;
+        }
+        var reg = new RegExp(/^[0-9a-fA-F]{8}$/);
+        if (!card_id.match(reg)) {
+            $.messager.alert("提示", "<p class='infoReport'>卡号不正确,卡号为8位数字或字母</p>", "error");
+            return;
+        }
+        var userid = rowData.id;
+        var work_status = rowData.work_status;
+        var is_psw = '0'; // rowData.is_psw;
+        Ajax(false, global.mj["GetDefaultEndDate"], { LoginID: LocalID, user_id: userid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var end_date = data.Data;
+            Ajax(true, global.mj["NewMjCardUsing"], { LoginID: LocalID, card_id: card_id, user_file_id: userid, card_kind: "22", begin_date: begin_date, end_date: end_date, work_status: work_status, is_psw: is_psw }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $("#info").css("color", "Green");
+                $("#info").html("制卡成功，卡号：" + cardsnr);
+                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                $.messager.alert("提示", "<p class='infoReport'>制卡成功</p>", "success");
+            });
+
+        });
+    }
+    function msrecycle() {
+        var cardsnr = $("#card").val();
+        if (cardsnr == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return;
+        }
+        clearTimeout(rool);
+        var cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + TKPlaintext
+                    + "\",\"blockdatas\":[{\"Key\":37,\"Value\":\"00000000000000000000000000000000\"},{\"Key\":38,\"Value\":\"00000000000000000000000000000000\"},{\"Key\":40,\"Value\":\"00000000000000000000000000000000\"}]}";
+        cardinfo = ActiveX.RFMifare_AllWriteCard(cardinfo);
+        var TKMadeCard = { "card_snr": cardsnr, "card_key": my };
+        var mscardinfo = ActiveX.RFMifare_MSReadCard(JSON2.stringify(TKMadeCard));
+        var mscardinfojson = JSON2.parse(mscardinfo);
+        ka = mscardinfojson.Data.card_id;
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("退卡失败，卡号：" + cardsnr + "，原因：错误信息：" + cardinfojson.Message);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else {
+            var cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + my
+                        + "\",\"blockdatas\":[{\"Key\":4,\"Value\":\"ffffffffffffffff\"},{\"Key\":52,\"Value\":\"00000000000000000000000000000000\"}]}";
+            cardinfo = ActiveX.RFMifare_AllWriteCard(cardinfo);
+            var cardinfojson = JSON2.parse(cardinfo);
+            if (!cardinfojson.Success) {
+                $("#info").css("color", "Red");
+                $("#info").html("退卡失败，卡号：" + cardsnr + "，原因：错误信息：" + cardinfojson.Message);
+                rool = setTimeout(function () { readcard() }, rooltime);
+                return;
+            }
+            else {
+                Ajax(true, global.tk["UpdateTkCard"], { LoginID: LocalID, card_id: cardsnr, isused: "0" }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    $("#info").css("color", "Green");
+                    $("#info").html("退卡成功，卡号：" + cardsnr);
+                    ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                });
+                if (!mscardinfojson.Success) {
+                    alert("退卡失败，卡号：" + cardsnr + "，原因：错误信息：" + cardinfojson.Message);
+                    return;
+                }
+                else {
+                    Ajax(true, global.ms["RecycleCardUsing"], { LoginID: LocalID, card_id: ka }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "门锁卡退卡成功", "info", function () { });
+                    });
+                }
+            }
+        }
+    }
+    function tkrecycle() {
+        var card_id = $('#card').val();
+        if (card_id == '' || card_id == null) {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return;
+        }
+        clearTimeout(rool);
+        var cardinfo = "{\"card_snr\":\"" + card_id + "\",\"card_key\":\"" + TKPlaintext
+                + "\",\"blockdatas\":[{\"Key\":37,\"Value\":\"00000000000000000000000000000000\"},{\"Key\":38,\"Value\":\"00000000000000000000000000000000\"},{\"Key\":40,\"Value\":\"00000000000000000000000000000000\"}]}";
+        cardinfo = ActiveX.RFMifare_AllWriteCard(cardinfo);
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("退卡失败，卡号：" + card_id + "，原因：错误信息：" + cardinfojson.Message);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else {
+            Ajax(true, global.tk["UpdateTkCard"], { LoginID: LocalID, card_id: card_id, isused: "0" }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+                    return;
+                }
+                $("#info").css("color", "Green");
+                $("#info").html("退卡成功，卡号：" + card_id);
+                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                rool = setTimeout(function () { readcard() }, rooltime);
+            });
+        }
+    }
+    function cardRecycle() {
+        var card_id = $('#card').val();
+
+        if (card_id == '' || card_id == null) {
+            $.messager.alert("提示", "<p class='infoReport'>未输入卡号</p>", "error");
+            return;
+        }
+        var reg = new RegExp(/^[0-9a-fA-F]{8}$/);
+        if (!card_id.match(reg)) {
+            $.messager.alert("提示", "<p class='infoReport'>卡号不正确,卡号为8位数字或字母</p>", "error");
+            return;
+        }
+        Ajax(true, global.mj["RecycleCardMjCardUsing"], { LoginID: LocalID, card_id: card_id }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $("#info").css("color", "Green");
+            $("#info").html("退卡成功，卡号：" + card_id);
+            ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+            $.messager.alert("提示", "<p class='infoReport'>退卡成功</p>", "success");
+        });
+    }
+    function setcombogrid(lon, data) {
+        $('#rightsel').combogrid({
+            panelWidth: lon,
+            columns: data
+        });
+    }
+    function formatweek(val) {
+        var you = "";
+        if (val.substr(0, 1) == "1") {
+            you += "一";
+        }
+        if (val.substr(1, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "二";
+        }
+        if (val.substr(2, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "三";
+        }
+        if (val.substr(3, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "四";
+        }
+        if (val.substr(4, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "五";
+        }
+        if (val.substr(5, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "六";
+        }
+        if (val.substr(6, 1) == "1") {
+            if (you != "") {
+                you += "、";
+            }
+            you += "日";
+        }
+        return you;
+    }
+    function formatfloor(val) {
+        var you = "";
+        for (var i = 0; i < 56; i++) {
+            if (val.substr(i, 1) == "1") {
+                if (you != "") {
+                    you += ",";
+                }
+                you += (i + 1).toString();
+            }
+        }
+        return you;
+    }
+    function make40() {
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        var rowData = datagrid.datagrid('getSelected');
+        if (rowData == null) {
+            $.messager.alert("提示", "请选择用户", "error", function () { });
+            return true;
+        }
+        var userid = rowData.id;
+        var level = "0";
+        Ajax(true, global.tk["GetTkUserRight"], { LoginID: LocalID, user_file: userid }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var group_id = data.Data.group_id;
+            Ajax(true, global.tk["GetTkRight"], { LoginID: LocalID, id: group_id }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                var r = data.Data;
+                //做卡
+                Ajax(true, global.tk["GetTKElevatorCardNo"], { LoginID: LocalID, elevator_id: r.elevator_id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    var lonElevatorNo = parseInt(r.elevator_id);
+                    var lonCardNo = data.Data;
+                    var strFloor = padLeft(parseInt(r.floor.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floor.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    var num = 0;
+                    for (var i = 0; i < r.floor.length && i < 56; i++) {
+                        if (r.floor.substr(i, 1) == "1") {
+                            num++;
+                        }
+                    }
+                    var lonCallType = 1;
+                    if (num > 1) {
+                        lonCallType = 0;
+                    }
+                    var strValidDate = r.begin_date.substr(2, 2) + r.begin_date.substr(5, 2) + r.begin_date.substr(8, 2) + "0000"
+        + r.end_date.substr(2, 2) + r.end_date.substr(5, 2) + r.end_date.substr(8, 2) + "2359";
+                    var strAvailablePeriod = r.begin_time.substr(0, 2) + r.begin_time.substr(3, 2) + r.end_time.substr(0, 2) + r.end_time.substr(3, 2);
+                    var strAvailableDate = r.week;
+                    var lonMultiElevatorNo = 0;
+                    if (r.elevator_idex != "0" || r.elevator_idex2 != "0") {
+                        lonMultiElevatorNo = 1;
+                    }
+                    var lonElevatorNoex = parseInt(r.elevator_idex);
+                    var strFloorex = padLeft(parseInt(r.floorex.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floorex.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    var lonElevatorNoex2 = parseInt(r.elevator_idex2);
+                    var strFloorex2 = padLeft(parseInt(r.floorex2.substr(0, 32), 2).toString(16).toUpperCase(), 8) + padLeft(parseInt(r.floorex2.substr(32, 24), 2).toString(16).toUpperCase(), 6);
+                    if (lonCallType == 1) {
+                        num = 0;
+                        for (var i = 0; i < r.floorex.length && i < 56; i++) {
+                            if (r.floorex.substr(i, 1) == "1") {
+                                num++;
+                            }
+                        }
+                        if (num > 1) {
+                            lonCallType = 0;
+                        }
+                    }
+                    if (lonCallType == 1) {
+                        for (var i = 0; i < r.floorex2.length && i < 56; i++) {
+                            if (r.floorex2.substr(i, 1) == "1") {
+                                num++;
+                            }
+                        }
+                        if (num > 1) {
+                            lonCallType = 0;
+                        }
+                    }
+                    var TKMadeTimeCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": TKPlaintext, "lonElevatorNo": lonElevatorNo,
+                        "lonCardNo": lonCardNo, "strRoomNo": padLeft(rowData.room_id, 4), "lonCardType": level, "strFloor": strFloor, "lonCallType": lonCallType,
+                        "strValidDate": strValidDate, "strAvailablePeriod": strAvailablePeriod, "strAvailableDate": strAvailableDate, "lonMultiElevatorNo": lonMultiElevatorNo,
+                        "ElevatorFloor": []
+                    };
+                    if (r.elevator_idex != "0" && r.elevator_idex2 != "0") {
+                        TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex, "Value": strFloorex }, { "Key": lonElevatorNoex2, "Value": strFloorex2}];
+                    }
+                    else if (r.elevator_idex != "0") {
+                        TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex, "Value": strFloorex}];
+                    }
+                    else if (r.elevator_idex2 != "0") {
+                        TKMadeTimeCard.ElevatorFloor = [{ "Key": lonElevatorNoex2, "Value": strFloorex2}];
+                    }
+                    var cardinfo = ActiveX.RFMifare_MadeTimeCard(JSON2.stringify(TKMadeTimeCard));
+                    var cardinfojson = JSON2.parse(cardinfo);
+                    if (!cardinfojson.Success) {
+                        $("#info").css("color", "Red");
+                        $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+                        rool = setTimeout(function () { readcard() }, rooltime);
+                        return;
+                    }
+                    else {
+                        var yo = formatfloor(r.floor);
+                        var you = formatweek(r.week);
+                        var yoex = formatfloor(r.floorex);
+                        var yoex2 = formatfloor(r.floorex2);
+                        var demo = "梯号:" + lonElevatorNo + "梯卡号：" + lonCardNo + ",楼层：" + yo + "，级别：" + $("#levelsel").combobox("getText")
+            + "日期：" + r.begin_date + "~" + r.end_date + "时间：" + r.begin_time + "~" + r.end_time + "星期：" + you
+            + "梯号2：" + lonElevatorNoex + ",楼层2：" + yoex + "梯号3：" + lonElevatorNoex2 + ",楼层3：" + yoex2;
+                        Ajax(true, global.tk["NewTkCard"], { LoginID: LocalID, card_id: card, card_kind: "40", elevator_id: r.elevator_id, card_no: lonCardNo, user_id: userid
+         , kind_name: $("#select").combobox("getText"), user_name: rowData.user_name, depart_name: rowData.depart_name
+         , room_name: rowData.room_name, elevator_name: r.elevator_name, demo: demo
+                        }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                rool = setTimeout(function () { readcard() }, rooltime);
+                                return;
+                            }
+                            $("#info").css("color", "Green");
+                            $("#info").html("制卡成功，卡号：" + card + "," + demo);
+                            ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                            rool = setTimeout(function () { readcard() }, rooltime);
+                            $.messager.alert("提示", "<p class='infoReport'>制卡成功</p>", "success");
+                        });
+                    }
+                });
+            });
+        });
+        return false;
+    }
+    function GrantCard() {
+        var row = datagrid.datagrid("getSelected");
+        var id = row.id;
+        var user_name = $("#user_name").val();
+        var depart_id = row.depart_id;
+        var BeginTime = $('#BeginTime').datetimebox('getValue');
+        var EndTime = $('#EndTime').datetimebox('getValue');
+        var card_kind = '03';
+        if ($('#xunjian').prop("checked")) {
+            card_kind = "22";
+        }
+        if (!id) {
+            $.messager.alert('提示', "<p class='infoReport'>请选择用户</p>", 'error');
+            return;
+        }
+        if (!BeginTime) {
+            $.messager.alert('提示', "<p class='infoReport'>请输入正确的生效时间</p>", 'error');
+            return;
+        }
+        if (!EndTime) {
+            $.messager.alert('提示', "<p class='infoReport'>请输入正确的失效时间</p>", 'error');
+            return;
+        }
+
+        if (Date.parse(BeginTime) > Date.parse(EndTime)) {
+            $.messager.alert('提示', "<p class='infoReport'>开始时间大于结束时间，请重新输入</p>", 'error');
+            return;
+        }
+        var data = $('#tbZWInfo').datagrid('getData');
+        if (data) {
+            if (data.rows.length >= 2) {
+                $.messager.alert('提示', "<p class='infoReport'>指纹数已到上限（2个）</p>", 'error');
+                return;
+            }
+        }
+        if (rool != null) {
+            clearTimeout(rool);
+        }
+        rool = setTimeout(Grant, 500);
+    }
+
+    function Grant() {
+        cot = 0;
+        ActiveX.Zw_FpCancel();
+        if ($('#info').length) {
+            $(".messager-body").window('close');
+        }
+        $.messager.show({
+            id: 'info',
+            title: '录入指纹',
+            msg: "<center><p id='zwxssp'>请按指纹！1 <br /><br /></p>&nbsp;<a id='nextsubmit' onClick='Grant()' href='#'><a></center>",
+            timeout: 0,
+            showType: 'fade',
+            style: {
+                right: '',
+                bottom: ''
+            },
+            width: 275,
+            height: 140
+        });
+        ActiveX.Zw_Start();
+        rools = setTimeout(GrantX, 500);
+    };
+    function GrantX() {
+        if (ActiveX.Zw_IsFingerPress()) {
+            rools = setTimeout(GrantX, 500);
+            return;
+        }
+        ActiveX.Zw_End();
+        var ret = "";
+        ret = ActiveX.Zw_CaptureFinger(0);
+        cot = 1;
+        rools = setTimeout(GrantY, 500);
+    }
+    function GrantY() {
+        $("#zwxssp")[0].innerHTML = "请按指纹！2";
+        if (ActiveX.Zw_IsFingerPress()) {
+            ActiveX.Zw_End();
+            ActiveX.Zw_Start();
+            rools = setTimeout(GrantY, 1000);
+            return;
+        }
+        COT = 2;
+        ActiveX.Zw_End();
+        var ret = "";
+        ret = ActiveX.Zw_CaptureFinger(1);
+        ActiveX.Zw_Start();
+        rools = setTimeout(GrantZ, 500);
+    }
+    function GrantZ() {
+        $("#zwxssp")[0].innerHTML = "请按指纹！3";
+        if (ActiveX.Zw_IsFingerPress()) {
+            ActiveX.Zw_End();
+            ActiveX.Zw_Start();
+            rools = setTimeout(GrantZ, 1000);
+            return;
+        }
+        ActiveX.Zw_End();
+        var ret = "";
+        ret = ActiveX.Zw_CaptureFinger(2);
+        var data = JSON.parse(ret);
+
+
+        if (data.Success && data.Data) {
+            $("#zwxssp")[0].innerHTML = "生成指纹数据成功！";
+        }
+        else {
+            if (data.Ex) {
+                $("#zwxssp")[0].innerHTML = "指纹3采集失败！";
+                ActiveX.Zw_End();
+                ActiveX.Zw_Start();
+                rools = setTimeout(GrantZ, 1000);
+                return;
+            } else if (!data.EX) {
+                ActiveX.Zw_End();
+                $("#zwxssp")[0].innerHTML = "生成指纹数据失败！";
+                $("#nextsubmit")[0].innerHTML = "重试";
+                return;
+            } else {
+                ActiveX.Zw_End();
+                $("#zwxssp")[0].innerHTML = "生成指纹数据失败！";
+                $("#nextsubmit")[0].innerHTML = "重试";
+            }
+        }
+        var zw = data.Data;
+        //使用方法
+        var row = datagrid.datagrid("getSelected");
+        var id = row.id;
+        var BeginTime = $('#BeginTime').datetimebox('getValue');
+        var EndTime = $('#EndTime').datetimebox('getValue');
+        var card_kind = '';
+        if ($('#xunjian').prop("checked")) {
+            card_kind = "22";
+        }
+        Ajax(true, global.zw.NewZwInfo, { LoginID: LocalID, zw: zw, user_id: id, card_kind: card_kind, begin_date: BeginTime, end_date: EndTime }, function (data) {
+            if (!data.Success) {
+                $.messager.alert('提示', data.Message, 'error');
+                if ($('#info').length) {
+                    $(".messager-body").window('close');
+                }
+                return;
+            }
+            if ($('#info').length) {
+                $(".messager-body").window('close');
+            }
+            $.messager.alert('提示', "<p class='infoReport'>保存成功</p>", 'info');
+            //查询
+            loaddata2(id);
+            $('#zwNum').val('');
+        });
+    };
+    //注销指纹
+    function RemoveZWInfo() {
+        var row = datagrid.datagrid('getSelected');
+        var rowZW = $('#tbZWInfo').datagrid('getSelected');
+        if (!rowZW) {
+            $.messager.alert('提示', "<p class='infoReport'>未选择要需要删除的指纹</p>", 'error');
+            return;
+        }
+        $.messager.confirm('提示', "<p class='infoReport'>确定删除选中项数据</p>", function (r) {
+            if (r) {
+                var useId = row.id;
+                RemoveZWInfoCore(useId, rowZW.id);
+            }
+        });
+    };
+
+    //注销指纹核心方法
+    function RemoveZWInfoCore(UseID, id) {
+        Ajax(true, global.zw["RemoveZwInfo"], { LoginID: LocalID, id: id }, function (data) {
+            if (!data.Success) {
+                $.messager.alert('提示', data.Message, 'error');
+                return;
+            };
+            $.messager.alert('提示', "<p class='infoReport'>删除成功</p>", 'info');
+            //重新加载数据
+            loaddata2(UseID);
+            $('#zwNum').val('');
+        });
+    };
+    //指纹表单击行事件
+    function ClickZWRow(rowIndex, rowData){
+        if (rowData) {
+            $('#zwNum').val(rowData.zw_id);
+            Ajax(true, global.mj.GetMjCardUsing, { LoginID: LocalID, card_id: rowData.zw_id }, function (data) {
+                if (!data.Success) {
+                    $.messager.alert('提示', data.Message, 'error');
+                    if ($('#info').length) {
+                        $(".messager-body").window('close');
+                    }
+                    return;
+                }
+                if (data.Data.end_date) {
+                    $('#EndTime').datetimebox('setValue', data.Data.end_date);
+                }
+            });
+        }
+    }
+    function displaynone() {
+        $("#ms").hide();
+    }
+</script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',collapsible:false" title="提示" style="padding:1px 0 0; height:80px;">
+        <div id="tou" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;">手动操作中……</div>
+        <div id="info" style="width:800px;text-align:left; color:Blue; font-weight:bold; font-size:large;">请把卡片放到读卡器上</div>
+    </div>  
+    <div data-options="region:'center',collapsible:false, border:false" style="padding:0px;width:184px; ">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north',collapsible:false,border:false" style="height:184px;">
+                <div class="easyui-panel"  data-options="collapsible:true" title="卡信息" style="width:100%;height:184px; padding:1px;">
+                    <div style="width:100%;height:30px;">
+                    制卡方式:<input id="reader" style="width: 106px" class="easyui-combobox" data-options="valueField: 'value',textField: 'text',data: [{
+			text: '无读卡器',
+			value: '0'
+		},{
+			text: '普通读卡器',
+			value: '1'
+		}],onChange:function(newValue, oldValue){setReader(newValue)}" />
+                    用户：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'用户'" style="width:80px;" readonly />
+                    部门：<input id="depart" class="easyui-validatebox textbox" data-options="prompt:'部门'" style="width:80px;" readonly/>
+                    <!--房间：--><input id="room" class="easyui-validatebox textbox" data-options="prompt:'房间'" style="width:80px;display:none;" readonly/>
+                    </div>
+                    <div style="width:100%;height:30px;">
+                    卡号：<input id="card" class="easyui-validatebox textbox" data-options="prompt:'卡号'" style="width:80px;" />
+                    梯卡号：<input id="cardno" class="easyui-validatebox textbox" data-options="prompt:'梯卡号'" style="width:50px;" readonly/>
+                    指纹号:
+                    <input id="zwNum" class="easyui-validatebox textbox" style="width: 106px;" readonly="readonly" />
+                    生效日期:
+                    <input id="BeginTime" class="easyui-datetimebox" style="width: 106px;" />
+                    失效日期:
+                    <input id="EndTime" class="easyui-datetimebox" style="width: 106px;" />
+                    </div>
+                    <div id="ka" style="width:100%;height:30px;">
+                    <!--<input id="tikong" name="zw"  value="false" type="radio" checked />梯控卡
+                    <input id="menjin" name="zw"  value="false" type="radio" unchecked/>门禁卡
+                    <input id="xunjian" name="zw"  value="false" type="radio" unchecked/>巡检卡-->
+                    </div>
+                    <div id="ms" style="width:100%;height:30px;">
+                    有效天数：<input id="ss" class="easyui-numberspinner" style="width:80px;" required="required" value="1" data-options="min:0,max:100" />  
+                    截止时间：<input id="tt" class="easyui-timespinner"  style="width:80px;"value ="14:00" data-options="min:'08:30'" /> 
+                    <select id="zhuang" class="easyui-combobox" data-options="prompt:'幢'" style="width:80px"></select>幢
+                    <select id="ceng" class="easyui-combobox" data-options="prompt:'层'" style="width:80px"></select>层
+                    <select id="fang" class="easyui-combogrid" data-options="prompt:'房间'" style="width:80px"></select>房间</br>
+                    </div>
+                    <div style="width:100%;height:30px;" >
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="make" style="width:50px;">制卡</a>
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="recy" style="width:50px;">退卡</a>
+                    <a style="width: 80px;" href="javascript:void(0)" class="easyui-linkbutton" id="zczw"
+                        onclick='GrantCard()'>注册指纹</a>
+                    <a style="width: 80px;" href="javascript:void(0)" class="easyui-linkbutton" id="zxzw"
+                        onclick='RemoveZWInfo()'>注销指纹</a>
+                    </div>
+                </div>
+            </div>	
+		<div data-options="region:'center',collapsible:false, border:false" style="padding:0px;width:250px; ">
+            <div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:250px; padding:0px;">
+                部门：<input id="departname" class="easyui-validatebox textbox" data-options="prompt:'部门'" style="width:70px;"/>
+                类型：<input id="kindname" class="easyui-validatebox textbox" data-options="prompt:'用户类型'" style="width:60px;"/>
+                用户：<input id="username" class="easyui-validatebox textbox" data-options="prompt:'用户'" style="width:60px;"/>
+                工号：<input id="useridnum" class="easyui-validatebox textbox" data-options="prompt:'工号'" style="width:60px;"/>
+                <!--房间：--><input id="roomname" class="easyui-validatebox textbox" data-options="prompt:'房间'" style="width:70px;display:none;"/>
+  	            <a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+		            <table id="dg"> </table>  
+            </div>
+		</div>
+        
+    <div data-options="region:'south'" style="height: 120px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'west'" style='padding:0px; width: 50%;'>
+                <table id='tbRightUser' class='easyui-datagrid' data-options="rownumbers:true,singleSelect:true,fitColumns:true,striped:true,pagination:true, collapsible: true,iconCls:'icon-search' "
+                    title="用户卡信息">
+                </table>
+            </div>
+            <div data-options="region:'center'" style='padding: 0px; width: 50%;'>
+                <table id='tbZWInfo' class='easyui-datagrid' data-options="rownumbers:true,singleSelect:true,fitColumns:true,striped:true,pagination:false, collapsible: true,iconCls:'icon-search', onClickRow:ClickZWRow "
+                    title="指纹信息">
+                </table>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+         <!--<div data-options="region:'east',collapsible:false" style="width:250px; " title="权限信息" >
+        <div id="wei" style="width:100%;text-align:left; color:Blue; font-weight:bold; font-size:small;"></div>
+		</div>-->
+</div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06" style="width:0px; height:0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+</body>
+</html>

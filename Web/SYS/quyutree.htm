@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+<script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+<script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+<script src="../../Scripts/json2.js" type="text/javascript"></script>
+<script src="../../Scripts/constant.js" type="text/javascript"></script>
+<script src="../../Scripts/common.js" type="text/javascript"></script>	
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var tree;
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var Ljsondata = { "total": 0, "rows": [] };
+    var a;
+    $(function () {
+        //        Ajax(true, sys["GetAllSysAreaTree"], { LoginID: LocalID, iconCls: 'icon-tool', iconCls1: 'icon-house', root: '0' }, function (data) {
+        //            if (!data.Success) {
+        //                alert(data.Message);
+        //                return;
+        //            }
+        //            $('#parent_id').combotree({
+        //                data: JSON2.parse(data.Data)
+        //            });
+        //        });
+        tree = $("#tt").tree({
+            onClick: function (node) {
+                loaddata();
+            }
+        });
+        Lloaddata();
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true, 
+            title: "门",
+            collapsible: false,
+            remotesort: false,
+            rownumbers: true,
+            SingleSelect: false,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'areaname',
+                title: '区域名',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'parent_id',
+                title: '上级',
+                //                sortable: true,
+                width: 80
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var ids;
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, sys["RemoveSysArea"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+
+                                    loaddata();
+                                    Lloaddata();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        } 
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+
+                    $("#areaname").val(rows.areaname);
+                    $("#parent_id").combotree("setValue", rows.parent_id);
+
+                    a = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win').window('open');
+                    $("#areaname").val("");
+                    $("#parent_id").val("");
+                    a = 0;
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+
+                $("#areaname").val(rowData.areaname);
+                $("#parent_id").combotree("setValue", rowData.parent_id);
+
+                a = 1;
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#save").click(function () {
+            if (a == 0) {
+                var parent_id
+                if ($("#parent_id").combobox('getValue') == "") { parent_id = 0; }
+                else {
+                    parent_id = $("#parent_id").combotree('getValue');
+                }
+                var areaname = $("#areaname").val();
+                if (areaname == "") {
+                    $.messager.alert("提示", "区域名不能为空！", "error");
+                    $("#areaname").select();
+                    return;
+                }
+                Ajax(true, sys["NewSysArea"], { LoginID: LocalID, areaname: areaname, parent_id: parent_id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                    Lloaddata();
+                });
+            }
+            if (a == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var ids = rows.id;
+                var parent_id = $("#parent_id").combotree('getValue');
+                var areaname = $("#areaname").val();
+                if (areaname == "") {
+                    $.messager.alert("提示", "区域名不能为空！", "error");
+                    $("#areaname").select();
+                    return;
+                }
+                if (parent_id == "") {
+                    $.messager.alert("提示", "父编号不能为空！", "error");
+                    $("#parent_id").select();
+                    return;
+                }
+                Ajax(true, sys["UpdateSysArea"], { LoginID: LocalID, id: ids, areaname: areaname, parent_id: parent_id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                    Lloaddata();
+                });
+            }
+        });
+
+    });
+    function Lloaddata() {
+        Ajax(true, sys["GetAllSysAreaTree"], { LoginID: LocalID, iconCls: 'exicon-home', iconCls1: 'icon-house', root: '0' }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            Ljsondata.total = data.Data.length;
+            Ljsondata.rows = JSON2.parse(data.Data);
+            tree.tree('loadData', Ljsondata.rows);
+            $('#parent_id').combotree({
+                data: JSON2.parse(data.Data)
+            });
+        });
+    }
+    function loaddata() {
+        var idTemp;
+        var node = tree.tree('getSelected');
+        var idTemp = node == null ? 0 : node.id;
+        datagrid.datagrid('unselectAll');
+        Ajax(true, sys["GetSysAreaList"], { LoginID: LocalID, parent_id: idTemp }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+
+</script>
+</head>
+<body>
+<div class="easyui-layout" data-options="fit:true">
+ <div data-options="region:'west',collapsible:false,iconCls:'icon-search'" title="区域树"style="padding:2px;width:250px; ">
+		<ul id="tt"></ul>
+	</div>
+<div data-options="region:'center',collapsible:false" style="padding-top:3px; padding-left:2px;padding-right:2px;width:60px">
+
+<table id="dg" ></table>
+
+</div>
+</div>
+<div id="win" class="easyui-window" title="区域" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:220px;height:160px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:5px;">
+<table cellpadding="5">
+			<tr>
+				<td>区域名：</td>
+				<td><input id="areaname" class="easyui-validatebox textbox" data-options="required:true" style="width:100px;height:20px;" /></td>
+			</tr>
+			<tr>
+				<td>父编号：</td>
+				<td><select id="parent_id" class="easyui-combotree"  style="width:100px;height:20px;">  </select></td>
+			</tr>
+			
+		</table>
+        </div>
+<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+        </div>
+
+</div>
+</body>
+</html>

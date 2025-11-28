@@ -1,0 +1,120 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <script src="../../Scripts/jquery/jquery-1.9.0.min.js" type="text/javascript"></script>
+    <link href="../../Scripts/ligerUI/skins/Aqua/css/ligerui-all.css" rel="stylesheet"
+        type="text/css" />
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/core/base.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerDialog.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerTextBox.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerCheckBox.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerComboBox.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerGrid.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerDateEditor.js" type="text/javascript"></script>
+    <script src="../../Scripts/ligerUI/js/plugins/ligerSpinner.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        //其中需要导入数据,且该需要封装成js文件
+        //文件导入名称注意路径.
+        //角色系统权限
+        $(f_initGrid);
+        var manager, g, grid, EmployeeData;
+        function f_initGrid() {
+            grid = g = manager = $("#maingrid").ligerGrid({
+                checkbox: true,
+                //前面是否有选择框
+                columns: [
+                { display: '角色编号', name: 'ID', width: 50, type: 'int', frozen: true },
+                { display: '模块编号', name: 'ID', width: 50, type: 'text', frozen: true },
+                 { display: '权限', name: 'ID', width: 50, type: 'int', frozen: true },
+                  { display: '修改时间', name: 'IncomeDay', type: 'date', format: 'yyyy-MM-dd', width: 100, editor: { type: 'date'} },
+                  { display: '创建时间', name: 'IncomeDay', type: 'date', format: 'yyyy-MM-dd', width: 100, editor: { type: 'date'} },
+           ],
+                onSelectRow: function (rowdata, rowindex) {
+                    $("#txtrowindex").val(rowindex);
+                },
+                enabledEdit: true, clickToEdit: false, isScroll: false,
+                data: EmployeeData,
+                width: '100%'
+            });
+        };
+        function beginEdit() {
+            var row = manager.getSelectedRow();
+            if (!row) { alert('请选择行'); return; }
+            manager.beginEdit(row);
+        }
+        function cancelEdit() {
+            var row = manager.getSelectedRow();
+            if (!row) { alert('请选择行'); return; }
+            manager.cancelEdit(row);
+        }
+        function cancelAllEdit() {
+            manager.cancelEdit();
+        }
+        function endEdit() {
+            var row = manager.getSelectedRow();
+            if (!row) { alert('请选择行'); return; }
+            manager.endEdit(row);
+        }
+        function endAllEdit() {
+            manager.endEdit();
+        }
+        function deleteRow() {
+            manager.deleteSelectedRow();
+        }
+        var newrowid = 100;
+        function addNewRow() {
+            manager.addEditRow();
+        }
+
+        function getSelected() {
+            var row = manager.getSelectedRow();
+            if (!row) { alert('请选择行'); return; }
+            alert(JSON.stringify(row));
+        }
+        function getData() {
+            var data = manager.getData();
+            alert(JSON.stringify(data));
+        }
+        function f_search() {
+            grid.options.data = $.extend(true, {}, CustomersData);
+            grid.loadData(f_getWhere());
+        }
+        function f_getWhere() {
+            if (!grid) return null;
+            var clause = function (rowdata, rowindex) {
+                var key = $("#txtKey").val();
+                return rowdata.CustomerID.indexOf(key) > -1;
+            };
+            return clause;
+        }
+    </script>
+</head>
+<body style="padding: 10px">
+    <a style='width: 50px; float: left; margin-left: 6px'>主键：</a>
+    <input style='width: 100px; float: left; margin-left: 6px' id="txtKey" type="text" />
+    <a class="l-button" style="width: 100px; float: left; margin-left: 6px;" onclick="f_search()">
+        搜索</a> <a class="l-button" style="width: 80px; float: left; margin-left: 6px;" onclick="beginEdit()">
+            修改行</a> <a class="l-button" style="width: 80px; float: left; margin-left: 6px;" onclick="endEdit()">
+                提交修改</a> <a class="l-button" style="width: 80px; float: left; margin-left: 6px;"
+                    onclick="endAllEdit()">提交全部</a> <a class="l-button" style="width: 80px; float: left;
+                        margin-left: 6px;" onclick="cancelEdit()">取消修改</a> <a class="l-button" style="width: 80px;
+                            float: left; margin-left: 6px;" onclick="cancelAllEdit()">取消全部</a>
+    <a class="l-button" style="width: 120px; float: left; margin-left: 6px;" onclick="deleteRow()">
+        删除选择的行</a> <a class="l-button" style="width: 100px; float: left; margin-left: 6px;"
+            onclick="addNewRow()">添加行</a>
+    <div class="l-clear">
+    </div>
+    <div id="maingrid" style="margin-top: 20px">
+    </div>
+    <br />
+    <br />
+    <a class="l-button" style="width: 120px" onclick="getSelected()">获取选中的值(选择行)</a>
+    <br />
+    <a class="l-button" style="width: 120px" onclick="getData()">获取当前的值</a>
+    <div style="display: none;">
+        <!-- g data total ttt -->
+    </div>
+</body>
+</html>
