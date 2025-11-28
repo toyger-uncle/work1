@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+    <link href="../css/XFullHtml.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="js/TKCardMake24Time.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            font-family: verdana,helvetica,arial,sans-serif,宋体;
+            font-size: 12px;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        h2
+        {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 15px;
+        }
+        
+        .demo-info
+        {
+            padding: 0 0 12px;
+        }
+        
+        .demo-tip
+        {
+            display: none;
+        }
+        
+        .textbox
+        {
+            height: 20px;
+            margin: 0;
+            padding: 0 2px;
+            box-sizing: content-box;
+        }
+    </style>
+</head>
+<script>
+    var LocalID = $.cookie("LocalID");
+    var cardsnr = "";
+    var TKPlaintext = "";
+    var rooltime = 500;
+    var cot = 0;
+    var maxcot = 12000;
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    var rool;
+    var columnsone = [[
+        { field: 'id', title: '编号', width: 30 },
+        { field: 'group_name', title: '权限组', width: 80 },
+        { field: 'elevator_name', title: '电梯', width: 80 },
+        { field: 'time_name', title: '时段', width: 80 },
+        { field: 'begin_date', title: '开始日期', width: 80 },
+        { field: 'end_date', title: '截止日期', width: 80 },
+        { field: 'begin_time', title: '开始时间', width: 60 },
+        { field: 'end_time', title: '截止时间', width: 60 },
+        {
+            field: 'week', title: '星期几有效', width: 150,
+            formatter: function (val, rec) {
+                if (val.length != 7) {
+                    return '出错';
+                }
+                else {
+                    var you = formatweek(val);
+                    return you;
+                }
+            }
+        },
+    {
+        field: 'floor', title: '楼层', width: 250,
+        formatter: function (val, rec) {
+            if (val.length != 200) {
+                return '出错';
+            } else {
+                var you = formatfloor(val);
+                return you;
+            }
+        }
+    }]];
+    var columnstwo = [[
+        { field: 'id', title: '编号', width: 30 },
+        { field: 'group_name', title: '权限组', width: 80 },
+        { field: 'elevator_name', title: '电梯', width: 80 },
+        { field: 'time_name', title: '时段', width: 80 },
+        { field: 'begin_time', title: '开始时间', width: 60 },
+        { field: 'end_time', title: '截止时间', width: 60 },
+        {
+            field: 'week', title: '星期几有效', width: 150,
+            formatter: function (val, rec) {
+                if (val.length != 7) {
+                    return '出错';
+                }
+                else {
+                    var you = formatweek(val);
+                    return you;
+                }
+            }
+        },
+    {
+        field: 'floor', title: '楼层', width: 250,
+        formatter: function (val, rec) {
+            if (val.length != 200) {
+                return '出错';
+            } else {
+                var you = formatfloor(val);
+                return you;
+            }
+        }
+    }]];
+    var columnsthree = [[
+    { field: 'id', title: '编号', width: 30 },
+    { field: 'group_name', title: '权限组', width: 80 },
+    { field: 'elevator_name', title: '电梯', width: 80 },
+    { field: 'time_name', title: '时段', width: 80 },
+    { field: 'begin_date', title: '开始日期', width: 80 },
+    { field: 'end_date', title: '截止日期', width: 80 },
+    { field: 'begin_time', title: '开始时间', width: 60 },
+    { field: 'end_time', title: '截止时间', width: 60 },
+    {
+        field: 'floor', title: '楼层', width: 250,
+        formatter: function (val, rec) {
+            if (val.length != 200) {
+                return '出错';
+            } else {
+                var you = formatfloor(val);
+                return you;
+            }
+        }
+    }]];
+</script>
+<body>
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'north',collapsible:false" title="提示" style="padding: 5px 0 0;
+            height: 80px;">
+            <div id="tou" style="width: 600px; text-align: left; color: Blue; font-weight: bold;
+                font-size: large;">
+                手动操作中……
+            </div>
+            <div id="info" style="width: 800px; text-align: left; color: Blue; font-weight: bold;
+                font-size: large;">
+                请把卡片放到读卡器上
+            </div>
+        </div>
+        <div data-options="region:'center',collapsible:false, border:false" style="padding: 0px;
+            width: 300px;">
+            <div class="easyui-layout" data-options="fit:true">
+                <div data-options="region:'north',collapsible:false,border:false" style="height: 250px;">
+                    <div class="easyui-panel" data-options="collapsible:true" title="卡信息" style="width: 100%;
+                        height: 124px; padding: 2px;">
+                        <div style="width: 100%; height: 30px;">
+                            类型：<select id="select" class="easyui-combobox" data-options="prompt:'类型'" style="width: 110px"></select>
+                            用户：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'用户'"
+                                style="width: 80px;" readonly="readonly" />
+                            部门：<input id="depart" class="easyui-validatebox textbox" data-options="prompt:'部门'"
+                                style="width: 80px;" readonly="readonly" />
+                            房间：<input id="room" class="easyui-validatebox textbox" data-options="prompt:'房间'"
+                                style="width: 80px;" readonly="readonly" />
+                        </div>
+                        <div style="width: 100%; height: 30px;">
+                            卡号：<input id="card" class="easyui-validatebox textbox" data-options="prompt:'卡号'"
+                                style="width: 80px;" readonly="readonly" />
+                            梯卡号：<input id="cardno" class="easyui-validatebox textbox" data-options="prompt:'梯卡号'"
+                                style="width: 50px;" readonly="readonly" />
+                            <div style="display: inline" id="automakediv">
+                                <input type="checkbox" id="automake" name="lg" value="0" />自动制卡
+                            </div>
+                            <input type="checkbox" id="autorecy" name="lg" value="1" />自动退卡
+                        </div>
+                        <div style="width: 100%; height: 30px;">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" id="make">制卡</a> <a href="javascript:void(0)"
+                                class="easyui-linkbutton" id="recy">退卡</a>
+                        </div>
+                    </div>
+                    <div style="width: 100%; height: 2px;">
+                    </div>
+                    <div class="easyui-panel" title="信息控制" data-options="iconCls:'icon-add',collapsible:true"
+                        style="width: 100%; height: 60px; padding: 3px;">
+                        <div style="display: inline" id="leveldiv">
+                            级别：<select id="levelsel" class="easyui-combobox" style="width: 70px">
+                                <option value="0" selected="selected">普通卡 </option>
+                                <option value="1">贵宾卡</option>
+                            </select>
+                        </div>
+                        <div style="display: inline" id="rightdiv">
+                            权限：<select id="rightsel" class="easyui-combogrid" style="width: 100px"></select>
+                        </div>
+                        <div style="display: inline" id="elevatordiv">
+                            电梯：<select id="elevatorsel" class="easyui-combobox" style="width: 100px"></select>
+                        </div>
+                        <div style="display: inline" id="roomdiv">
+                            房间：<select id="roomsel" class="easyui-combobox" style="width: 150px"></select>
+                        </div>
+                        <div id="sp">
+                            <div style="color: #99BBE8; background: #fafafa; padding: 3px;">
+                                选择房间
+                            </div>
+                            <div style="padding: 3px">
+                            </div>
+                        </div>
+                        <div style="display: inline" id="floordiv">
+                            楼层：<select id="floorsel" class="easyui-combobox" style="width: 100px"></select>
+                        </div>
+                        <div id="spf">
+                            <div style="color: #99BBE8; background: #fafafa; padding: 3px;">
+                                选择楼层
+                            </div>
+                            <div style="padding: 3px">
+                            </div>
+                        </div>
+                        <div style="display: inline" id="timediv">
+                            响应时间：<input id="timetxt" class="easyui-validatebox textbox" data-options="prompt:'时间',required:true,precision:0,validType:'length[1,2]'"
+                                style="width: 40px;" />秒
+                        </div>
+                        <div style="display: inline" id="rigdiv">
+                            副权限：<select id="rigsel" class="easyui-combogrid" style="width: 100px"></select>
+                        </div>
+                        <div style="display: inline" id="ckdiv">
+                            <input type="checkbox" id="ckck" name="l" value="0" />启用
+                        </div>
+                        <div style="display: inline" id="qxdiv">
+                            <input type="checkbox" id="qxck" name="g" value="0" />取消
+                        </div>
+                        <div style="display: inline" id="carddiv">
+                            卡：<select id="cardsnrsel" class="easyui-combogrid" style="width: 100px"></select>
+                        </div>
+                    </div>
+                    <div style="width: 100%; height: 2px;">
+                    </div>
+                    <div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true"
+                        style="width: 100%; height: 60px; padding: 3px;">
+                        部门：<input id="departname" class="easyui-validatebox textbox" data-options="prompt:'部门'"
+                            style="width: 70px;" />
+                        类型：<input id="kindname" class="easyui-validatebox textbox" data-options="prompt:'用户类型'"
+                            style="width: 60px;" />
+                        用户：<input id="username" class="easyui-validatebox textbox" data-options="prompt:'用户'"
+                            style="width: 60px;" />
+                        工号：<input id="useridnum" class="easyui-validatebox textbox" data-options="prompt:'工号'"
+                            style="width: 60px;" />
+                        房间：<input id="roomname" class="easyui-validatebox textbox" data-options="prompt:'房间'"
+                            style="width: 70px;" />
+                        <a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">
+                            查询 </a>
+                    </div>
+                    <div style="width: 100%; height: 2px;">
+                    </div>
+                </div>
+                <div data-options="region:'center',collapsible:false, border:false" style="padding: 0px;
+                    width: 250px;">
+                    <div style="width: 100%; height: 100px;">
+                        <table id="dg">
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-options="region:'east',collapsible:false" style="width: 250px;" title="权限信息">
+            <div id="wei" style="width: 100%; text-align: left; color: Blue; font-weight: bold;
+                font-size: small;">
+            </div>
+        </div>
+    </div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06"
+        style="width: 0px; height: 0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+    <script>
+        $(function () {
+            if (iniConnec()) {
+                iniTable();
+                iniEvent();
+                displaynone();
+                cboValue();
+            }
+        });       
+    </script>
+</body>
+</html>

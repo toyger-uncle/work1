@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var cardsnr = "";
+var SysOriginalCiphertext = "";
+var rooltime = 500;
+var cot = 0;
+var maxcot = 12000;
+$(function () {
+    while (true) {
+        var ActiveX;
+        var ret;
+        try {
+            ActiveX = $("#ActiveX")[0];
+            ret = ActiveX.GetVersion();
+        }
+        catch (e) {
+            $("#info").css("color", "Red");
+            $("#info").html("初始化失败，请安装做卡插件，重试！");
+            return;
+            continue;
+        }
+        if (ret != "1.0") {
+            $("#info").css("color", "Red");
+            $("#info").html("做卡插件版本不匹配，请重新安装对应版本，重试！" + "(当前" + ret + "软件需要1.0)");
+            return;
+            continue;
+        }
+        ret = ActiveX.OpenCom();
+        if (ret != 0) {
+            $("#info").css("color", "Red");
+            $("#info").html("初始化失败，请插好读卡器，重试！");
+            return;
+            continue;
+        }
+        break;
+    }
+    $("#info").html("获取出厂密钥……");
+    Ajax(true, sys["GetSysOriginalCiphertext"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        SysOriginalCiphertext = data.Data;
+        $("#info").html("获取出厂密钥成功");
+        $("#old").prop('checked', true);
+        display();
+        readcard();
+    });
+});
+function display() {
+    var x = "";
+    if ($("#old").is(":checked")) {
+        x += "自定义密钥";
+        $("#oldpsw").val("");
+        $("#oldtb").css("display", "block");
+    }
+    else {
+        x += "出厂密钥";
+        $("#oldtb").css("display", "none");
+    }
+    x += "修改为";
+    if ($("#new").is(":checked")) {
+        x += "自定义密钥";
+        $("#newpsw").val("");
+        $("#psw").val("");
+        $("#newtb").css("display", "block");
+    }
+    else {
+        x += "出厂密钥";
+        $("#newtb").css("display", "none");
+    }
+    $("#tou").html(x);
+}
+function readcard() {
+    var oldpsw = "";
+    var newpsw = "";
+    if (!($("#old").is(":checked")) && !($("#new").is(":checked"))) {
+        $("#info").html("您在做没有意义的事");
+        $("#info").css("color", "Red");
+        setTimeout(function () { readcard() }, rooltime);
+        return;
+    }
+    else if ($("#old").is(":checked") && $("#new").is(":checked")) {
+        if ($("#oldpsw").val().length != 6 && $("#oldpsw").val().length != 12) {
+            $("#info").html("原密码长度不对");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        if ($("#newpsw").val().length != 6 && $("#newpsw").val().length != 12) {
+            $("#info").html("新密码长度不对");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        if ($("#newpsw").val() != $("#psw").val()) {
+            $("#info").html("新密码和确认密码不一致");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        if ($("#oldpsw").val().length == 6) {
+            Ajax(true, sys["EncryptSysPlaintext"], { LoginID: LocalID, SysPlaintext: $("#oldpsw").val() }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                oldpsw = data.Data;
+                if ($("#newpsw").val().length == 6) {
+                    Ajax(true, sys["EncryptSysPlaintext"], { LoginID: LocalID, SysPlaintext: $("#newpsw").val() }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        newpsw = data.Data;
+                        updatepsw(oldpsw, newpsw);
+                    });
+                }
+                else {
+                    newpsw = $("#newpsw").val();
+                    updatepsw(oldpsw, newpsw);
+                }
+            });
+        }
+        else {
+            oldpsw = $("#oldpsw").val();
+            if ($("#newpsw").val().length == 6) {
+                Ajax(true, sys["EncryptSysPlaintext"], { LoginID: LocalID, SysPlaintext: $("#newpsw").val() }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    newpsw = data.Data;
+                    updatepsw(oldpsw, newpsw);
+                });
+            }
+            else {
+                newpsw = $("#newpsw").val();
+                updatepsw(oldpsw, newpsw);
+            }
+        }
+    }
+    else if ($("#old").is(":checked") && !($("#new").is(":checked"))) {
+        if ($("#oldpsw").val().length != 6 && $("#oldpsw").val().length != 12) {
+            $("#info").html("原密码长度不对");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }  
+        if ($("#oldpsw").val().length == 6) {
+            Ajax(true, sys["EncryptSysPlaintext"], { LoginID: LocalID, SysPlaintext: $("#oldpsw").val() }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                oldpsw = data.Data;
+                updatepsw(oldpsw, SysOriginalCiphertext);
+            });
+        }
+        else {
+            oldpsw = $("#oldpsw").val();
+            updatepsw(oldpsw, SysOriginalCiphertext);
+        }
+    }
+    else if (!($("#old").is(":checked")) && $("#new").is(":checked")) {
+        if ($("#newpsw").val().length != 6 && $("#newpsw").val().length != 12) {
+            $("#info").html("新密码长度不对");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        if ($("#newpsw").val() != $("#psw").val()) {
+            $("#info").html("新密码和确认密码不一致");
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        if ($("#newpsw").val().length == 6) {
+            Ajax(true, sys["EncryptSysPlaintext"], { LoginID: LocalID, SysPlaintext: $("#newpsw").val() }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                newpsw = data.Data;
+                updatepsw(SysOriginalCiphertext, newpsw);
+            });
+        }
+        else {
+            newpsw = $("#newpsw").val();
+            updatepsw(SysOriginalCiphertext, newpsw);
+        }
+    }
+}
+function updatepsw(oldpsw,newpsw) {
+    var currentcardsnr = ActiveX.RFMifare_GetSnr();
+    if (currentcardsnr == "") {
+        $("#info").css("color", "Blue");
+        $("#info").html("读卡中，请放上卡片……");
+        cot++;
+        if (cot > maxcot) {
+            $("#info").css("color", "Red");
+            $("#info").html("长时间未读到卡，已停止工作，要继续请刷新页面");
+            return;
+        }
+    }
+    else {
+        cot = 0;
+    }
+    if (currentcardsnr == "" || currentcardsnr == cardsnr) {
+        cardsnr = currentcardsnr;
+        setTimeout(function () { readcard() }, rooltime);
+        return;
+    }
+    cardsnr = currentcardsnr;
+    $("#info").html("读卡成功，卡号：" + cardsnr);
+    var data = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + oldpsw + "\"}";
+    var keys = "[{\"Key\":9,\"Value\":\"" + newpsw + "\"},{\"Key\":10,\"Value\":\"" + newpsw + "\"}]";
+    var cardinfo = "{\"card_snr\":\"" + cardsnr + "\",\"card_key\":\"" + newpsw + "\",\"blockdatas\":[{\"Key\":36,\"Value\":\"\"},{\"Key\":40,\"Value\":\"\"}]}";
+
+    var ret = ActiveX.RFMifare_AllInitCard(data, keys, "");
+    data = JSON2.parse(ret);
+    if (!data.Success) {
+        cardinfo = ActiveX.RFMifare_AllReadCard(cardinfo);
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").html("梯控修改密钥失败，卡号：" + cardsnr + "，错误信息：" + data.Message);
+            $("#info").css("color", "Red");
+            setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        $("#info").html("卡片密钥已修改，卡号：" + cardsnr);
+        $("#info").css("color", "Red");
+        ActiveX.RFMifare_Alarm(4, 20, 0, 1);
+        setTimeout(function () { readcard() }, rooltime);
+        return;
+    }
+    $("#info").css("color", "Green");
+    $("#info").html("修改卡片密钥成功，卡号：" + cardsnr);
+    ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+    setTimeout(function () { readcard() }, rooltime);
+}
+</script>
+
+    </head>
+<body>
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'north',collapsible:false" title="提示" style="text-align:right;padding:5px 0 0; height:100px;">
+  	        <div id="tou" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;">自定义密钥修改为出厂密钥</div>
+	        <div id="info" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;"></div>
+        </div>  
+		<div data-options="region:'west',collapsible:false" title="原密钥" style="padding:10px;width:250px; ">
+		<table cellpadding="5">
+			<tr>
+				<td>自定义:</td>
+                <td><input id="old" type="checkbox" name="lang" value="0"  onclick="display()"/></td>
+			</tr>
+		</table>
+		<table id = "oldtb" cellpadding="5" style=" display:none;">
+			<tr>
+				<td>原密钥:</td>
+				<td><input id="oldpsw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter Old System Password.',required:true,validType:'length[6,12]'" /></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'center'" title="新密钥" style="text-align:right;padding:5px 0 0; width:250px;">
+        <table cellpadding="5">
+			<tr>
+				<td>自定义:</td>
+                <td><input id="new" type="checkbox" name="lang" value="0"  onclick="display()"/></td>
+			</tr>
+		</table>
+		<table id = "newtb" cellpadding="5" style=" display:none;">
+			<tr>
+				<td>新密钥:</td>
+				<td><input id="newpsw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter New System Password.',required:true,validType:'length[6,12]'" /></td>
+			</tr>
+			<tr>
+				<td>确认密钥:</td>
+				<td><input id="psw" class="easyui-validatebox textbox" type="password" data-options="prompt:'Enter Confirm New System Password.',required:true,validType:'equalTo[\'#newpsw\']',invalidMessage:'两次输入密码不匹配'" /></td>
+			</tr>
+		</table>
+		</div>
+	</div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06" style="width:0px; height:0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+</body>
+</html>

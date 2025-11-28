@@ -1,0 +1,294 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var d;
+        var k;
+        var datagrid1;
+        var jsondata1 = { "total": 0, "rows": [] };
+        $(function () {
+            Ajax(true, global.xf["GetXFMngWindowGrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#win_grp').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'group_name'
+                });
+            });
+            Ajax(true, global.xf["GetXFMngWindowGrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#win_grp2').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'group_name'
+                });
+            });
+            Ajax(true, global.sys["GetMngCardKindList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#card_kind').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'card_kind'
+                });
+            });
+            Ajax(true, global.sys["GetMngCardKindList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#card_kind2').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'card_kind'
+                });
+            });
+            datagrid1 = $("#dg").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "班组可消费",
+                collapsible: true,
+                remotesort: false,
+                rownumbers: true,
+                columns: [[{
+                    field: 'win_grp',
+                    title: '班组名',
+                    width: '32%'
+                }, {
+                    field: 'card_kind',
+                    title: '可用卡类型',
+                    width: '32%'
+                }, {
+                    field: 'rate',
+                    title: '折扣率（%）',
+                    width: '32%'
+                }]]
+            });
+            loaddata();
+            $("#close").click(function () {
+                $('#win1').window('close');
+            });
+            $("#add").click(function () {
+                $('#win1').window('open');
+                $("#win_grp").combobox("setValue");
+                $("#card_kind").combobox("setValue");
+                $("#rate").val("");
+                $("#meal1_type").combobox("setValue");
+                $("#auto_money11").val("");
+                $("#meal1_num").combobox("setValue");
+                $("#auto_money12").val("");
+
+                $("#meal2_type").combobox("setValue");
+                $("#auto_money21").val("");
+                $("#meal2_num").combobox("setValue");
+                $("#auto_money22").val("");
+
+                $("#meal3_type").combobox("setValue");
+                $("#auto_money31").val("");
+                $("#meal3_num").combobox("setValue");
+                $("#auto_money32").val("");
+
+                $("#meal4_type").combobox("setValue");
+                $("#auto_money41").val("");
+                $("#meal4_num").combobox("setValue");
+                $("#auto_money42").val("");
+                $("#is_psw").combobox("setValue");
+                $("#is_print").combobox("setValue");
+                d = 0;
+            });
+
+            $("#update").click(function () {
+                var rows = datagrid1.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                id = rows.id;
+                $('#win1').window('open');
+                $("#win_grp").combobox(rows.win_grp);
+                $("#card_kind").combobox(rows.card_kind);
+                $("#rate").val(rows.rate);
+                $("#meal1_type").combobox(rows.meal1_type);
+                $("#auto_money11").val(rows.auto_money11);
+                $("#meal1_num").combobox(rows.meal1_num);
+                $("#auto_money12").val(rows.auto_money12);
+
+                $("#meal2_type").combobox(rows.meal2_type);
+                $("#auto_money21").val(rows.auto_money21);
+                $("#meal2_num").combobox(rows.meal2_num);
+                $("#auto_money22").val(rows.auto_money22);
+
+                $("#meal3_type").combobox(rows.meal3_type);
+                $("#auto_money31").val(rows.auto_money31);
+                $("#meal3_num").combobox(rows.meal3_num);
+                $("#auto_money32").val(rows.auto_money32);
+
+                $("#meal4_type").combobox(rows.meal4_type);
+                $("#auto_money41").val(rows.auto_money41);
+                $("#meal4_num").combobox(rows.meal4_num);
+                $("#auto_money42").val(rows.auto_money42);
+                $("#is_psw").combobox(rows.is_psw);
+                $("#is_print").combobox(rows.is_print);
+                d = 1;
+            });
+
+            $("#save").click(function () {
+                if (d == 0) {
+                    var win_grp = $('#win_grp').combobox("getValue");
+                    var card_kind = $('#card_kind').combobox("getValue");
+                    var rate = $("#rate").val();
+
+                    var meal1_type = $('#meal1_type').combobox("getValue");
+                    var auto_money11 = $("#auto_money11").val();
+                    var meal1_num = $('#meal1_num').combobox("getValue");
+                    var auto_money12 = $("#auto_money12").val();
+
+                    var meal2_type = $('#meal2_type').combobox("getValue");
+                    var auto_money21 = $("#auto_money21").val();
+                    var meal2_num = $('#meal2_num').combobox("getValue");
+                    var auto_money22 = $("#auto_money22").val();
+
+                    var meal3_type = $('#meal3_type').combobox("getValue");
+                    var auto_money31 = $("#auto_money31").val();
+                    var meal3_num = $('#meal3_num').combobox("getValue");
+                    var auto_money32 = $("#auto_money32").val();
+
+                    var meal4_type = $('#meal4_type').combobox("getValue");
+                    var auto_money41 = $("#auto_money41").val();
+                    var meal4_num = $('#meal4_num').combobox("getValue");
+                    var auto_money42 = $("#auto_money42").val();
+                    var is_psw = $('#is_psw').combobox("getValue");
+                    var is_print = $('#is_print').combobox("getValue");
+
+                    Ajax(true, global.xf["NewXFCardkindWingrp"], { LoginID: LocalID, win_grp: win_grp, card_kind: card_kind, rate: rate, meal1_type: meal1_type, auto_money11: auto_money11, meal1_num: meal1_num, auto_money12: auto_money12, meal2_type: meal2_type, auto_money21: auto_money21, meal2_num: meal2_num, auto_money22: auto_money22, meal3_type: meal3_type, auto_money31: auto_money31, meal3_num: meal3_num, auto_money32: auto_money32, meal4_type: meal4_type, auto_money41: auto_money41, meal4_num: meal4_num, auto_money42: auto_money42, is_psw: is_psw, is_print: is_print }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "添加成功", "info");
+                        $('#win1').window('close');
+                        loaddata();
+                    });
+                }
+                if (d == 1) {
+                    $('#win1').window('open');
+                    var rows = datagrid1.datagrid('getSelected');
+                    var id = rows.id;
+                    var win_grp = $("#win_grp").combobox(rows.win_grp);
+                    var card_kind = $("#card_kind").combobox(rows.card_kind);
+                    var rate = $("#rate").val(rows.rate);
+
+                    var meal1_type = $("#meal1_type").combobox(rows.meal1_type);
+                    var auto_money11 = $("#auto_money11").val(rows.auto_money11);
+                    var meal1_num = $("#meal1_num").combobox(rows.meal1_num);
+                    var auto_money12 = $("#auto_money12").val(rows.auto_money12);
+
+                    var meal2_type = $("#meal2_type").combobox(rows.meal2_type);
+                    var auto_money21 = $("#auto_money21").val(rows.auto_money21);
+                    var meal2_num = $("#meal2_num").combobox(rows.meal2_num);
+                    var auto_money22 = $("#auto_money22").val(rows.auto_money22);
+
+                    var meal3_type = $("#meal3_type").combobox(rows.meal3_type);
+                    var auto_money31 = $("#auto_money31").val(rows.auto_money31);
+                    var meal3_num = $("#meal3_num").combobox(rows.meal3_num);
+                    var auto_money32 = $("#auto_money32").val(rows.auto_money32);
+
+                    var meal4_type = $("#meal4_type").combobox(rows.meal4_type);
+                    var auto_money41 = $("#auto_money41").val(rows.auto_money41);
+                    var meal4_num = $("#meal4_num").combobox(rows.meal4_num);
+                    var auto_money42 = $("#auto_money42").val(rows.auto_money42);
+                    var is_psw = $("#is_psw").combobox(rows.is_psw);
+                    var is_print = $("#is_print").combobox(rows.is_print);
+
+                    Ajax(true, global.xf["UpdateXFCardkindWingrp"], { LoginID: LocalID, win_grp: win_grp, card_kind: card_kind, rate: rate, meal1_type: meal1_type, auto_money11: auto_money11, meal1_num: meal1_num, auto_money12: auto_money12, meal2_type: meal2_type, auto_money21: auto_money21, meal2_num: meal2_num, auto_money22: auto_money22, meal3_type: meal3_type, auto_money31: auto_money31, meal3_num: meal3_num, auto_money32: auto_money32, meal4_type: meal4_type, auto_money41: auto_money41, meal4_num: meal4_num, auto_money42: auto_money42, id: id, is_psw: is_psw, is_print: is_print }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "添加成功", "info");
+                        $('#win1').window('close');
+                        loaddata();
+                    });
+
+                }
+            });
+
+            $("#remove").click(function () {
+                var rowData = datagrid1.datagrid('getSelections');
+                var ids;
+                if (rowData == null || rowData.length == 0) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                    if (data) {
+                        for (var i = 0; i < rowData.length; i++) {
+                            ids = rowData[i].id;
+                            Ajax(true, global.xf["RemoveCardkindWingrp"], { LoginID: LocalID, id: ids }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                loaddata();
+                            });
+                        }
+                        $.messager.alert("提示", "删除成功", "info");
+                    }
+                });
+            });
+        });
+
+
+        function loaddata() {
+            datagrid1.datagrid('unselectAll');
+            Ajax(true, global.xf["GetXFCardkindWingrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata1.rows = data.Data;
+                datagrid1.datagrid('loadData', jsondata1);
+
+            });
+        }
+
+
+
+    </script>
+    <div class="easyui-layout">
+        <div>
+            <div data-options="region:'north',collapsible:false">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-add'" href="javascript:void(0)"
+                    id="add" style="width: 80px">添加</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-edit'"
+                        href="javascript:void(0)" id="update" style="width: 80px">修改</a> <a class="easyui-linkbutton"
+                            data-options="iconCls:'icon-remove'" href="javascript:void(0)" id="remove" style="width: 80px">
+                            删除</a>
+                <table id="dg">
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,597 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+</head>
+<body>
+   
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var dd;
+        var kk;
+        var datagrid3;
+        var jsondata3 = { "total": 0, "rows": [] };
+        $(function () {
+            Ajax(true, global.xf["GetXFMngWindowList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#win_id3').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'window_num'
+                });
+            });
+            Ajax(true, global.xf["GetXFMngWindowList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#win_id4').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'window_num'
+                });
+            });
+            Ajax(true, global.sys["GetMngCardKindList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#card_kind3').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'card_kind'
+                });
+            });
+            Ajax(true, global.sys["GetMngCardKindList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#card_kind4').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'card_kind'
+                });
+            });
+            datagrid3 = $("#dg3").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "机器可消费",
+                collapsible: true,
+                remotesort: false,
+                rownumbers: true,
+                columns: [[{
+                    field: 'win_id',
+                    title: '机器名',
+                    width: '32%'
+                }, {
+                    field: 'card_kind',
+                    title: '可用卡类型',
+                    width: '32%'
+                }, {
+                    field: 'rate',
+                    title: '折扣率（%）',
+                    width: '32%'
+                }]]
+            });
+            loaddata3();
+            $("#close3").click(function () {
+                $('#win3').window('close');
+            });
+            $("#add3").click(function () {
+                $('#win3').window('open');
+                $("#win_id3").combobox("setValue");
+                $("#card_kind3").combobox("setValue");
+                $("#rate3").val("");
+                $("#meal1_type2").combobox("setValue");
+                $("#auto_money112").val("");
+                $("#meal1_num2").combobox("setValue");
+                $("#auto_money122").val("");
+
+                $("#meal2_type2").combobox("setValue");
+                $("#auto_money212").val("");
+                $("#meal2_num2").combobox("setValue");
+                $("#auto_money222").val("");
+
+                $("#meal3_type2").combobox("setValue");
+                $("#auto_money312").val("");
+                $("#meal3_num2").combobox("setValue");
+                $("#auto_money322").val("");
+
+                $("#meal4_type2").combobox("setValue");
+                $("#auto_money412").val("");
+                $("#meal4_num2").combobox("setValue");
+                $("#auto_money422").val("");
+                $("#is_psw2").combobox("setValue");
+                $("#is_print2").combobox("setValue");
+                dd = 0;
+            });
+
+            $("#update3").click(function () {
+
+                var rows = datagrid3.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                id = rows.id;
+                $('#win3').window('open');
+                $("#win_id3").combobox(rows.win_id);
+                $("#card_kind3").combobox(rows.card_kind);
+                $("#rate3").val(rows.rate3);
+                $("#meal1_type2").combobox(rows.meal1_type);
+                $("#auto_money112").val(rows.auto_money11);
+                $("#meal1_num2").combobox(rows.meal1_num2);
+                $("#auto_money122").val(rows.auto_money12);
+
+                $("#meal2_type2").combobox(rows.meal2_type);
+                $("#auto_money212").val(rows.auto_money21);
+                $("#meal2_num2").combobox(rows.meal2_num2);
+                $("#auto_money222").val(rows.auto_money22);
+
+                $("#meal3_type2").combobox(rows.meal3_type);
+                $("#auto_money312").val(rows.auto_money31);
+                $("#meal3_num2").combobox(rows.meal3_num);
+                $("#auto_money322").val(rows.auto_money32);
+
+                $("#meal4_type2").combobox(rows.meal4_type);
+                $("#auto_money412").val(rows.auto_money41);
+                $("#meal4_num2").combobox(rows.meal4_num);
+                $("#auto_money422").val(rows.auto_money42);
+                $("#is_psw2").combobox(rows.is_psw);
+                $("#is_print2").combobox(rows.is_print);
+                dd = 1;
+            });
+
+            $("#save3").click(function () {
+                if (dd == 0) {
+                    var win_id3 = $('#win_id3').combobox("getValue");
+                    var card_kind3 = $('#card_kind3').combobox("getValue");
+                    var rate3 = $("#rate3").val();
+
+                    var meal1_type2 = $('#meal1_type2').combobox("getValue");
+                    var auto_money112 = $("#auto_money112").val();
+                    var meal1_num2 = $('#meal1_num2').combobox("getValue");
+                    var auto_money122 = $("#auto_money122").val();
+
+                    var meal2_type2 = $('#meal2_type2').combobox("getValue");
+                    var auto_money212 = $("#auto_money212").val();
+                    var meal2_num2 = $('#meal2_num2').combobox("getValue");
+                    var auto_money222 = $("#auto_money222").val();
+
+                    var meal3_type2 = $('#meal3_type2').combobox("getValue");
+                    var auto_money312 = $("#auto_money312").val();
+                    var meal3_num2 = $('#meal3_num2').combobox("getValue");
+                    var auto_money322 = $("#auto_money322").val();
+
+                    var meal4_type2 = $('#meal4_type2').combobox("getValue");
+                    var auto_money412 = $("#auto_money412").val();
+                    var meal4_num2 = $('#meal4_num2').combobox("getValue");
+                    var auto_money422 = $("#auto_money422").val();
+                    var is_psw2 = $('#is_psw2').combobox("getValue");
+                    var is_print2 = $('#is_print2').combobox("getValue");
+
+                    Ajax(true, global.xf["NewXFCardkindWingrp"], { LoginID: LocalID, win_id: win_id3, card_kind: card_kind3, rate: rate3, meal1_type: meal1_type2, auto_money11: auto_money112, meal1_num: meal1_num2, auto_money12: auto_money122, meal2_type: meal2_type2, auto_money21: auto_money212, meal2_num: meal2_num2, auto_money22: auto_money222, meal3_type: meal3_type2, auto_money31: auto_money312, meal3_num: meal3_num2, auto_money32: auto_money322, meal4_type: meal4_type2, auto_money41: auto_money412, meal4_num: meal4_num2, auto_money42: auto_money422, is_psw2: is_psw2, is_print2: is_print2 }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "添加成功", "info");
+                        $('#win3').window('close');
+                        loaddata3();
+                    });
+                }
+                if (dd == 1) {
+                    $('#win3').window('open');
+                    var rows = datagrid3.datagrid('getSelected');
+                    var id = rows.id;
+                    var win_id3 = $("#win_id3").combobox(rows.win_id);
+                    var card_kind3 = $("#card_kind3").combobox(rows.card_kind);
+                    var rate3 = $("#rate3").val(rows.rate3);
+
+                    var meal1_type2 = $("#meal1_type2").combobox(rows.meal1_type);
+                    var auto_money112 = $("#auto_money112").val(rows.auto_money11);
+                    var meal1_num2 = $("#meal1_num2").combobox(rows.meal1_num);
+                    var auto_money122 = $("#auto_money122").val(rows.auto_money12);
+
+                    var meal2_type2 = $("#meal2_type2").combobox(rows.meal2_type);
+                    var auto_money212 = $("#auto_money212").val(rows.auto_money21);
+                    var meal2_num2 = $("#meal2_num2").combobox(rows.meal2_num);
+                    var auto_money222 = $("#auto_money222").val(rows.auto_money22);
+
+                    var meal3_type2 = $("#meal3_type2").combobox(rows.meal3_type);
+                    var auto_money312 = $("#auto_money312").val(rows.auto_money31);
+                    var meal3_num2 = $("#meal3_num2").combobox(rows.meal3_num);
+                    var auto_money322 = $("#auto_money322").val(rows.auto_money32);
+
+                    var meal4_type2 = $("#meal4_type2").combobox(rows.meal4_type);
+                    var auto_money412 = $("#auto_money412").val(rows.auto_money41);
+                    var meal4_num2 = $("#meal4_num2").combobox(rows.meal4_num);
+                    var auto_money422 = $("#auto_money422").val(rows.auto_money42);
+
+                    var is_psw2 = $("#is_psw2").val(rows.is_psw2);
+                    var is_print2 = $("#is_print2").val(rows.is_print2);
+
+                    Ajax(true, global.xf["UpdateXFCardkindWingrp"], { LoginID: LocalID, win_id: win_id3, card_kind: card_kind3, rate: rate3, meal1_type: meal1_type2, auto_money11: auto_money112, meal1_num: meal1_num2, auto_money12: auto_money122, meal2_type: meal2_type2, auto_money21: auto_money212, meal2_num: meal2_num2, auto_money22: auto_money222, meal3_type: meal3_type2, auto_money31: auto_money31, meal3_num: meal3_num2, auto_money32: auto_money322, meal4_type: meal4_type2, auto_money41: auto_money412, meal4_num: meal4_num2, auto_money42: auto_money422, id: id, is_psw2: is_psw2, is_print2: is_print2 }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "添加成功", "info");
+                        $('#win3').window('close');
+                        loaddata3();
+                    });
+                }
+            });
+
+            $("#remove3").click(function () {
+                var rowData = datagrid3.datagrid('getSelections');
+                var ids;
+                if (rowData == null || rowData.length == 0) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                    if (data) {
+                        for (var i = 0; i < rowData.length; i++) {
+                            ids = rowData[i].id;
+                            Ajax(true, global.xf["RemoveCardkindWingrp"], { LoginID: LocalID, id: ids }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                loaddata3();
+                            });
+                        }
+                        $.messager.alert("提示", "删除成功", "info");
+                    }
+                });
+            });
+        });
+
+
+        function loaddata3() {
+            datagrid3.datagrid('unselectAll');
+            Ajax(true, global.xf["GetXFCardkindWingrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata3.rows = data.Data;
+                datagrid3.datagrid('loadData', jsondata3);
+
+            });
+        }
+
+    </script>
+    <div class="easyui-layout">
+        <!--<div data-options="region:'left',split:true,collapsible:false" style="width: 100%;">
+            <div id="win3" class="easyui-window" title="机器可消费性设置" data-options="iconCls:'icon-save'"
+                style="width: 750px; height: 500px; padding: 10px;">
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center'" style="padding: 5px 0 0;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <th style="width: 60px;" align="right">
+                                    机器名：
+                                </th>
+                                <td align="left">
+                                    <select id="win_id3" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                                    </select>
+                                </td>
+                                <th style="width: 60px;" align="right">
+                                    可用卡类型:
+                                </th>
+                                <td align="left">
+                                    <select id="card_kind3" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                                    </select>
+                                </td>
+                                <th style="width: 60px;" align="right">
+                                    消费折扣：
+                                </th>
+                                <td align="left">
+                                    <input id="rate3" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    早餐设置
+                                </th>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    早餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_type2" class="easyui-combobox" style="width: 106px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    第一次自动扣款金额:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money112" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    早餐次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_num2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上自动扣款金额：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money122" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    中餐设置：
+                                </th>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    中餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_type2" class="easyui-combobox" style="width: 106px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    第一次自动扣款金额:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money212" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    中餐次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_num2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上自动扣款金额：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money222" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    晚餐设置
+                                </th>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    晚餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_type2" class="easyui-combobox" style="width: 106px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    第一次自动扣款金额:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money312" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    晚餐次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_num2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上自动扣款金额：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money322" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    夜餐设置
+                                </th>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    夜餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_type2" class="easyui-combobox" style="width: 106px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    第一次自动扣款金额:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money412" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    夜餐次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_num2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上自动扣款金额：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money422" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                            id="close3" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                                href="javascript:void(0)" id="save3" style="width: 80px">提交</a>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!--<div data-options="region:'left',split:true,collapsible:false" style="width: 100%;">
+            <div id="win4" class="easyui-window" title="机器可消费性（POS）设置" data-options="iconCls:'icon-save'"
+                style="width: 450px; height: 250px; padding: 10px;">
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center'" style="padding: 5px 0 0;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <th style="width: 60px;" align="right">
+                                    机器名：
+                                </th>
+                                <td align="left">
+                                    <select id="win_id4" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                                    </select>
+                                </td>
+                                <th style="width: 60px;" align="right">
+                                    可用卡类型:
+                                </th>
+                                <td align="left">
+                                    <select id="card_kind4" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th align="right" style="width: 60px;">
+                                    是否密码消费:
+                                </th>
+                                <td align="left">
+                                    <select id="is_psw2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    小票打印数:
+                                </th>
+                                <td align="left">
+                                    <select id="is_print2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不打印</option>
+                                        <option value="1">1张</option>
+                                        <option value="2">2张</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th style="width: 60px;" align="right">
+                                    消费折扣：
+                                </th>
+                                <td align="left">
+                                    <input id="rate4" class="easyui-validatebox textbox" style="width: 100px" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                        <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                            id="close4" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                                href="javascript:void(0)" id="save4" style="width: 80px">提交</a>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <div>
+            <div data-options="region:'north',collapsible:false">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-add'" href="javascript:void(0)"
+                    id="add3" style="width: 80px">添加</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-edit'"
+                        href="javascript:void(0)" id="update3" style="width: 80px">修改</a> <a class="easyui-linkbutton"
+                            data-options="iconCls:'icon-remove'" href="javascript:void(0)" id="remove3" style="width: 80px">
+                            删除</a>
+                <table id="dg3">
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

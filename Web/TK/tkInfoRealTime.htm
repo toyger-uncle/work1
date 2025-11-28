@@ -1,0 +1,291 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/scene_co_ch.js" type="text/javascript"></script>
+    <style type="text/css">
+        body
+        {
+            margin: 0px 0px 0px 0px;
+            font: 12px simsun;
+            text-align: center;
+        }
+        #contentright
+        {
+            width: 248px;
+            overflow: scroll;
+            left: 0px;
+            color: #263457;
+            scrollbar-face-color: #9EBFE8;
+            scrollbar-shadow-color: #FFFFFF;
+            scrollbar-highlight-color: #FFFFFF;
+            scrollbar-3dlight-color: #9EBFE8;
+            scrollbar-darkshadow-color: #9EBFE8;
+            scrollbar-track-color: #FFFFFF;
+            scrollbar-arrow-color: #FFFFFF;
+        }
+        .right_bt
+        {
+            width: 100%;
+            height: 20px;
+            text-align: center;
+            color: #011a77;
+            padding-top: 6px;
+            background-image: url(../../Picture/pzmain_table_bt.gif);
+        }
+        .right_bt span
+        {
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 15px;
+            cursor: default;
+        }
+        .th
+        {
+            border-right: 1px #b4c2cf solid;
+            height: 25px;
+            background-image: url(../../Picture/pzmain_table_bt.gif);
+            cursor: default;
+        }
+        .thx
+        {
+            height: 25px;
+            background-image: url(../../Picture/pzmain_table_bt.gif);
+            cursor: default;
+        }
+        .td
+        {
+            border-right: 1px #b4c2cf solid;
+            height: 20px;
+            cursor: default;
+        }
+        .tdx
+        {
+            height: 20px;
+            cursor: default;
+        }
+        .tr
+        {
+            background-color: #f1f8fe;
+        }
+        .trp
+        {
+            background-color: #ffffff;
+        }
+        .tr:hover
+        {
+            background-color: #41acf0;
+        }
+        .trp:hover
+        {
+            background-color: #41acf0;
+        }
+    </style>
+</head>
+<body style="width: 240px">
+    <script type="text/javascript">
+        var getTimeTK = function (value, row, index) {
+            if (row.case_time != '') {
+                return row.case_time.slice(11, 19);
+            } else {
+                return null;
+            }
+        };
+        var getFlagTK = function (value, row, index) {
+            var img = '<img src=';
+            if (row.flag == '00') {
+                img += "../../Scripts/jquery-easyui/themes/icons/ok.png />";
+            } else {
+                img += "../../Scripts/jquery-easyui/themes/icons/no.png />";
+            }
+            return img;
+        };
+    </script>
+    <div id="cc" class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'north',border:true,collapsible:true" title='<center>人员信息</center>'
+            style="width: 240px; height: 160px;">
+            <table border='0' style='border-bottom: 0px #b4c2cf solid;' cellpadding="0px;width: 240px;"
+                cellspacing="0px">
+                <tr>
+                    <td style='width: 20%;' class='tdx'>
+                        &nbsp; 电梯：
+                    </td>
+                    <td style='width: 30%;' id="tkElv" class='tdx'>
+                    </td>
+                    <td style='width: 50%;' rowspan="20" colspan="20" class='tdx'>
+                        <img id="tkPhoto" src="../../Images/pzcard_pzbz.gif" style='height: 129px; width: 120px'
+                            alt="个人相片" />
+                    </td>
+                </tr>
+                <tr>
+                    <td style='width: 20%;' class='tdx'>
+                        &nbsp; 姓名：
+                    </td>
+                    <td style='width: 30%;' id="tkName" class='tdx'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='width: 20%;' class='tdx'>
+                        &nbsp; 部门：
+                    </td>
+                    <td style='width: 30%;' id="tkDep" class='tdx'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='width: 20%;' class='tdx'>
+                        &nbsp; 卡号：
+                    </td>
+                    <td style='width: 30%;' id="tkCardid" class='tdx'>
+                    </td>
+                </tr>
+                <tr>
+                    <td style='padding-left: 10px; width: 50%;' id="tTime" colspan="2" class='tdx'>
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div data-options="region:'center'" style='width: 240px;'>
+            <table id="dgtk" class="easyui-datagrid" data-options="fitColumns:true,singleSelect:true,nowrap:false">
+                <thead>
+                    <tr>
+                        <th style='width: 50px;' data-options="field:'flag',sortable:false,align:'center',formatter:getFlagTK">
+                            状态
+                        </th>
+                        <th style='width: 100px;' data-options="field:'user_name',align:'center',sortable:false">
+                            姓名
+                        </th>
+                        <th style='width: 100px;' data-options="field:'elevator_name',align:'center',sortable:false">
+                            电梯
+                        </th>
+                        <th style='width: 100px;' data-options="field:'case_time',sortable:false,align:'center',formatter:getTimeTK">
+                            时间
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var ftk = {
+            sortName: "id",
+            sortOrder: "asc",
+            PageSize: 10,
+            PageNum: 1,
+            LocalID: $.cookie("LocalID"),
+            datatable: {},
+            rool: undefined,
+            maxId: -1,
+            id: -1,
+            //计算table最大索引
+            index: -1,
+            //获取最大id
+            getMaxId: function () {
+                Ajax(true, tk["MaxIDTkRecord"], { LoginID: ftk.LocalID
+                }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    ftk.maxId = data.Data;
+                });
+            },
+            setData: function (rowData) {
+                if (rowData) {
+                    Ajax(true, '/sys/GetUserFile', { LoginID: ftk.LocalID, id: rowData.user_file }, function (data) {
+                        if (data.Success) {
+                            if (data.Data.photo && data.Data.photo != '') {
+                                document.getElementById('tkPhoto').src = "../../Photo/" + data.Data.photo;
+                            } else {
+                                document.getElementById('tkPhoto').src = "../../Images/pzcard_pzbz.gif";
+                            }
+                        } else {
+                            document.getElementById('tkPhoto').src = "../../Images/pzcard_pzbz.gif";
+                        }
+                    });
+                    document.getElementById('tkCardid').innerHTML = rowData.card_id;
+                    document.getElementById('tkElv').innerHTML = rowData.elevator_name;
+                    document.getElementById('tkName').innerHTML = rowData.user_name;
+                    document.getElementById('tkDep').innerHTML = rowData.depart_name;
+                    document.getElementById('tTime').innerHTML = rowData.case_time;
+                }
+            },
+            //初始化表格
+            iniGrid: function () {
+                ftk.datatable = $("#dgtk").datagrid({
+                    fit: true, //自动补全
+                    onClickRow: function (rowIndex, rowData) {
+                        ftk.setData(rowData);
+                    }
+                });
+            },
+            //加载数据
+            loaddata: function () {
+                var inOutNull = undefined;
+                if (ftk.maxId < 0) {
+                    return;
+                }
+                Ajax(true, tk["GetTkRecordPageList"], { LoginID: ftk.LocalID, id: ftk.maxId, event_reason: inOutNull, sortName: 'id', sortOrder: true, pageSize: 20, pageNum: 1
+                }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    //                                                index++;
+                    //                                                datatable.datagrid('insertRow', {
+                    //                                                    index: 0,
+                    //                                                    row: {
+                    //                                                        user_name: id,
+                    //                                                        event_date:'2015-01-12 15:34:45'
+                    //                                                    }
+                    //                                                });
+                    //                                                id++;
+                    //                                               
+                    //                                                    datatable.datagrid('clickRow', 0);
+
+                    //将id值赋给最大值
+                    if (data.Data.length && data.Data.length != 0) {
+                        for (var i = 0; i < data.Data.length; i++) {
+                            if (data.Data[i].id > parseInt(ftk.maxId)) {
+                                ftk.maxId = data.Data[i].id;
+                            }
+                            ftk.datatable.datagrid('insertRow', {
+                                index: 0,
+                                row: data.Data[i]
+                            });
+                            ftk.index++;
+                            //将最新一条记录放到上面显示
+                            if (i == data.Data.length - 1) {
+                                ftk.setData(data.Data[i]);
+                            }
+                        }
+                    }
+                    if (ftk.index > 19) {
+                        for (var i = ftk.index; i > 19; i--) {
+                            ftk.datatable.datagrid('deleteRow', i);
+                            ftk.index--;
+                        }
+                    }
+                });
+            }
+        };
+        $(function () {
+            ftk.iniGrid();
+            ftk.getMaxId();
+            XCommon.intervalOpt.interval(ftk.loaddata, 10000);
+        });
+      
+    </script>
+</body>
+</html>

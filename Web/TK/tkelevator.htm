@@ -1,0 +1,566 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var id = null; 
+var jsondata = {"total":0,"rows":[]};
+$(function () {
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        //pagination: true, //显示分页  
+        //pageSize: 10, //分页大小  
+        //pageList: [10, 50, 100], //每页的个数  
+        //fit: true, //自动补全  
+        fitColumns: true,
+        striped: true,
+        iconCls: "icon-save", //图标  
+        title: "电梯管理",
+        collapsible: true,
+        remotesort: false,
+        //rownumbers: true,
+        //sortName:"id",
+        //sortOrder: 'desc',
+        columns: [[{
+            field: 'id',
+            title: '梯号',
+            //sortable: true,
+            width: 50
+        }, {
+            field: 'elevator_name',
+            title: '梯名',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'floor_num',
+            title: '层数',
+            //sortable: true,
+            width: 50
+        }, {
+            field: 'gid',
+            title: '局号',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'max_card_no',
+            title: '最大卡号',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'com_type',
+            title: '联网类型',
+            //sortable: true,
+            width: 80,
+            formatter: function (value, row) {
+                if (value == "01") {
+                    return "485";
+                }
+                if (value == "02") {
+                    return "以太网";
+                }
+            }
+        }, {
+            field: 'start_floor',
+            title: '起始层',
+            //sortable: true,
+            width: 80
+        }]],
+        toolbar: [{
+            text: "删除", iconCls: "icon-remove", handler: function () {
+                var rowData = datagrid.datagrid('getSelections');
+                if (rowData == null || rowData.length == 0) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $.messager.confirm("提示", "确定删除选中的" + rowData.length + "项数据", function (data) {
+                    if (data) {
+                        var ids = "";
+                        for (var i = 0; i < rowData.length; i++) {
+                            if (i != 0) {
+                                ids += "|";
+                            }
+                            ids += rowData[i].id;
+                        }
+                        Ajax(true, tk["RemoveTkElevator"], { LoginID: LocalID, id: ids }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                            loaddata($("#text").val());
+                        });
+                    }
+                });
+            }
+        }, {
+            text: "修改", iconCls: "icon-edit", handler: function () {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win').window({
+                    title: '修改电梯',
+                    iconCls: 'icon-edit',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+                id = rowData.id;
+                $('#id').numberbox('setValue', parseFloat(rowData.id));
+                $('#elevatorname').val(rowData.elevator_name);
+                $('#floornum').numberbox('setValue', parseFloat(rowData.floor_num));
+                $('#gid').numberbox('setValue', parseFloat(rowData.gid));
+                $('#qishi').numberbox('setValue', parseFloat(rowData.start_floor));
+                $('#com').combobox('setValue', parseFloat(rowData.com_type));
+                $('#ck').combobox('setValue', parseFloat(rowData.com));
+                $('#com').combobox({
+                    onChange: function (newValue, oldValue) {
+                        if (newValue == "01") {
+                            $('#ck').combobox("enable");
+                            $('#ck').combobox('setValue', parseFloat(rowData.com));
+                        }
+                        if (newValue == "02") {
+                            $('#ck').combobox("disable");
+                            $('#ck').combobox("setValue", "");
+                        }
+                    }
+                });
+                $('#id').numberbox().next('span').find('input').select();
+            }
+        }, {
+            text: "增加", iconCls: "icon-add", handler: function () {
+                id = null;
+                $('#elevatorname').val('');
+                $('#gid').numberbox('setValue', "");
+                $('#qishi').numberbox('setValue', "");
+                $('#ck').combobox('setValue', "");
+                $('#com').combobox('setValue', "");
+                $('#com').combobox({
+                    onChange: function (newValue, oldValue) {
+                        if (newValue == "01") {
+                            $('#ck').combobox("enable");
+                            $('#ck').combobox("setValue", "");
+                        }
+                        if (newValue == "02") {
+                            $('#ck').combobox("disable");
+                            $('#ck').combobox("setValue", "");
+                        }
+                    }
+                });
+                $('#ip').val('127.0.0.1');
+                Ajax(true, tk["GetTkElevatorMaxFloorNum"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#floornum').numberbox('setValue', data.Data);
+                });
+                Ajax(true, tk["GetTkElevatorMaxid"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#id').numberbox('setValue', data.Data + 1);
+                    $('#id').numberbox().next('span').find('input').select();
+                });
+                $('#win').window({
+                    title: '新增电梯',
+                    iconCls: 'icon-add',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+            }
+        }, {
+            text: "查询", iconCls: "icon-search", handler: function () {
+                loaddata($("#text").val());
+            }
+        }],
+        onSortColumn: function (sort, order) {
+        },
+        onDblClickCell: function (rowIndex, field, value) {
+            var rowData = jsondata.rows[rowIndex];
+            if (rowData == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            $('#win').window({
+                title: '修改电梯',
+                iconCls: 'icon-edit',
+                maximizable: false,
+                minimizable: false
+            });
+            $('#win').window('open');
+            id = rowData.id;
+            $('#id').numberbox('setValue', parseFloat(rowData.id));
+            $('#elevatorname').val(rowData.elevator_name);
+            $('#floornum').numberbox('setValue', parseFloat(rowData.floor_num));
+            $('#gid').numberbox('setValue', parseFloat(rowData.gid));
+            $('#ck').combobox('setValue', parseFloat(rowData.com));
+            $('#com').combobox({
+                onChange: function (newValue, oldValue) {
+                    if (newValue == "01") {
+                        $('#ck').combobox("enable");
+                        $('#ck').combobox('setValue', parseFloat(rowData.com));
+                    }
+                    if (newValue == "02") {
+                        $('#ck').combobox("disable");
+                        $('#ck').combobox("setValue", "");
+                    }
+                }
+            });
+            $('#qishi').numberbox('setValue', parseFloat(rowData.start_floor));
+            $('#com').combobox('setValue', parseFloat(rowData.com_type));
+            $('#id').numberbox().next('span').find('input').select();
+        }
+    });
+    $("#search").click(function () {
+        loaddata($("#text").val());
+    });
+    $("#close").click(function () {
+        $('#win').window('close');
+    });
+    $("#save").click(function () {
+        if ($("#elevatorname").val() == "") {
+            $.messager.alert("提示", "梯名不能为空", "error", function () {
+                $('#elevatorname').select();
+            });
+            return;
+        }
+        if (id == null) {//新增
+            Ajax(true, tk["ExistTkElevator"], { LoginID: LocalID, id: $("#id").val() }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                if (data.Data) {
+                    $.messager.alert("提示", "梯号已存在", "error", function () {
+                        $('#id').select();
+                    });
+                    return;
+                }
+                Ajax(true, tk["NewTkElevator"], { LoginID: LocalID, id: $("#id").val(), elevator_name: $("#elevatorname").val(),
+                    floor_num: $("#floornum").val(), gid: $("#gid").val(), com: $("#ck").combobox("getValue"), start_floor: $("#qishi").val(), com_type: $("#com").combobox("getValue")
+                }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        $('#id').numberbox().next('span').find('input').select();
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win').window('close');
+                    loaddata($("#text").val());
+                });
+            });
+        }
+        else {//修改
+            Ajax(true, tk["UpdateTkElevator"], { LoginID: LocalID, oldid: id, id: $("#id").val(), elevator_name: $("#elevatorname").val(),
+                floor_num: $("#floornum").val(), gid: $("#gid").val(), com: $("#ck").combobox("getValue"), start_floor: $("#qishi").val(), com_type: $("#com").combobox("getValue")
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#id').numberbox().next('span').find('input').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+                $('#win').window('close');
+                loaddata($("#text").val());
+            });
+        }
+    });
+    $('#win').window('close');
+    loaddata($("#text").val());
+});
+function loaddata(elevatorname) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, tk["GetTkElevatorList"], { LoginID: LocalID, elevator_name: elevatorname }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            $('#text').select();
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+}
+$.extend($.fn.validatebox.defaults.rules, {
+    CHS: {
+        validator: function (value, param) {
+            return /^[\u0391-\uFFE5]+$/.test(value);
+        },
+        message: '请输入汉字'
+    },
+    english: {// 验证英语
+        validator: function (value) {
+            return /^[A-Za-z]+$/i.test(value);
+        },
+        message: '请输入英文'
+    },
+    ip: {// 验证IP地址
+        validator: function (value) {
+            return /\d+\.\d+\.\d+\.\d+/.test(value);
+        },
+        message: 'IP地址格式不正确'
+    },
+    ZIP: {
+        validator: function (value, param) {
+            return /^[0-9]\d{5}$/.test(value);
+        },
+        message: '邮政编码不存在'
+    },
+    QQ: {
+        validator: function (value, param) {
+            return /^[1-9]\d{4,10}$/.test(value);
+        },
+        message: 'QQ号码不正确'
+    },
+    mobile: {
+        validator: function (value, param) {
+            return /^(?:13\d|15\d|18\d)-?\d{5}(\d{3}|\*{3})$/.test(value);
+        },
+        message: '手机号码不正确'
+    },
+    tel: {
+        validator: function (value, param) {
+            return /^(\d{3}-|\d{4}-)?(\d{8}|\d{7})?(-\d{1,6})?$/.test(value);
+        },
+        message: '电话号码不正确'
+    },
+    mobileAndTel: {
+        validator: function (value, param) {
+            return /(^([0\+]\d{2,3})\d{3,4}\-\d{3,8}$)|(^([0\+]\d{2,3})\d{3,4}\d{3,8}$)|(^([0\+]\d{2,3}){0,1}13\d{9}$)|(^\d{3,4}\d{3,8}$)|(^\d{3,4}\-\d{3,8}$)/.test(value);
+        },
+        message: '请正确输入电话号码'
+    },
+    number: {
+        validator: function (value, param) {
+            return /^[0-9]+.?[0-9]*$/.test(value);
+        },
+        message: '请输入数字'
+    },
+    money: {
+        validator: function (value, param) {
+            return (/^(([1-9]\d*)|\d)(\.\d{1,2})?$/).test(value);
+        },
+        message: '请输入正确的金额'
+
+    },
+    mone: {
+        validator: function (value, param) {
+            return (/^(([1-9]\d*)|\d)(\.\d{1,2})?$/).test(value);
+        },
+        message: '请输入整数或小数'
+
+    },
+    integer: {
+        validator: function (value, param) {
+            return /^[+]?[1-9]\d*$/.test(value);
+        },
+        message: '请输入最小为1的整数'
+    },
+    integ: {
+        validator: function (value, param) {
+            return /^[+]?[0-9]\d*$/.test(value);
+        },
+        message: '请输入整数'
+    },
+    range: {
+        validator: function (value, param) {
+            if (/^[1-9]\d*$/.test(value)) {
+                return value >= param[0] && value <= param[1]
+            } else {
+                return false;
+            }
+        },
+        message: '输入的数字在{0}到{1}之间'
+    },
+    minLength: {
+        validator: function (value, param) {
+            return value.length >= param[0]
+        },
+        message: '至少输入{0}个字'
+    },
+    maxLength: {
+        validator: function (value, param) {
+            return value.length <= param[0]
+        },
+        message: '最多{0}个字'
+    },
+    //select即选择框的验证
+    selectValid: {
+        validator: function (value, param) {
+            if (value == param[0]) {
+                return false;
+            } else {
+                return true;
+            }
+        },
+        message: '请选择'
+    },
+    idCode: {
+        validator: function (value, param) {
+            return /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value);
+        },
+        message: '请输入正确的身份证号'
+    },
+    loginName: {
+        validator: function (value, param) {
+            return /^[\u0391-\uFFE5\w]+$/.test(value);
+        },
+        message: '登录名称只允许汉字、英文字母、数字及下划线。'
+    },
+    equalTo: {
+        validator: function (value, param) {
+            return value == $(param[0]).val();
+        },
+        message: '两次输入的字符不一至'
+    },
+    englishOrNum: {// 只能输入英文和数字
+        validator: function (value) {
+            return /^[a-zA-Z0-9_ ]{1,}$/.test(value);
+        },
+        message: '请输入英文、数字、下划线或者空格'
+    },
+    xiaoshu: {
+        validator: function (value) {
+            return /^(([1-9]+)|([0-9]+\.[0-9]{1,2}))$/.test(value);
+        },
+        message: '最多保留两位小数！'
+    },
+    ddPrice: {
+        validator: function (value, param) {
+            if (/^[1-9]\d*$/.test(value)) {
+                return value >= param[0] && value <= param[1];
+            } else {
+                return false;
+            }
+        },
+        message: '请输入1到100之间正整数'
+    },
+    jretailUpperLimit: {
+        validator: function (value, param) {
+            if (/^[0-9]+([.]{1}[0-9]{1,2})?$/.test(value)) {
+                return parseFloat(value) > parseFloat(param[0]) && parseFloat(value) <= parseFloat(param[1]);
+            } else {
+                return false;
+            }
+        },
+        message: '请输入0到100之间的最多俩位小数的数字'
+    },
+    rateCheck: {
+        validator: function (value, param) {
+            if (/^[0-9]+([.]{1}[0-9]{1,2})?$/.test(value)) {
+                return parseFloat(value) > parseFloat(param[0]) && parseFloat(value) <= parseFloat(param[1]);
+            } else {
+                return false;
+            }
+        },
+        message: '请输入0到1000之间的最多俩位小数的数字'
+    }
+});
+</script>
+
+</head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:60px; padding:2px;">
+    梯名：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'Enter Room Name.'" />
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div style="width:100%; height:800px;">
+		<table id="dg"> </table>  
+</div>	
+<div id="win" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'" style="width:300px;height:350px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:10px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>梯号:</td>
+				<td><input id="id" class="easyui-numberbox textbox" data-options="prompt:'请输入梯号',required:true,precision:0,validType:'length[1,2]'" /></td>
+			</tr>
+			<tr>
+				<td>梯名:</td>
+				<td><input id="elevatorname" class="easyui-validatebox textbox" data-options="prompt:'请输入梯名',required:true,validType:'length[1,6]'" /></td>
+			</tr>
+			<tr>
+				<td>层数:</td>
+				<td><input id="floornum" class="easyui-numberbox textbox" data-options="prompt:'请输入层数',required:true,precision:0,validType:'length[1,3]'" /></td>
+			</tr>
+            <tr>
+				<td>联网方式:</td>
+				<td><select id="com" class="easyui-combobox"  style="width:150px;height:25px"> 
+                <option value="01">485</option>
+                <option value="02">以太网</option></select></td>
+
+			</tr>
+            <tr>
+				<td>串口:</td>
+				<td><select id="ck" class="easyui-combobox"  style="width:150px;height:25px"> 
+                <option value="1">COM1</option>
+                <option value="2">COM2</option>
+                <option value="3">COM3</option> 
+                <option value="4">COM4</option>
+                <option value="5">COM5</option>
+                <option value="6">COM6</option>
+                <option value="7">COM7</option>
+                <option value="8">COM8</option>
+                <option value="9">COM9</option></select></td>
+
+			</tr>
+			<tr>
+				<td>局号:</td>
+				<td><input id="gid" class="easyui-numberbox textbox" data-options="prompt:'请输入局号',required:true,validType:''" /></td>
+
+			</tr>
+            <tr>
+				<td>起始层数:</td>
+				<td><input id="qishi" class="easyui-numberbox textbox" data-options="prompt:'请输入起始层数',required:true,precision:0,validType:'length[1,3]'" /></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

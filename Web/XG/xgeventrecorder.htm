@@ -1,0 +1,403 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+       <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var a;
+    var jsondata = { "total": 0, "rows": [] };
+    var sortName = "id";
+    var sortOrder = "asc";
+    var PageSize = 10;
+    var PageNum = 1;
+    $(function () {
+        var curr_time = new Date();
+        var strDate = curr_time.getFullYear() + "-";
+        strDate += curr_time.getMonth() + 1 + "-";
+        strDate += curr_time.getDate() - 1;
+        strDate += " " + curr_time.getHours() + ":";
+        strDate += curr_time.getMinutes() + ":";
+        strDate += curr_time.getSeconds();
+        $("#dt1").datetimebox("setValue", strDate);
+        //        Ajax(true, global.sys["GetAllDepartUserTree"], { LoginID: LocalID, iconCls: 'icon-tool', iconCls1: 'icon-house', root: '0' }, function (data) {
+        //            if (!data.Success) {
+        //                alert(data.Message);
+        //                return;
+        //            }
+        //            $('#use').combotree({
+        //                data: JSON2.parse(data.Data),
+        //                editable: false
+        //            });
+        //        });
+        Ajax(true, global.xg["GetXGMngRoadList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'id': '', 'road_name': '全部' };
+            data.Data.push(temp);
+            $('#xl').combobox({
+                data: data.Data,
+                valueField: "id",
+                textField: "road_name",
+                editable: false
+            });
+        });
+        Ajax(true, global.xg["GetXGWindowList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            var temp = { 'window_num': '', 'window_name': '全部' };
+            data.Data.push(temp);
+            $('#xd').combobox({
+                data: data.Data,
+                valueField: "window_num",
+                textField: "window_name",
+                editable: false
+            });
+
+        });
+        $('#com').combobox({
+            onChange: function (newValue, oldValue) {
+                if (newValue == "text") {
+                    $('#to').show();
+                }
+                else { $('#to').hide(); }
+            }
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "user_name",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            sortName: sortName,
+            sortOrder: sortOrder,
+            columns: [[{
+                field: 'road_name',
+                title: '线路名',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'mach_id',
+                title: '巡检点',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'window_name',
+                title: '巡检点名',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'event_cardid',
+                title: '卡号',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'event_date',
+                title: '时间',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'user_name',
+                title: '用户',
+                width: 80,
+                sortable: true
+            }, {
+                field: 'event_reason',
+                title: '状态',
+                width: 80,
+                sortable: true,
+                formatter: function (value, row) {
+                    if (value == "xx") {
+                        return '有效';
+                    }
+                    if (value == "yy") {
+                        return '已处理';
+                    }
+                    else {
+                        return '未处理';
+                    }
+                }
+            }]],
+            //排列行
+            onSortColumn: function (sort, order) {
+                sortName = sort;
+                sortOrder = order;
+                loaddata($("#dt1").datetimebox("getValue"), $("#dt2").datetimebox("getValue"),$("#xl").combobox("getValue"),$("#xd").combobox("getValue"),$("#use").val());
+            }
+        });
+        $("#all").change(function () {
+            if ($("#all").prop("checked")) {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", true);
+            }
+            else {
+                var d = $("#do").find("input:checkbox");
+                d.prop("checked", false);
+            }
+        });
+        $('#win1').window('close');
+        $("#shengcheng").click(function () {
+            $('#win1').window('open');
+        });
+        $("#save").click(function () {
+            var you = "";
+            if ($("#id").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "depart_name";
+            }
+            if ($("#bm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "user_name";
+            }
+            if ($("#gh").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "event_cardid";
+            }
+            if ($("#xm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "window_name";
+            }
+            if ($("#indate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "mach_id";
+            }
+            if ($("#outdate").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "road_name";
+            }
+            if ($("#mm").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "event_reason";
+            }
+            if ($("#zt").prop("checked")) {
+                if (you != "") {
+                    you += "|";
+                } you += "event_date";
+            }
+            if (you == "") {
+                alert("未选择目录项！");
+                return;
+            }
+            var BeginTime = $("#dt1").datetimebox("getValue");
+            var EndTime = $("#dt2").datetimebox("getValue");
+            var xl = $("#xl").combobox("getValue");
+            var xd = $("#xd").combobox("getValue");
+            var use = $("#use").val();
+            var yous = "";
+            if ($("#five").is(":checked")) {
+                yous += "xx";
+            }
+
+            if ($("#six").is(":checked")) {
+                if (yous != "") {
+                    yous += "|";
+                }
+                yous += "yy";
+            }
+            if ($("#sun").is(":checked")) {
+                if (yous != "") {
+                    yous += "|";
+                }
+                yous += "30|00|15|16|17|18|19|20|21|22|23|24|25|26|27";
+            }
+            var fgf = $('#fgf').combobox('getValue');
+            var kinds = $('#com').combobox('getValue');
+            var yilai = $('#yilai').combobox('getValue');
+            var paixu = $('#paixu').combobox('getValue');
+            if (kinds == "") {
+                alert("未选择格式！");
+                return;
+            }
+            if (kinds == "text") {
+                var url = RTURL + global.export["ExportXGEventRecorderPageFile"] + "?LoginID=" + LocalID + "&user_name=" + use + "&mach_id=" + xd + "&road_id=" + xl + "&event_reason=" + yous + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+            else {
+                var url = RTURL + global.export["ExportXGEventRecorderPageFile"] + "?LoginID=" + LocalID + "&user_name=" + use + "&mach_id=" + xd + "&road_id=" + xl + "&event_reason=" + yous + "&BeginTime=" + BeginTime + "&EndTime=" + EndTime + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+                window.open(url);
+            }
+        });
+        $("#close").click(function () {
+            $('#win1').window('close');
+        });
+        loaddata( $("#dt1").datetimebox("getValue"), $("#dt2").datetimebox("getValue"));
+        $("#search").click(function () {
+            var BeginTime = $("#dt1").datetimebox("getValue");
+            var EndTime = $("#dt2").datetimebox("getValue");
+            var xl = $("#xl").combobox("getValue");
+            var xd = $("#xd").combobox("getValue");
+            var use = $("#use").val();
+            var you = "";
+            if ($("#five").is(":checked")) {
+                you += "xx";
+            }
+            
+            if ($("#six").is(":checked")) {
+                if (you != "") {
+                    you += "|";
+                }
+                you += "yy";
+            }
+            if ($("#sun").is(":checked")) {
+                if (you != "") {
+                    you += "|";
+                }
+                you += "30|00|15|16|17|18|19|20|21|22|23|24|25|26|27";
+            }
+            loaddata(BeginTime, EndTime, xl, xd, use,you);
+        });
+    });
+    function clkdada() {
+        var databox = $("#do").find("input:checkbox");
+        var j = 0;
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                j++;
+            }
+        }
+        if (j <= 2) {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].checked) {
+                    databox[i].disabled = true;
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < databox.length; i++) {
+                if (databox[i].disabled) {
+                    databox[i].disabled = false;
+                }
+            }
+        }
+    }
+    function loaddata(BeginTime, EndTime,xl,xd,use,you) {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.xg["GetXGEventRecorderPageList"], { LoginID: LocalID,user_name:use,mach_id:xd,event_reason:you,road_id:xl, BeginTime: BeginTime, EndTime: EndTime, sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Ex;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            if (jsondata.total == 0) {
+                PageNum = 1;
+            }
+            var p = datagrid.datagrid('getPager');
+            $(p).pagination({
+                beforePageText: '第', //页数文本框前显示的汉字 
+                afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+                displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total == 0 ? 0 : 1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+                onSelectPage: function (pageNumber, pageSize) {
+                    PageSize = pageSize;
+                    PageNum = pageNumber;
+                    if (PageNum < 1) {
+                        PageNum = 1;
+                    }
+                    loaddata(BeginTime, EndTime, xl, xd, use, you);
+                }
+            });
+        });
+    }
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="原始记录" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true"style="">
+<div style="width:100%; height:400px;">
+<div data-options="region:'north',collapsible:false,border:false" style="padding:2px;" >
+时间从<input class="easyui-datetimebox" id="dt1"data-options="required:true " style="width:150px"/> 
+到<input class="easyui-datetimebox" id="dt2"data-options="required:true"value="${notices.release_time}" style="width:150px"/> 
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng" >导出</a><br/>
+线路：<select id="xl" class="easyui-combobox"  style="width:120px;height:20px"> </select>
+巡点:<select id="xd" class="easyui-combobox"  style="width:120px;height:20px"> </select>
+用户:<input id="use" class="easyui-validatebox textbox" data-options=" validType: 'length[1,10]', prompt: '请输入用户名'" style="width:120px;height:20px"/><br/>
+<input type="checkbox" name="week" id="five" checked ="checked"/>有效<input type="checkbox" name="week" id="six" />无效<input type="checkbox" name="week" id="sun" />未处理
+</div>
+ <div data-options="region:'south',collapsible:false,border:false" style="padding:2px;" >
+		<table id="dg"style="" data-options="pagination:true"> </table>  
+        </div>
+</div>
+     </div>
+     </div>
+     <div id="win1" class="easyui-window" title="导出" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:200px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+    <div style="padding:5px;">
+    排序依赖：<select id="yilai" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="depart_name">部门</option>
+                <option value="user_name">用户</option>
+                <option value="event_cardid">卡号</option>
+                <option value="window_name">巡检点</option>
+                <option value="mach_id">巡检点号</option>
+                <option value="road_name">线路名</option>
+                <option value="event_reason">状态</option>
+                <option value="event_date">时间</option></select>
+    排序类型：<select id="paixu" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="asc">正序</option>
+                <option value="desc">倒序</option></select>
+            格式：<select id="com" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="text">text</option>
+                <option value="word">word</option>
+                <option value="excel">excel</option></select>
+			<input type="checkbox" id="all" checked="checked" />全部</div>
+        <div id="do" style="padding:5px;">
+        <div id="to" style="padding:5px;">
+                分隔符：<select id="fgf" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="|">竖杠</option>
+                <option value=" ">空格</option></select></div>
+			<input type="checkbox" id="id"checked="checked"name='databox' onclick='clkdada();' />部门
+            <input type="checkbox" id="bm"checked="checked" name='databox' onclick='clkdada();' />用户
+			<input type="checkbox" id="gh" checked="checked" name='databox'onclick='clkdada();'/>卡号
+            <input type="checkbox" id="xm" checked="checked"name='databox'onclick='clkdada();' />巡检点
+			<input type="checkbox" id="indate"checked="checked" name='databox'onclick='clkdada();' />巡检点号
+            <input type="checkbox" id="outdate" checked="checked" name='databox'onclick='clkdada();' />线路名
+			<input type="checkbox" id="mm" checked="checked"name='databox' onclick='clkdada();'/>状态
+            <input type="checkbox" id="zt" checked="checked" name='databox'onclick='clkdada();' />时间
+            </div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">取消</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">确定</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

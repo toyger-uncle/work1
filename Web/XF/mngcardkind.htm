@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var id = null; 
+var jsondata = {"total":0,"rows":[]};
+$(function () {
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        //pagination: true, //显示分页  
+        //pageSize: 20, //分页大小  
+        //pageList: [20, 50, 100], //每页的个数  
+        //fit: true, //自动补全  
+        fitColumns: true,
+        striped: true,
+        iconCls: "icon-save", //图标  
+        title: "卡类型管理",
+        collapsible:true,
+        remotesort: false,
+        singleSelect: true,
+        rownumbers: true,
+        //sortName:"id",
+        //sortOrder: 'desc',
+        columns: [[{
+            field: 'id',
+            title: '编号',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'card_kind',
+            title: '类型',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'rate',
+            title: '折扣',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'limit_money',
+            title: '单笔限额',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'meal_money',
+            title: '一餐限额',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'day_money',
+            title: '一天限额',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'min_money',
+            title: '抵金',
+            //sortable: true,
+            width: 100
+        }]],
+        toolbar: [{
+            text: "修改", iconCls: "icon-edit", handler: function () {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win').window({
+                    title: '修改卡类型',
+                    iconCls: 'icon-edit',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+                id = rowData.id;
+                $('#cardkind').val(rowData.card_kind);
+                $('#rate').numberbox('setValue', parseInt(rowData.rate));
+                $('#limitmoney').numberbox('setValue', parseFloat(rowData.limit_money));
+                $('#mealmoney').numberbox('setValue', parseFloat(rowData.meal_money));
+                $('#daymoney').numberbox('setValue', parseFloat(rowData.day_money));
+                $('#minmoney').numberbox('setValue', parseFloat(rowData.min_money));
+                $('#cardkind').select();
+            }
+        }, {
+            text: "查询", iconCls: "icon-search", handler: function () {
+                loaddata($("#text").val());
+            }
+        }],
+        onSortColumn: function (sort, order) {
+        },
+        onDblClickCell: function (rowIndex, field, value) {
+            var rowData = jsondata.rows[rowIndex];
+            if (rowData == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            $('#win').window({
+                title: '修改卡类型',
+                iconCls: 'icon-edit',
+                maximizable: false,
+                minimizable: false
+            });
+            $('#win').window('open');
+            id = rowData.id;
+            $('#cardkind').val(rowData.card_kind);
+            $('#rate').numberbox('setValue', parseInt(rowData.rate));
+            $('#limitmoney').numberbox('setValue', parseFloat(rowData.limit_money));
+            $('#mealmoney').numberbox('setValue', parseFloat(rowData.meal_money));
+            $('#daymoney').numberbox('setValue', parseFloat(rowData.day_money));
+            $('#minmoney').numberbox('setValue', parseFloat(rowData.min_money));
+            $('#cardkind').select();
+        }
+    });
+    $("#search").click(function () {
+        loaddata($("#text").val());
+    });
+    $("#close").click(function () {
+        $('#win').window('close');
+    });
+    $("#save").click(function () {
+        if ($("#cardkind").val() == "") {
+            $.messager.alert("提示", "类型名不能为空", "error", function () {
+                $('#cardkind').select();
+            });
+            return;
+        }
+        Ajax(true, sys["UpdateMngCardKind"], { LoginID: LocalID, id: id, card_kind: $("#cardkind").val(),
+            rate: $("#rate").val(), limit_money: $("#limitmoney").val(), meal_money: $("#mealmoney").val(),
+            day_money: $("#daymoney").val(), min_money: $("#minmoney").val()}, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                $('#cardkind').select();
+                return;
+            }
+            $.messager.alert("提示", "保存成功", "info");
+            $('#win').window('close');
+            loaddata($("#text").val());
+        });
+    });
+    $('#win').window('close');
+    loaddata($("#text").val());
+});
+function loaddata(cardkind) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, sys["GetMngCardKindList"], { LoginID: LocalID, card_kind: cardkind }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            $('#text').select();
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+}
+</script>
+
+</head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:60px; padding:2px;">
+    类型：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'Enter Room Name.'" />
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div style="width:100%; height:800px;">
+		<table id="dg"> </table>  
+</div>	
+<div id="win" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'" style="width:300px;height:300px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:10px;">
+        <table cellpadding="5">
+			<tr>
+				<td>类型名:</td>
+				<td><input id="cardkind" class="easyui-validatebox textbox" data-options="prompt:'请输入类型名',required:true,validType:'length[1,6]'" /></td>
+			</tr>
+			<tr>
+				<td>折扣:</td>
+				<td><input id="rate" class="easyui-numberbox textbox" data-options="prompt:'请输入折扣',required:true,precision:0,validType:'length[1,3]'" /></td>
+			</tr>
+			<tr>
+				<td>单笔限额:</td>
+				<td><input id="limitmoney" class="easyui-numberbox textbox" data-options="prompt:'请输入单笔限额',required:true,precision:2,groupSeparator:',',decimalSeparator:'.',validType:'length[1,10]'" /></td>
+			</tr>
+			<tr>
+				<td>一餐限额:</td>
+				<td><input id="mealmoney" class="easyui-numberbox textbox" data-options="prompt:'请输入一餐限额',required:true,precision:2,groupSeparator:',',decimalSeparator:'.',validType:'length[1,10]'" /></td>
+			</tr>
+			<tr>
+				<td>一天限额:</td>
+				<td><input id="daymoney" class="easyui-numberbox textbox" data-options="prompt:'请输入一天限额',required:true,precision:2,groupSeparator:',',decimalSeparator:'.',validType:'length[1,10]'" /></td>
+			</tr>
+			<tr>
+				<td>抵金:</td>
+				<td><input id="minmoney" class="easyui-numberbox textbox" data-options="prompt:'请输入抵金',required:true,precision:2,groupSeparator:',',decimalSeparator:'.',validType:'length[1,10]'" /></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

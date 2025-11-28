@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var aa;
+        var jsondata = { "total": 0, "rows": [] };
+        $(function () {
+            Ajax(true, global.xf["GetXFMerchantInfoList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#merchant_id').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'name'
+                });
+            });
+
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "",
+                collapsible: true,
+                remotesort: false,
+                rownumbers: true,
+                columns: [[{
+                    field: 'group_name',
+                    title: '班组名',
+                    width: '33%'
+                }, {
+                    field: 'merchant_id',
+                    title: '商户名',
+                    width: '33%'
+                }, {
+                    field: 'grp_type',
+                    title: '类型',
+                    width: '33%'
+                }]]
+            });
+            loaddata();
+            $('#win1').window('close');
+            $("#close").click(function () {
+                $('#win1').window('close');
+            });
+            $("#add").click(function () {
+                $('#win1').window('open');
+                $("#group_name").val("");
+                $("#merchant_id").combobox("setValue", "");
+                $("#grp_type").combobox("setValue", "");
+                aa = 0;
+            });
+            $("#update").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win1').window('open');
+                $("#group_name").val(rows.group_name);
+                $("#merchant_id").combobox(rows.merchant_id);
+                $("#grp_type").combobox(rows.grp_type);
+                aa = 1;
+            });
+            $("#save").click(function () {
+                if (aa == 0) {
+                    var group_name = $("#group_name").val();
+                    var merchant_id = $('#merchant_id').combobox("getValue");
+                    var grp_type = $('#grp_type').combobox("getValue");
+                    if (group_name == "") {
+                        alert("班组名不能为空！");
+                        return;
+                    }
+                    Ajax(true, global.xf["NewXFMngWindowGrp"], { LoginID: LocalID, group_name: group_name, merchant_id: merchant_id, grp_type: grp_type }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "添加成功", "info");
+                        $('#win1').window('close');
+                        loaddata();
+                    });
+                }
+                if (aa == 1) {
+                    var rows = datagrid.datagrid('getSelected');
+                    var id = rows.id;
+                    var group_name = $("#group_name").val(rows.group_name);
+                    var merchant_id = $("#merchant_id").combobox(rows.merchant_id);
+                    var grp_type = $("#grp_type").combobox(rows.grp_type);
+                    if (group_name == "") {
+                        alert("班组名不能为空！");
+                        return;
+                    }
+                    Ajax(true, global.xf["UpdateXFMngWindowGrp"], { LoginID: LocalID, group_name: group_name, merchant_id: merchant_id, grp_type: grp_type, id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "修改成功", "info");
+                        $('#win1').window('close');
+                        loaddata();
+                    });
+                }
+            });
+
+            $("#remove").click(function () {
+                var rowData = datagrid.datagrid('getSelections');
+                var ids;
+                if (rowData == null || rowData.length == 0) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                    if (data) {
+                        for (var i = 0; i < rowData.length; i++) {
+                            ids = rowData[i].id;
+                            Ajax(true, global.xf["RemoveXFMngWindowGrp"], { LoginID: LocalID, id: ids }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                loaddata();
+                            });
+                        }
+                        $.messager.alert("提示", "删除成功", "info");
+                    }
+                });
+            });
+        });
+
+
+        function loaddata() {
+            datagrid.datagrid('unselectAll');
+            Ajax(true, global.xf["GetXFMngWindowGrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+            });
+        }
+    </script>
+    <div class="easyui-layout">
+        <a class="easyui-linkbutton" data-options="iconCls:'icon-add'" href="javascript:void(0)"
+            id="add" style="width: 80px">添加</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-edit'"
+                href="javascript:void(0)" id="update" style="width: 80px">修改</a> <a class="easyui-linkbutton"
+                    data-options="iconCls:'icon-remove'" href="javascript:void(0)" id="remove" style="width: 80px">
+                    删除</a>
+        <div data-options="region:'left',split:true,collapsible:false" style="width: 100%;">
+            <table id="dg">
+            </table>
+        </div>
+    </div>
+</body>
+</html>

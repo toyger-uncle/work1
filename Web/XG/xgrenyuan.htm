@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+     <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+</head>
+<body>
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var doordivHTML = "";
+    var chang;
+    var rool;
+    var datagrid3;
+    var jsondata3 = { "total": 0, "rows": [] };
+    $(function () {
+
+        Ajax(true, global.mj["GetMJWhereGroupList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#qy').combobox({
+                data: data.Data,
+                valueField: 'address_group_id',
+                textField: 'address_group',
+                onLoadSuccess: function () {
+                    var data = $('#qy').combobox('getData');
+                    $("#qy").combobox('select', data[0].address_group_id);
+                },
+                onChange: function (newValue, oldValue) {
+                    var divHTML = "";
+                    var clientWidth = document.body.clientWidth;
+                    var clientHeight = document.body.clientHeight;
+                    var k = clientWidth / 10;
+                    Ajax(true, global.mj["GetMJControlDoorList"], { LoginID: LocalID, address_group_id: newValue }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        chang = data.Data;
+                        if (chang != undefined) {
+                            for (var i = 0; i < chang.length; i++) {
+                                var x = chang[i].pointx;
+                                var y = chang[i].pointy;
+                                var px = Math.round(x * clientWidth / 10000);
+                                var py = Math.round(y * clientHeight / 10000);
+                                divHTML += "<div id='" + chang[i].id + "' draggable='true' disable='false' style='top:";
+                                if (x == "" || y == "") { divHTML += "0px; left:0px;width:20px; height:20px;display: inline;position:absolute;className:easyui-draggable; background-image:"; }
+                                else { divHTML += (py - 20) + "px; left:" + px + "px;width:20px; height:20px;display: inline;position:absolute; className:easyui-draggable; background-image:"; }
+                                if (chang[i].door_status == "1") {
+                                    divHTML += "url(../../Images/dooropenmin.gif);";
+                                }
+                                else {
+                                    divHTML += "url(../../Images/doorclosemin.gif);";
+                                }
+                                divHTML += "cursor:move;' title='" + chang[i].door_name + "'";
+                                if (status == "1") {
+                                    divHTML += "onmousedown='GetStartPos();GetDiv(this)'";
+                                }
+                                else {
+                                    divHTML += "onclick='kaiguan(this);'";
+                                }
+                                divHTML += "></div>";
+                            }
+                            if (divHTML != doordivHTML) {
+                                doordivHTML = divHTML;
+                                var doordiv = document.getElementById("doordiv");
+                                doordiv.innerHTML = doordivHTML;
+                                jilu();
+                            }
+                        }
+                         
+                    });
+                }
+            });
+        });
+
+    });
+
+    function jilu() {
+        for (var i = 0; i < chang.length; i++) {
+            $("#" + chang[i].id).draggable({
+                onStopDrag: function (e) {
+                    var clientWidth = document.body.clientWidth;
+                    var clientHeight = document.body.clientHeight;
+                    var kuan = Math.round(e.clientX * 10000 / clientWidth);
+                    var gao = Math.round(e.clientY * 10000 / clientHeight);
+                    var ids = e.target.id;
+                    Ajax(true, global.mj["UpdateMJControlDoorXY"], { LoginID: LocalID, id: ids, pointx: kuan, pointy: gao }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                    });
+                }
+            });
+        }
+    }
+    </script>
+<div class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',collapsible:false" title=""style="padding:2px;z-index: 9; position: relative; ">
+区域：<select id="qy" class="easyui-combobox"  style="width:100px;height:20px"></select>
+	</div>
+    <div id="doordiv" data-options="region:'center',collapsible:false" title=""style="width:90%;z-index: 9; position: relative; ">
+	<div title="1111" class="easyui-draggable" id="00008" style='left: 269px; top: 92px; width: 20px; height: 20px; display: inline; position: absolute; cursor: move; background-image: url("../../Images/doorclosemin.gif");' onclick="kaiguan(this);"></div>
+    </div> 
+	</div>
+</body>
+</html>

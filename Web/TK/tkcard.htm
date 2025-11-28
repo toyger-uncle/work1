@@ -1,0 +1,385 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <link href="../../Scripts/jquery-easyui/themes/IconExtension.css" rel="stylesheet"
+        type="text/css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var jsondata = { "total": 0, "rows": [] };
+var sortName = "card_id";
+var sortOrder = "asc";
+var PageSize = 10;
+var PageNum = 1;
+$(function () {
+    $('#com').combobox({
+        onChange: function (newValue, oldValue) {
+            if (newValue == "text") {
+                $('#to').show();
+            }
+            else { $('#to').hide(); }
+        }
+    });
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        pagination: true, //显示分页  
+        pageSize: PageSize, //分页大小  
+        pageList: [10, 20, 50, 100, 1000], //每页的个数  
+        //fit: true, //自动补全  
+        fitColumns: true,
+        striped: true,
+        iconCls: "icon-search", //图标  
+        title: "卡展示",
+        collapsible: true,
+        remotesort: false,
+        singleSelect: true,
+        //rownumbers:true,
+        sortName: sortName,
+        sortOrder: sortOrder,
+        columns: [[{
+            field: 'card_id',
+            title: '卡号',
+            sortable: true,
+            width: 50
+        }, {
+            field: 'kind_name',
+            title: '类型',
+            sortable: true,
+            width: 70
+        }, {
+            field: 'user_name',
+            title: '用户',
+            sortable: true,
+            width: 80
+        }, {
+            field: 'depart_name',
+            title: '部门',
+            sortable: true,
+            width: 80
+        }, {
+            field: 'elevator_name',
+            title: '所属电梯',
+            sortable: true,
+            width: 80
+        }, {
+            field: 'card_no',
+            title: '梯卡号',
+            sortable: true,
+            width: 60
+        }, {
+            field: 'room_name',
+            title: '房间',
+            sortable: true,
+            width: 80
+        }, {
+            field: 'isused',
+            title: '使用否',
+            sortable: true,
+            width: 30,
+            formatter: function (val, rec) {
+                if (val == "1") {
+                    return '使用';
+                } else {
+                    return "停用";
+                }
+            }
+        }]],
+        onSortColumn: function (sort, order) {
+            sortName = sort;
+            sortOrder = order;
+            loaddata($("#text").val(), $("#combo").combobox("getValue"), $("#isused").combobox("getValue"),
+                $("#card").val(), $("#select").combobox("getValue"), $("#depart").val(), $("#room").val(), $("#cardno").val());
+        }
+    });
+    $("#all").change(function () {
+        if ($("#all").prop("checked")) {
+            var d = $("#do").find("input:checkbox");
+            d.prop("checked", true);
+        }
+        else {
+            var d = $("#do").find("input:checkbox");
+            d.prop("checked", false);
+        }
+    });
+    $('#win1').window('close');
+    $("#shengcheng").click(function () {
+        $('#win1').window('open');
+    });
+    $("#save").click(function () {
+        var you = "";
+        if ($("#id").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "depart_name";
+        }
+        if ($("#bm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "user_name";
+        }
+        if ($("#gh").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "card_id";
+        }
+        if ($("#xm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "kind_name";
+        }
+        if ($("#indate").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "elevator_id";
+        }
+        if ($("#outdate").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "elevator_name";
+        }
+        if ($("#mm").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "room_name";
+        }
+        if ($("#zt").prop("checked")) {
+            if (you != "") {
+                you += "|";
+            } you += "card_no";
+        }
+        if (you == "") {
+            alert("未选择目录项！");
+            return;
+        }
+        var name = $("#text").val();
+        var elevator_id = $('#combo').combobox('getValue');
+        var isused = $("#isused").combobox("getValue");
+        var card = $("#card").val();
+        var kind = $("#select").combobox("getValue");
+        var depart = $("#depart").val();
+        var room = $("#room").val();
+        var cardno = $("#cardno").val();
+        var fgf = $('#fgf').combobox('getValue');
+        var kinds = $('#com').combobox('getValue');
+        var yilai = $('#yilai').combobox('getValue');
+        var paixu = $('#paixu').combobox('getValue');
+        if (kinds == "") {
+            alert("未选择格式！");
+            return;
+        }
+        if (kinds == "text") {
+            var url = RTURL + global.export["ExportTkCardPageFile"] + "?LoginID=" + LocalID + "&user_name=" + name + "&card_id=" + card + "&card_kind=" + kind + "&depart_name=" + depart
+            + "&elevator_id=" + elevator_id + "&isused=" + isused + "&room_name=" + room + "&card_no=" + cardno + "&columname=" + you + "&exporttype=" + kinds + "&di=" + fgf + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+            window.open(url);
+        }
+        else {
+            var url = RTURL + global.export["ExportTkCardPageFile"] + "?LoginID=" + LocalID + "&user_name=" + name + "&card_id=" + card + "&card_kind=" + kind + "&depart_name=" + depart
+            + "&elevator_id=" + elevator_id + "&isused=" + isused + "&room_name=" + room + "&card_no=" + cardno + "&columname=" + you + "&exporttype=" + kinds + "&sortName=" + yilai + "&sortOrder=" + (paixu == "asc" ? false : true) + "&pageSize=" + "100000" + "&pageNum=" + "1";
+            window.open(url);
+        }
+    });
+    $("#close").click(function () {
+        $('#win1').window('close');
+    });
+    $("#search").click(function () {
+        loaddata($("#text").val(), $("#combo").combobox("getValue"), $("#isused").combobox("getValue"),
+                $("#card").val(), $("#select").combobox("getValue"), $("#depart").val(), $("#room").val(), $("#cardno").val());
+    });
+    Ajax(true, tk["GetTkElevatorList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#combo').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'elevator_name'
+        });
+    });
+    Ajax(true, tk["GetTkCardKindList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#select').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'kind_name'
+        });
+    });
+    loaddata($("#text").val(), $("#combo").combobox("getValue"), $("#isused").combobox("getValue"),
+                $("#card").val(), $("#select").combobox("getValue"), $("#depart").val(), $("#room").val(), $("#cardno").val());
+});
+function clkdada() {
+    var databox = $("#do").find("input:checkbox");
+    var j = 0;
+    for (var i = 0; i < databox.length; i++) {
+        if (databox[i].checked) {
+            j++;
+        }
+    }
+    if (j <= 2) {
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].checked) {
+                databox[i].disabled = true;
+            }
+        }
+    }
+    else {
+        for (var i = 0; i < databox.length; i++) {
+            if (databox[i].disabled) {
+                databox[i].disabled = false;
+            }
+        }
+    }
+}
+function loaddata(username, elevator, isused, card, kind, depart, room, cardno) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, tk["GetTkCardPageList"], { LoginID: LocalID, user_name: username, isused: isused,
+        card_id: card, kind_name: kind, depart_name: depart, elevator_name: elevator, room_name: room, card_no: cardno,
+        sortName: sortName, sortOrder: (sortOrder == "asc" ? false : true), pageSize: PageSize, pageNum: PageNum
+    }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            $('#text').select();
+            return;
+        }
+        jsondata.total = data.Ex;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+        if (jsondata.total == 0) {
+            PageNum = 1;
+        }
+        var p = datagrid.datagrid('getPager');
+        $(p).pagination({
+            beforePageText: '第', //页数文本框前显示的汉字 
+            afterPageText: '页    共 ' + Math.ceil(jsondata.total / PageSize) + ' 页',
+            displayMsg: '当前显示 ' + (PageSize * (PageNum - 1) + (jsondata.total==0 ? 0:1)) + ' - ' + (PageSize * (PageNum - 1) + data.Data.length) + ' 条记录   共 ' + jsondata.total + ' 条记录',
+            onSelectPage: function (pageNumber, pageSize) {
+                PageSize = pageSize;
+                PageNum = pageNumber;
+                if (PageNum < 1) {
+                    PageNum = 1;
+                }
+                loaddata($("#text").val(), $("#combo").combobox("getValue"), $("#isused").combobox("getValue"),
+                $("#card").val(), $("#select").combobox("getValue"), $("#depart").val(), $("#room").val(), $("#cardno").val());
+            }
+        });
+    });
+} 
+function myformatter(date) {
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}
+function myformatterx(date) {
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    var d = date.getDate() - 1;
+    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}  
+</script>
+
+</head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:60px; padding:2px;">
+    用户：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'请输入用户名'" style="width:80px;"/>
+    所属电梯：<select id="combo" class="easyui-combobox" style="width:100px"></select>
+    使用否：<select id="isused" class="easyui-combobox" style="width:60px"><option value="" selected>全部</option><option value="1" >使用</option><option value="0" >停用</option></select>
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+<a class="easyui-linkbutton" data-options="iconCls:'exicon-20130406125519344_easyicon_net_16'" href="javascript:void(0)" id="shengcheng" >导出</a>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div class="easyui-panel" title="更多选项" data-options="iconCls:'icon-add',collapsible:true,collapsed:true" style="width:100%;height:60px; padding:5px;">
+    卡号：<input id="card" class="easyui-validatebox textbox" data-options="prompt:'请输入卡号'" style="width:50px;"/>
+    类型：<select id="select" class="easyui-combobox" style="width:100px"></select>
+    部门：<input id="depart" class="easyui-validatebox textbox" data-options="prompt:'请输入部门名'" style="width:80px;"/>
+    房间：<input id="room" class="easyui-validatebox textbox" data-options="prompt:'请输入房间名'" style="width:80px;"/>
+    梯卡号：<input id="cardno" class="easyui-validatebox textbox" data-options="prompt:'请输入梯卡号'" style="width:50px;"/>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div style="width:100%; height:800px;">
+		<table id="dg"> </table>  
+</div>	
+<div id="win1" class="easyui-window" title="导出" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:200px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+    <div style="padding:5px;">
+    排序依赖：<select id="yilai" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="depart_name">部门</option>
+                <option value="user_name">用户</option>
+                <option value="card_id">卡号</option>
+                <option value="kind_name">卡类型</option>
+                <option value="elevator_id">梯号</option>
+                <option value="elevator_name">梯名</option>
+                <option value="room_name">房间</option>
+                <option value="card_no">梯卡号</option></select>
+    排序类型：<select id="paixu" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="asc">正序</option>
+                <option value="desc">倒序</option></select>
+            格式：<select id="com" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="text">text</option>
+                <option value="word">word</option>
+                <option value="excel">excel</option></select>
+			<input type="checkbox" id="all" checked="checked" />全部</div>
+        <div id="do" style="padding:5px;">
+        <div id="to" style="padding:5px;">
+                分隔符：<select id="fgf" class="easyui-combobox"  style="width:60px;height:25px"> 
+                <option value="|">竖杠</option>
+                <option value=" ">空格</option></select></div>
+			<input type="checkbox" id="id"checked="checked"name='databox' onclick='clkdada();' />部门
+            <input type="checkbox" id="bm"checked="checked" name='databox' onclick='clkdada();' />用户
+			<input type="checkbox" id="gh" checked="checked" name='databox'onclick='clkdada();'/>卡号
+            <input type="checkbox" id="xm" checked="checked"name='databox'onclick='clkdada();' />卡类型
+			<input type="checkbox" id="indate"checked="checked" name='databox'onclick='clkdada();' />梯号
+            <input type="checkbox" id="outdate" checked="checked" name='databox'onclick='clkdada();' />梯名
+			<input type="checkbox" id="mm" checked="checked"name='databox' onclick='clkdada();'/>房间
+            <input type="checkbox" id="zt" checked="checked" name='databox'onclick='clkdada();' />梯卡号
+            </div>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">取消</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">确定</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var pp;
+    var cc = 10000;
+    $(function () {
+        //            Ajax(true, global.tk["GetTkElevatorList"], { LoginID: LocalID }, function (data) {
+        //                if (!data.Success) {
+        //                    alert(data.Message);
+        //                    return;
+        //                }
+        //                $('#diant').combobox({
+        //                    data: data.Data,
+        //                    valueField: 'id',
+        //                    textField: 'elevator_name'
+        //                });
+        //            });
+        //            $('#diant').combobox({
+        //                onSelect: function (rec) {
+        //                    var you = "";
+        //                    for (var i = 0; i < rec.floor_num; i++) {
+        //                        you += "<input type='checkbox' name='lang' value='" + (i + 1) + "'/><span>" + (i + 1) + "楼</span>";
+        //                        if (i >= 56) {
+        //                            break;
+        //                        }
+        //                        if (i != rec.floor_num - 1) {
+        //                            you += "<br/>";
+        //                        }
+        //                    }
+        //                    $("#sp").children().eq(1).html(you);
+        //                    $('#floor').combo('setText', '');
+        //                    $('#floor').combo('setValue', '');
+        //                    $('#sp input').click(function () {
+        //                        var value = "";
+        //                        var text = "";
+        //                        $('input[name="lang"]:checked').each(function () {
+        //                            if (value != "") {
+        //                                value += ",";
+        //                            }
+        //                            value += $(this).val();
+        //                            if (text != "") {
+        //                                text += ",";
+        //                            }
+        //                            text += $(this).next('span').text();
+        //                        });
+        //                        $('#floor').combo('setValue', value).combo('setText', text);
+        //                    });
+        //                }
+        //            });
+        Ajax(true, global.tk["GetTkRoomList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            $('#fj').combobox({
+                data: data.Data,
+                valueField: 'id',
+                textField: 'room_name'
+            });
+        });
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            //pagination: true, //显示分页  
+            //pageSize: 10, //分页大小  
+            //pageList: [10, 50, 100], //每页的个数  
+            //fit: true, //自动补全  
+            fitColumns: true,
+            striped: true,
+            iconCls: "icon-save", //图标  
+            title: "电梯状态",
+            collapsible: true,
+            remotesort: false,
+            checkbox: true,
+            //rownumbers: true,
+            //sortName:"id",
+            //sortOrder: 'desc',
+            columns: [[{
+                field: 'ck',
+                checkbox: true,
+                width: 20
+            }, {
+                field: 'id',
+                title: '梯号',
+                //sortable: true,
+                width: 50
+            }, {
+                field: 'elevator_name',
+                title: '梯名',
+                //sortable: true,
+                width: 100
+            }, {
+                field: 'floor_num',
+                title: '层数',
+                //sortable: true,
+                width: 50
+            }, {
+                field: 'comm_message',
+                title: '通讯信息',
+                //sortable: true,
+                width: 150,
+                formatter: function (value, row) {
+                    if (value == "脱网中") {
+                        return '<font color="red">' + value + '</font>';
+                    }
+                    else if (value == "联网中") {
+                        return '<font color="green">' + value + '</font>';
+                    }
+                    else { return value; }
+                }
+            }, {
+                field: 'last_time',
+                title: '最后通讯时间',
+                //sortable: true,
+                width: 80
+            }]],
+            onSelect: function (rowIndex, rowData) {
+                if ($("#dg").datagrid('getSelections').length > 1) {
+                    $("#dtsysd").hide();
+                    $("#room").hide();
+                    $("#yskcl").hide();
+                    $("#yckt").hide();
+                    $("#jydt").hide();
+                    $("#dkdt").hide();
+                    $("#ssjk").hide();
+                    $("#do").hide();
+                }
+                else {
+                    $("#dtsysd").show();
+                    $("#room").show();
+                    $("#yskcl").show();
+                    $("#yckt").show();
+                    $("#jydt").show();
+                    $("#dkdt").show();
+                    $("#ssjk").show();
+                    $("#do").show();
+                }
+            },
+            onUnselect: function (rowIndex, rowData) {
+                if ($("#dg").datagrid('getSelections').length > 1) {
+                    $("#dtsysd").hide();
+                    $("#room").hide();
+                    $("#yskcl").hide();
+                    $("#yckt").hide();
+                    $("#jydt").hide();
+                    $("#dkdt").hide();
+                    $("#ssjk").hide();
+                    $("#do").hide();
+                }
+                else {
+                    $("#dtsysd").show();
+                    $("#room").show();
+                    $("#yskcl").show();
+                    $("#yckt").show();
+                    $("#jydt").show();
+                    $("#dkdt").show();
+                    $("#ssjk").show();
+                    $("#do").show();
+                }
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#sz").click(function () {
+            var rows = datagrid.datagrid('getSelections');
+            if (rows == null || rows == "") {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            if (rows.length > 1) {
+                $.messager.alert("提示", "不能多个电梯同时设置", "error");
+                return;
+            }
+            $('#win').window('open');
+
+        });
+        $("#A1").click(function () {
+            $('#win').window('close');
+        });
+        $("#A2").click(function () {
+            var rows = datagrid.datagrid('getSelected');
+            var th = $("#tihao").val();
+            if (th == "") {
+                $.messager.alert("提示", "梯号不能为空", "error");
+                return;
+            }
+            var id = rows.gid;
+            Ajax(true, global.tk["NetSetElevatorID"], { LoginID: LocalID, gid: id, ElevatorID: th }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#win').window('close');
+                if (data.Data == true) {
+                    $.messager.alert("提示", "设置成功", "info");
+                }
+                if (data.Data == false) {
+                    $.messager.alert("提示", "设置失败", "error");
+                }
+            });
+        });
+        $("#gsh").click(function () {
+            var rows = datagrid.datagrid('getSelections');
+            if (rows == null || rows == "") {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            for (var i = 0; i < rows.length; i++) {
+                id = rows[i].gid;
+                (function (id) {
+                    Ajax(true, global.tk["NetFormat"], { LoginID: LocalID, gid: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (data.Data == true) {
+                            $.messager.alert("提示", "格式化成功", "info");
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "格式化失败", "error");
+                        }
+                    });
+                })(id)
+            }
+        });
+    });
+    var rool;
+    function loaddata() {
+        clearTimeout(rool);
+        Ajax(true, global.tk["GetTkElevatorList"], { LoginID: LocalID, com_type: "02" }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                $('#text').select();
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+            rool = setTimeout(function () { loaddata(); }, cc);
+        });
+    }
+    </script>
+</head>
+<body>
+<div class="easyui-panel" title="高级通讯" data-options="collapsible:true" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true">
+<div style="width:100%; height:400px;">
+<div id ="do" style="padding:2px;"> 
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="sz" >设置梯号</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="gsh" >格式化</a>
+<!--<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="dtsysd" >电梯使用</a>-->
+</div>
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div>
+
+</div>
+     </div><div id="win" class="easyui-window" title="设置梯号" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:200px;height:150px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="d1">
+              <table cellpadding="5">
+              <tr>
+				<td>梯号：</td>
+				<td><input id="tihao" class="easyui-validatebox textbox" data-options="required:true,prompt: '请输入梯号'" style="width:80px;height:20px;"maxlength="8"/></td>
+			
+			</tr>
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A1" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A2" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

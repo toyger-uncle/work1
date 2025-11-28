@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style>
+    <script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var tp;
+    $(function () {
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            columns: [[{
+                field: 'id',
+                title: '编号',
+                width: 80
+
+            }, {
+                field: 'group_name',
+                title: '班组名',
+                width: 80
+            }
+            ]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    for (var i = 0; i < rowData.length; i++) {
+                        ids = rowData[i].id;
+                        Ajax(true, xg["RemoveXGWindowGrp"], { LoginID: LocalID, id: ids }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            loaddata();
+                        });
+                    }
+                    $.messager.alert("提示", "删除成功", "info");
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+                    $('#bz').val(rows.group_name);
+                    tp = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win').window('open');
+                    $('#bz').val("");
+                    tp = 0;
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                $('#bz').val(rowData.group_name);
+                tp = 1;
+
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#save").click(function () {
+            if (tp == 0) {
+                var bz = $('#bz').val();
+                if (bz == "") {
+                    alert("班组名不能为空！");
+                    return;
+                }
+                if (bz.length>25) {
+                    alert("班组名长度不能超过25！");
+                    return;
+                }
+                Ajax(true, xg["NewXGWindowGrp"], { LoginID: LocalID, group_name: bz }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "保存成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+            if (tp == 1) {
+                var rows = datagrid.datagrid('getSelected');
+                var bz = $('#bz').val();
+                var id = rows.id;
+                if (bz == "") {
+                    alert("班组名不能为空！");
+                    return;
+                }
+                if (bz.length > 25) {
+                    alert("班组名长度不能超过25！");
+                    return;
+                }
+                Ajax(true, xg["UpdateXGWindowGrp"], { LoginID: LocalID, id: id, group_name: bz }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    $('#win').window('close');
+                    loaddata();
+                });
+            }
+        });
+    });
+    function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, xg["GetXGWindowGrpList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.total = data.Data.length;
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+           
+        });
+    }
+    </script>	
+</head>
+<body>
+<div class="easyui-panel" title="班组维护" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px;">
+<div style="width:100%; height:400px;">
+		<table id="dg"style="padding: 5px;"> </table>  
+</div>	
+</div>
+<div id="win" class="easyui-window" title="班组维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:200px;height:120px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:10px;">
+			  班组名：<input id="bz" class="easyui-validatebox textbox" data-options="required:true"style="width:100px;" />
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

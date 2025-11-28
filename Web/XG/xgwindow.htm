@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style> 
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var tp;
+        $(function () {
+            Ajax(true, global.xg["GetXGWindowGrpList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#bz').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'group_name'
+                });
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                fitColumns: true,
+                striped: true,
+                title: "",
+                collapsible: true,
+                remotesort: false,
+                singleSelect: true,
+                columns: [[{
+                    field: 'window_num',
+                    title: '巡检号',
+                    width: 80
+
+                }, {
+                    field: 'window_name',
+                    title: '巡检点名称',
+                    width: 80
+                }, {
+                    field: 'used',
+                    title: '使用状况',
+                    width: 80,
+                    formatter: function (value, row) {
+                        if (value == "0") {
+                            return '停用';
+                        }
+                        if (value == "1") {
+                            return '使用';
+                        }
+                    }
+                }, {
+                    field: 'app',
+                    title: '进出状况',
+                    width: 80,
+                    formatter: function (value, row) {
+                        if (value == 0) {
+                            return '出';
+                        }
+                        if (value == 1) {
+                            return '进';
+                        }
+                    }
+                }, {
+                    field: 'group_name',
+                    title: '班组名',
+                    width: 80
+                }, {
+                    field: 'mj_doorid',
+                    title: '门号',
+                    width: 80
+                }
+            ]],
+                toolbar: [{
+                    text: "删除", iconCls: "icon-remove", handler: function () {
+                        var rowData = datagrid.datagrid('getSelections');
+                        var ids;
+                        if (rowData == null || rowData.length == 0) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        for (var i = 0; i < rowData.length; i++) {
+                        ids = rowData[i].window_num;
+                            Ajax(true, global.xg["RemoveXGWindow"], { LoginID: LocalID, id: ids }, function (data) {
+                                if (!data.Success) {
+                                    alert(data.Message);
+                                    return;
+                                }
+                                loaddata();
+                            });
+                        }
+                        $.messager.alert("提示", "删除成功", "info");
+                    }
+                }, {
+                    text: "修改", iconCls: "icon-edit", handler: function () {
+                        var rows = datagrid.datagrid('getSelected');
+                        if (rows == null) {
+                            $.messager.alert("提示", "未选择项", "error");
+                            return;
+                        }
+                        $('#win').window('open');
+                        $('#xjid').val(rows.window_num);
+                        $('#xjname').val(rows.window_name);
+                        $('#men').val(rows.mj_doorid);
+                        $('#app').combobox('setValue', (rows.app).toString().trim());
+                        $('#bz').combobox('setValue', rows.belong_group);
+                        $('#use').combobox('setValue', rows.used);
+                        tp = 1; 
+                    }
+                }, {
+                    text: "增加", iconCls: "icon-add", handler: function () {
+                        $('#win').window('open');
+                        Ajax(true, global.xg["GetXGWindowMaxIDAdd"], { LoginID: LocalID }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            $('#xjid').val(data.Data);
+                        });
+                        $('#xjname').val("");
+                        $("#use").combobox('setValue', 1);
+                        $("#bz").combobox('setValue', "");
+                        tp = 0;
+                    }
+
+                }],
+                onDblClickRow: function (rowIndex, rowData) {
+                    $('#win').window('open');
+                    $('#xjid').val(rowData.window_num);
+                    $('#xjname').val(rowData.window_name);
+                    $('#men').val(rowData.mj_doorid);
+                    $('#bz').combobox('setValue', rowData.belong_group);
+                    $('#app').combobox('setValue', (rowData.app).toString().trim());
+                    $('#use').combobox('setValue', rowData.used);
+                    tp = 1; 
+                }
+            });
+            loaddata();
+            $('#win').window('close');
+            $("#close").click(function () {
+                $('#win').window('close');
+            });
+            $("#save").click(function () {
+                if (tp == 0) {
+                    var ids = $('#xjid').val();
+                    var name = $('#xjname').val();
+                    var men = $('#men').val();
+                    var use = $("#use").combobox('getValue');
+                    var bz = $("#bz").combobox('getValue');
+                    var app = $("#app").combobox('getValue');
+                    if (bz == "") {
+                        alert("班组名不能为空！");
+                        return;
+                    }
+                    if (use == "") {
+                        alert("使用情况不能为空！");
+                        return;
+                    }
+                    if (name == "") {
+                        alert("巡检点名称不能为空！");
+                        return;
+                    }
+
+                    if (app == "") {
+                        alert("进出情况不能为空！");
+                        return;
+                    }
+                    if (ids == "") {
+                        alert("巡检号不能为空！");
+                        return;
+                    }
+                    if (ids == "00000"||ids=="0000"||ids=="000"||ids=="00"||ids=="0") {
+                        alert("巡检号不能为零！");
+                        return;
+                    }
+                    Ajax(true, global.xg["NewXGWindow"], { LoginID: LocalID,  window_num: ids, used: use, app: app, window_name: name, belong_group: bz,mj_doorid:men }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "保存成功", "info");
+                        $('#win').window('close');
+                        loaddata();
+                    });
+                }
+                if (tp == 1) {
+                    var rows = datagrid.datagrid('getSelected');
+                    var bz = $('#bz').combobox('getValue');
+                    var id = rows.window_num;
+                    var ids = $('#xjid').val();
+                    var men = $('#men').val();
+                    var name = $('#xjname').val();
+                    var use = $("#use").combobox('getValue');
+                    var app = $("#app").combobox('getValue');
+                    if (bz == "") {
+                        alert("班组名不能为空！");
+                        return;
+                    }
+                    if (use == "") {
+                        alert("使用情况不能为空！");
+                        return;
+                    }
+                    if (name == "") {
+                        alert("巡检点名称不能为空！");
+                        return;
+                    }
+                    if (app == "") {
+                        alert("进出情况不能为空！");
+                        return;
+                    }
+                    if (ids == "") {
+                        alert("巡检号不能为空！");
+                        return;
+                    }
+                    if (ids == "00000") {
+                        alert("巡检号不能为零！");
+                        return;
+                    }
+                    Ajax(true, global.xg["UpdateXGWindow"], { LoginID: LocalID, oldid: id, window_num: ids, used: use, app: app, window_name: name, belong_group: bz, mj_doorid: men }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $.messager.alert("提示", "修改成功", "info");
+                        $('#win').window('close');
+                        loaddata();
+                    });
+                }
+            });
+        });
+        function loaddata() {
+            datagrid.datagrid('unselectAll');
+            Ajax(true, global.xg["GetXGWindowList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                jsondata.total = data.Data.length;
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+
+            });
+        }
+    </script>	
+</head>
+<body>
+<div class="easyui-panel" title="巡检点维护" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px;">
+<div style="width:100%; height:400px;">
+		<table id="dg"style="padding: 5px;"> </table>  
+</div>	
+</div>
+<div id="win" class="easyui-window" title="巡检点维护" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:270px;height:280px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:10px;">
+			  <table cellpadding="4">
+              <tr>
+				<td>巡检号:</td>
+				<td><input id="xjid" class="easyui-validatebox textbox"  data-options="required:true"style="width:100px;" maxlength="5"/></td>
+			</tr>
+			<tr>
+				<td>巡检点名称:</td>
+				<td><input id="xjname" class="easyui-validatebox textbox" data-options="required:true,validType: 'length[1,10]', prompt: '长度不能超过5'"style="width:100px;" maxlength="5"/></td>
+			</tr>
+			
+			<tr>
+				<td>使用情况：</td>
+				<td><select id="use" class="easyui-combobox"  style="width:100px;"> 
+            <option value="1">使用</option>
+            <option value="0">停用</option></select></td>
+			</tr>
+			<tr>
+				<td>进出情况：</td>
+				<td><select id="app" class="easyui-combobox"  style="width:100px;"> 
+            <option value="1">出</option>
+            <option value="0">进</option></select></td>
+			</tr>
+           
+            <tr>
+				<td>班组名：</td>
+				<td><select id="bz" class="easyui-combobox"  style="width:100px;"> </select></td>
+			</tr>
+            <tr>
+				<td>门号:</td>
+				<td><input id="men" class="easyui-validatebox textbox" data-options="required:true,validType: 'length[1,10]', prompt: '长度不能超过5'"style="width:100px;" maxlength="5"/></td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

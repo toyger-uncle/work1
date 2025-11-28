@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+</style> 
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid;
+    var jsondata = { "total": 0, "rows": [] };
+    var cc;
+    $(function () {
+        datagrid = $("#dg").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            columns: [[{
+                field: 'road_name',
+                title: '线路名',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'begin_time',
+                title: '开始时间',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'end_time',
+                title: '结束时间',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'road_time',
+                title: '间隔（分）',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'yc_time',
+                title: '误差（分）',
+                //                sortable: true,
+                width: 80
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid.datagrid('getSelections');
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var ids;
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, global.xg["RemoveXGMngRoad"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win').window('open');
+                    var bt = rows.begin_time;
+                    var bt1 = bt.substr(11, 2) + ":" + bt.substr(14, 2);
+                    $("#bt").timespinner('setValue', bt);
+                    var et = rows.end_time;
+                    var et1 = et.substr(11, 2) + ":" + bt.substr(14, 2);
+                    $("#et").timespinner('setValue', et);
+                    $('#xl').val(rows.road_name);
+                    $('#wc').val(rows.yc_time);
+                    $('#jg').val(rows.road_time);
+                    cc = 1;
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+
+                    $('#win').window('open');
+                    cc = 0;
+                    $('#xl').val("");
+                    $('#wc').val("10");
+                    $('#jg').val("60");
+                }
+
+            }],
+            onDblClickRow: function (rowIndex, rowData) {
+                $('#win').window('open');
+                var bt = rowData.begin_time;
+                $("#bt").timespinner('setValue', bt);
+                var et = rowData.end_time;
+                $("#et").timespinner('setValue', et);
+                $('#xl').val(rowData.road_name);
+                $('#wc').val(rowData.yc_time);
+                $('#jg').val(rowData.road_time);
+                cc = 1;
+
+            }
+        });
+        loaddata();
+        $('#win').window('close');
+        $("#close").click(function () {
+            $('#win').window('close');
+        });
+        $("#save").click(function () {
+            var bt = $("#bt").timespinner('getValue');
+            var et = $("#et").timespinner('getValue');
+            var xl = $('#xl').val();
+            var wc = $('#wc').val();
+            var jg = $('#jg').val();
+            if (xl == "") {
+                alert("线路名不能为空");
+                return;
+            }
+            if (bt == "") {
+                alert("开始时间不能为空");
+                return;
+            }
+            if (et == "") {
+                alert("结束时间不能为空");
+                return;
+            }
+            if (wc == "") {
+                alert("误差时间不能为空");
+                return;
+            }
+            if (jg == "") {
+                alert("间隔时间不能为空");
+                return;
+            }
+            if (cc == 0) {
+
+                Ajax(true, global.xg["NewXGMngRoad"], { LoginID: LocalID, road_name: xl, road_time: jg, begin_time: bt, end_time: et, yc_time: wc }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    loaddata();
+                    $('#win').window('close');
+                });
+            }
+            if (cc == 1) {
+                var rowdata = datagrid.datagrid('getSelected');
+                var id = rowdata.id;
+                Ajax(true, global.xg["UpdateXGMngRoad"], { LoginID: LocalID, id: id, road_name: xl, road_time: jg, begin_time: bt, end_time: et, yc_time: wc }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "修改成功", "info");
+                    loaddata();
+                    $('#win').window('close');
+                });
+            }
+        });
+    });
+function loaddata() {
+        datagrid.datagrid('unselectAll');
+        Ajax(true, global.xg["GetXGMngRoadList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata.rows = data.Data;
+            datagrid.datagrid('loadData', jsondata);
+        });
+    }
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="巡检线路" data-options="collapsible:false,maximized:true" style="width:100%; padding:2px;">
+<div style="width:100%; height:400px;">
+		<table id="dg"style="padding: 5px;"> </table>  
+</div>	
+</div>
+<div id="win" class="easyui-window" title="巡检线路" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:260px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="Do">
+              <table cellpadding="5">
+              <tr>
+				<td>线路名：</td><td><input id="xl" class="easyui-validatebox textbox" style="width:80px;height:20px"" /></td>
+                </tr>
+          <tr>
+			    <td>开始时间：</td><td><input id="bt" class="easyui-timespinner"  style="width:80px;height:20px" value="09:00" required="required" data-options="showSeconds:false" />  </td>
+                </tr>
+          <tr>
+			    <td>结束时间：</td><td><input id="et" class="easyui-timespinner"  style="width:80px;height:20px"value="10:00"  required="required" data-options="showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>间隔（分）：</td><td><input id="jg" class="easyui-numberbox"value="60" style="width:80px;height:20px"data-options="min:10"/></td>
+                </tr>
+          <tr>
+				<td>误差（分）：</td><td><input id="wc" class="easyui-numberbox"value="10" style="width:80px;height:20px"data-options="min:5" /></td>
+                </tr>
+         
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

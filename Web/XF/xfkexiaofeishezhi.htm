@@ -1,0 +1,583 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#win1').window('close');
+            $('#win3').window('close');
+        });
+    </script>
+</head>
+<body>
+    <div id="t1" class="easyui-tabs" style="width: 100%; height: 520px;">
+        <div title="班组消费" data-options="href :'bzxf.htm'" style="">
+        </div>
+        <div title="机器消费" data-options="href :'jqxf.htm'" style="">
+        </div>
+    </div>
+    <div id="win1" class="easyui-window" title="班组可消费性设置" data-options="iconCls:'icon-save'"
+        style="width: 750px; height: 600px; padding: 10px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north',border:true" style="width: 100px; padding: 5px 0 0;
+                height: 400px;">
+                <table cellpadding="1px" cellspacing="5px">
+                    <tr>
+                        <th style="width: 60px;" align="right">
+                            班组名：
+                        </th>
+                        <td align="left">
+                            <select id="win_grp" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                            </select>
+                        </td>
+                        <th style="width: 60px;" align="right">
+                            卡类型:
+                        </th>
+                        <td align="left">
+                            <select id="card_kind" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                            </select>
+                        </td>
+                        <th style="width: 60px;" align="right">
+                            折扣：
+                        </th>
+                        <td align="left">
+                            <input id="rate" class="easyui-validatebox textbox" style="width: 100px" />
+                        </td>
+                    </tr>
+                </table>
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center',title:'普通'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 40px;">
+                                    早餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    早餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_type" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_num" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money11" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money12" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 60px;">
+                                    中餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 60px;">
+                                    中餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_type" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_num" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money21" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money22" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 60px;">
+                                    晚餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 60px;">
+                                    晚餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_type" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_num" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money31" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money32" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 60px;">
+                                    夜餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 60px;">
+                                    夜餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_type" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_num" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money41" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 60px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money42" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div data-options="region:'center',border:true" style="width: 100px; padding: 5px 0 0;
+                height: 50px;">
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center',title:'POS'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <th align="right" style="width: 120px;">
+                                    是否密码消费:
+                                </th>
+                                <td align="left">
+                                    <select id="is_psw" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 120px;">
+                                    小票打印数:
+                                </th>
+                                <td align="left">
+                                    <select id="is_print" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不打印</option>
+                                        <option value="1">1张</option>
+                                        <option value="2">2张</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+    <div id="win3" class="easyui-window" title="机器可消费性设置" data-options="iconCls:'icon-save'"
+        style="width: 750px; height: 600px; padding: 10px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'north',border:true" style="width: 100px; padding: 5px 0 0;
+                height: 400px;">
+                <table cellpadding="1px" cellspacing="5px" border="0px">
+                    <tr>
+                        <th style="width: 60px;" align="right">
+                            机器名：
+                        </th>
+                        <td align="left">
+                            <select id="win_id3" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                            </select>
+                        </td>
+                        <th style="width: 60px;" align="right">
+                            卡类型:
+                        </th>
+                        <td align="left">
+                            <select id="card_kind3" class="easyui-combobox" style="width: 106px" data-options="required:true">
+                            </select>
+                        </td>
+                        <th style="width: 60px;" align="right">
+                            折扣：
+                        </th>
+                        <td align="left">
+                            <input id="rate3" class="easyui-validatebox textbox" style="width: 100px" />
+                        </td>
+                    </tr>
+                </table>
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center',title:'普通'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    早餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    早餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_type2" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal1_num2" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money112" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money122" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 70px;">
+                                    中餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    中餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_type2" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal2_num2" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money212" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money222" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 70px;">
+                                    晚餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    晚餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_type2" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal3_num2" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money312" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money322" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                            <tr style="height: 40px;">
+                                <th align="right" style="width: 70px;">
+                                    夜餐设置
+                                </th>
+                            </tr>
+                            <tr style="height: 30px;">
+                                <th align="right" style="width: 70px;">
+                                    夜餐类型:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_type2" class="easyui-combobox" style="width: 86px">
+                                        <option value="1">消费金额</option>
+                                        <option value="0">工作餐</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    次数:
+                                </th>
+                                <td align="left">
+                                    <select id="meal4_num2" class="easyui-combobox" style="width: 86px">
+                                        <option value="0">不限次</option>
+                                        <option value="1">1次</option>
+                                        <option value="2">2次</option>
+                                        <option value="3">3次</option>
+                                        <option value="4">4次</option>
+                                        <option value="5">5次</option>
+                                        <option value="6">6次</option>
+                                        <option value="7">7次</option>
+                                        <option value="8">8次</option>
+                                        <option value="9">9次</option>
+                                        <option value="10">10次</option>
+                                        <option value="11">11次</option>
+                                        <option value="12">12次</option>
+                                        <option value="13">13次</option>
+                                        <option value="14">14次</option>
+                                        <option value="15">不能消费</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    首次扣款:
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money412" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                                <th align="right" style="width: 70px;">
+                                    一次以上：
+                                </th>
+                                <td align="left">
+                                    <input id="auto_money422" class="easyui-validatebox textbox" style="width: 80px" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div data-options="region:'center',border:true" style="width: 100px; padding: 5px 0 0;
+                height: 50px;">
+                <div class="easyui-layout" data-options="fit:true">
+                    <div data-options="region:'center',title:'POS'" style="padding: 5px;">
+                        <table cellpadding="1px" cellspacing="5px">
+                            <tr>
+                                <th align="right" style="width: 80px;">
+                                    是否密码消费:
+                                </th>
+                                <td align="left">
+                                    <select id="is_psw2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">否</option>
+                                        <option value="1">是</option>
+                                    </select>
+                                </td>
+                                <th align="right" style="width: 80px;">
+                                    小票打印数:
+                                </th>
+                                <td align="left">
+                                    <select id="is_print2" class="easyui-combobox" style="width: 106px">
+                                        <option value="0">不打印</option>
+                                        <option value="1">1张</option>
+                                        <option value="2">2张</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close3" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save3" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

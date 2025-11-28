@@ -1,0 +1,1411 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var id = null; 
+var jsondata = {"total":0,"rows":[]};
+$(function () {
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        //pagination: true, //显示分页  
+        //pageSize: 10, //分页大小  
+        //pageList: [10, 50, 100], //每页的个数  
+        //fit: true, //自动补全  
+        fitColumns: true,
+        striped: true,
+        iconCls: "icon-save", //图标  
+        title: "权限组管理",
+        collapsible: true,
+        remotesort: false,
+        singleSelect: true,
+        //rownumbers: true,
+        //sortName:"id",
+        //sortOrder: 'desc',
+        columns: [[{
+            field: 'id',
+            title: '权限号',
+            //sortable: true,
+            width: 30
+        }, {
+            field: 'group_name',
+            title: '权限名',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'time_id',
+            title: '时段号',
+            hidden: true,
+            //sortable: true,
+            width: 20
+        }, {
+            field: 'time_name',
+            title: '时段',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'elevator_id',
+            title: '电梯',
+            hidden: true,
+            //sortable: true,
+            width: 20
+        }, {
+            field: 'elevator_name',
+            title: '电梯',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'floor',
+            title: '有效楼层',
+            //sortable: true,
+            width: 300,
+            formatter: function (val, rec) {
+                var qsc = rec.start_floor;
+                if (val.length != 200) {
+                    return '出错';
+                } else {
+                    if (qsc == "" || qsc == null) {
+                        var you = "";
+                        for (var i = 0; i < 200; i++) {
+                            if (val.substr(i, 1) == "1") {
+                                if (you != "") {
+                                    you += ",";
+                                }
+                                you += (i + 1).toString();
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                        }
+                        return you;
+                    }
+                    else if (qsc < 0) {
+                        var you = "";
+                        for (var i = 0; i < 200; i++) {
+                            if (val.substr(i, 1) == "1") {
+                                if (you != "") {
+                                    you += ",";
+                                }
+                                if ((i + parseInt(qsc)) >= 0) { you += (i + parseInt(qsc) + 1).toString(); }
+                                else {
+                                    you += (i + parseInt(qsc)).toString();
+                                }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                        }
+                        return you;
+                    }
+                    else if (qsc > 0) {
+                        var you = "";
+                        for (var i = 0; i < 200; i++) {
+                            if (val.substr(i, 1) == "1") {
+                                if (you != "") {
+                                    you += ",";
+                                }
+                                you += (i + parseInt(qsc)).toString();
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                        }
+                        return you;
+                    }
+                }
+            }
+        }]],
+        toolbar: [{
+            text: "修改", iconCls: "icon-edit", handler: function () {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win').window({
+                    title: '修改权限组',
+                    iconCls: 'icon-edit',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+                id = rowData.id;
+                var qishi = rowData.start_floor;
+                var qishiex = rowData.start_floorex;
+                var qishiex2 = rowData.start_floorex2;
+                $('#id').numberbox('setValue', parseFloat(rowData.id));
+                $('#timeid').combobox("setValue", rowData.time_id);
+                var recs = $.grep($('#elevatorid').combobox("getData"), function (value) {
+                    if (value.id == rowData.elevator_id) {
+                        return value;
+                    }
+                });
+                var you = "";
+                if (recs.length > 0) {
+                    var rec = recs[0];
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                        if (rowData.floor.substr(i, 1) == "1") {
+                            you += "checked=true";
+                        }
+                        if (qishi == "" || qishi == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishi > 0) {
+                            you += " /><span>" + (i + parseInt(qishi)) + "楼</span>";
+                        }
+                        if (qishi < 0) {
+                            if ((i + parseInt(qishi)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishi) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishi)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                }
+                $("#sp").children().eq(1).html(you);
+                var value = "";
+                var text = "";
+                $('input[name="lang"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floor').combo('setValue', value).combo('setText', text);
+                $('#sp input').click(function () {
+                    var value = "";
+                    var text = "";
+                    $('input[name="lang"]:checked').each(function () {
+                        if (value != "") {
+                            value += ",";
+                        }
+                        value += $(this).val();
+                        if (text != "") {
+                            text += ",";
+                        }
+                        text += $(this).next('span').text();
+                    });
+                    $('#floor').combo('setValue', value).combo('setText', text);
+                });
+                $('#elevatorid').combobox({
+                    onSelect: function (rec) {
+                        var qishi1 = rec.start_floor;
+                        var you = "";
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                            if (rec.id == rowData.elevator_id) {
+                                if (rowData.floor.substr(i, 1) == "1") {
+                                    you += "checked=true";
+                                }
+                            }
+                            if (qishi1 == "" || qishi1 == null) {
+                                you += " /><span>" + (i + 1) + "楼</span>";
+                            }
+                            if (qishi1 > 0) {
+                                you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>";
+                            }
+                            if (qishi1 < 0) {
+                                if ((i + parseInt(qishi1)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishi1) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#sp").children().eq(1).html(you);
+                        var value = "";
+                        var text = "";
+                        if (rec.id == rowData.elevator_id) {
+                            $('input[name="lang"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                        }
+                        $('#floor').combo('setValue', value).combo('setText', text);
+                        $('#sp input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="lang"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floor').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+                $('#elevatorid').combobox("setValue", rowData.elevator_id);
+
+                var recs = $.grep($('#elevatoridex').combobox("getData"), function (value) {
+                    if (value.id == rowData.elevator_idex) {
+                        return value;
+                    }
+                });
+                var you = "";
+                if (recs.length > 0) {
+                    var rec = recs[0];
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='langex' value='" + (i + 1) + "' ";
+                        if (rowData.floorex.substr(i, 1) == "1") {
+                            you += "checked=true";
+                        }
+                        if (qishiex == "" || qishiex == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishiex > 0) {
+                            you += " /><span>" + (i + parseInt(qishiex)) + "楼</span>";
+                        }
+                        if (qishiex < 0) {
+                            if ((i + parseInt(qishiex)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishiex) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishiex)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                }
+                $("#spex").children().eq(1).html(you);
+                var value = "";
+                var text = "";
+                $('input[name="langex"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floorex').combo('setValue', value).combo('setText', text);
+                $('#spex input').click(function () {
+                    var value = "";
+                    var text = "";
+                    $('input[name="langex"]:checked').each(function () {
+                        if (value != "") {
+                            value += ",";
+                        }
+                        value += $(this).val();
+                        if (text != "") {
+                            text += ",";
+                        }
+                        text += $(this).next('span').text();
+                    });
+                    $('#floorex').combo('setValue', value).combo('setText', text);
+                });
+                $('#elevatoridex').combobox({
+                    onSelect: function (rec) {
+                        var you = "";
+                        var qishiex1 = rec.start_floor;
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='langex' value='" + (i + 1) + "' ";
+                            if (rec.id == rowData.elevator_idex) {
+                                if (rowData.floorex.substr(i, 1) == "1") {
+                                    you += "checked=true";
+                                }
+                            }
+                            if (qishiex1 == "" || qishiex == null) {
+                                you += " /><span>" + (i + 1) + "楼</span>";
+                            }
+                            if (qishiex1 > 0) {
+                                you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>";
+                            }
+                            if (qishiex1 < 0) {
+                                if ((i + parseInt(qishiex1)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishiex1) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#spex").children().eq(1).html(you);
+                        var value = "";
+                        var text = "";
+                        if (rec.id == rowData.elevator_idex) {
+                            $('input[name="langex"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                        }
+                        $('#floorex').combo('setValue', value).combo('setText', text);
+                        $('#spex input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="langex"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floorex').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+                $('#elevatoridex').combobox("setValue", rowData.elevator_idex);
+
+                var recs = $.grep($('#elevatoridex2').combobox("getData"), function (value) {
+                    if (value.id == rowData.elevator_idex2) {
+                        return value;
+                    }
+                });
+                var you = "";
+                if (recs.length > 0) {
+                    var rec = recs[0];
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='langex2' value='" + (i + 1) + "' ";
+                        if (rowData.floorex2.substr(i, 1) == "1") {
+                            you += "checked=true";
+                        }
+                        if (qishiex2 == "" || qishiex2 == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishiex2 > 0) {
+                            you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>";
+                        }
+                        if (qishiex2 < 0) {
+                            if ((i + parseInt(qishiex2)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishiex2) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                }
+                $("#spex2").children().eq(1).html(you);
+                var value = "";
+                var text = "";
+                $('input[name="langex2"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floorex2').combo('setValue', value).combo('setText', text);
+                $('#spex2 input').click(function () {
+                    var value = "";
+                    var text = "";
+                    $('input[name="langex2"]:checked').each(function () {
+                        if (value != "") {
+                            value += ",";
+                        }
+                        value += $(this).val();
+                        if (text != "") {
+                            text += ",";
+                        }
+                        text += $(this).next('span').text();
+                    });
+                    $('#floorex2').combo('setValue', value).combo('setText', text);
+                });
+                $('#elevatoridex2').combobox({
+                    onSelect: function (rec) {
+                        var you = "";
+                        var qishiex22 = rec.start_floor;
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='langex2' value='" + (i + 1) + "' ";
+                            if (rec.id == rowData.elevator_idex2) {
+                                if (rowData.floor.substr(i, 1) == "1") {
+                                    you += "checked=true";
+                                }
+                            }
+                            if (qishiex22 == "" || qishiex2 == null) {
+                                you += " /><span>" + (i + 1) + "楼</span>";
+                            }
+                            if (qishiex22 > 0) {
+                                you += " /><span>" + (i + parseInt(qishiex22)) + "楼</span>";
+                            }
+                            if (qishiex22 < 0) {
+                                if ((i + parseInt(qishiex22)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishiex22) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishiex22)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#spex2").children().eq(1).html(you);
+                        var value = "";
+                        var text = "";
+                        if (rec.id == rowData.elevator_idex2) {
+                            $('input[name="langex2"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                        }
+                        $('#floorex2').combo('setValue', value).combo('setText', text);
+                        $('#spex2 input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="langex2"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floorex2').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+                $('#elevatoridex2').combobox("setValue", rowData.elevator_idex2);
+
+                $('#rightname').val(rowData.group_name);
+                $('#rightname').select();
+            }
+        }, {
+            text: "增加", iconCls: "icon-add", handler: function () {
+                id = null;
+                Ajax(true, tk["GetTkRightMaxid"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#id').numberbox('setValue', data.Data + 1);
+                });
+                $('#rightname').val('');
+                $('#timeid').combobox('clear');
+                $('#elevatorid').combobox('clear');
+                $("#sp").children().eq(1).html("");
+                $('#floor').combo('setText', '');
+                $('#floor').combo('setValue', '');
+                $('#elevatorid').combobox({
+                    onSelect: function (rec) {
+                        var qishi1 = rec.start_floor;
+                        var you = "";
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                            if (qishi1 == "" || qishi1 == null) {
+                                you += " /><span>" + (i + 1) + "楼</span>";
+                            }
+                            if (qishi1 > 0) {
+                                you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>";
+                            }
+                            if (qishi1 < 0) {
+                                if ((i + parseInt(qishi1)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishi1) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#sp").children().eq(1).html(you);
+                        $('#floor').combo('setText', '');
+                        $('#floor').combo('setValue', '');
+                        $('#sp input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="lang"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floor').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+
+                $('#elevatoridex').combobox('clear');
+                $("#spex").children().eq(1).html("");
+                $('#floorex').combo('setText', '');
+                $('#floorex').combo('setValue', '');
+                $('#elevatoridex').combobox({
+                    onSelect: function (rec) {
+                        var qishiex1 = rec.start_floor;
+                        var you = "";
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='langex' value='" + (i + 1) + "' ";
+                            if (qishiex1 > 0) {
+                                you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>";
+                            }
+                            if (qishiex1 < 0) {
+                                if ((i + parseInt(qishiex1)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishiex1) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#spex").children().eq(1).html(you);
+                        $('#floorex').combo('setText', '');
+                        $('#floorex').combo('setValue', '');
+                        $('#spex input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="langex"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floorex').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+
+                $('#elevatoridex2').combobox('clear');
+                $("#spex2").children().eq(1).html("");
+                $('#floorex2').combo('setText', '');
+                $('#floorex2').combo('setValue', '');
+                $('#elevatoridex2').combobox({
+                    onSelect: function (rec) {
+                        var qishiex2 = rec.start_floor;
+                        var you = "";
+                        for (var i = 0; i < rec.floor_num; i++) {
+                            you += "<input type='checkbox' name='langex2' value='" + (i + 1) + "' ";
+                            if (qishiex2 > 0) {
+                                you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>";
+                            }
+                            if (qishiex2 < 0) {
+                                if ((i + parseInt(qishiex2)) >= 0) {
+                                    you += " /><span>" + (i + parseInt(qishiex2) + 1) + "楼</span>";
+                                }
+                                else { you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>"; }
+                            }
+                            if (i >= 56) {
+                                break;
+                            }
+                            if (i != rec.floor_num - 1) {
+                                you += "<br/>";
+                            }
+                        }
+                        $("#spex2").children().eq(1).html(you);
+                        $('#floorex2').combo('setText', '');
+                        $('#floorex2').combo('setValue', '');
+                        $('#spex2 input').click(function () {
+                            var value = "";
+                            var text = "";
+                            $('input[name="langex2"]:checked').each(function () {
+                                if (value != "") {
+                                    value += ",";
+                                }
+                                value += $(this).val();
+                                if (text != "") {
+                                    text += ",";
+                                }
+                                text += $(this).next('span').text();
+                            });
+                            $('#floorex2').combo('setValue', value).combo('setText', text);
+                        });
+                    }
+                });
+
+                $('#win').window({
+                    title: '新增权限',
+                    iconCls: 'icon-add',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+                $('#rightname').select();
+            }
+        }, {
+            text: "查询", iconCls: "icon-search", handler: function () {
+                loaddata($("#text").val(), $("#select").combo("getValue"), $("#combo").combo("getValue"));
+            }
+        }],
+        onSortColumn: function (sort, order) {
+        },
+        onDblClickCell: function (rowIndex, field, value) {
+            var rowData = jsondata.rows[rowIndex];
+            if (rowData == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            $('#win').window({
+                title: '修改权限组',
+                iconCls: 'icon-edit',
+                maximizable: false,
+                minimizable: false
+            });
+            $('#win').window('open');
+            id = rowData.id;
+            var qishi = rowData.start_floor;
+            var qishiex = rowData.start_floorex;
+            var qishiex2 = rowData.start_floorex2;
+            $('#id').numberbox('setValue', parseFloat(rowData.id));
+            $('#timeid').combobox("setValue", rowData.time_id);
+            var recs = $.grep($('#elevatorid').combobox("getData"), function (value) {
+                if (value.id == rowData.elevator_id) {
+                    return value;
+                }
+            });
+            var you = "";
+            if (recs.length > 0) {
+                var rec = recs[0];
+                for (var i = 0; i < rec.floor_num; i++) {
+                    you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                    if (rowData.floor.substr(i, 1) == "1") {
+                        you += "checked=true";
+                    }
+                    if (qishi == "" || qishi == null) {
+                        you += " /><span>" + (i + 1) + "楼</span>";
+                    }
+                    if (qishi > 0) {
+                        you += " /><span>" + (i + parseInt(qishi)) + "楼</span>";
+                    }
+                    if (qishi < 0) {
+                        if ((i + parseInt(qishi)) >= 0) {
+                            you += " /><span>" + (i + parseInt(qishi) + 1) + "楼</span>";
+                        }
+                        else { you += " /><span>" + (i + parseInt(qishi)) + "楼</span>"; }
+                    }
+                    if (i >= 56) {
+                        break;
+                    }
+                    if (i != rec.floor_num - 1) {
+                        you += "<br/>";
+                    }
+                }
+            }
+            $("#sp").children().eq(1).html(you);
+            var value = "";
+            var text = "";
+            $('input[name="lang"]:checked').each(function () {
+                if (value != "") {
+                    value += ",";
+                }
+                value += $(this).val();
+                if (text != "") {
+                    text += ",";
+                }
+                text += $(this).next('span').text();
+            });
+            $('#floor').combo('setValue', value).combo('setText', text);
+            $('#sp input').click(function () {
+                var value = "";
+                var text = "";
+                $('input[name="lang"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floor').combo('setValue', value).combo('setText', text);
+            });
+            $('#elevatorid').combobox({
+                onSelect: function (rec) {
+                    var qishi1 = rec.start_floor;
+                    var you = "";
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                        if (rec.id == rowData.elevator_id) {
+                            if (rowData.floor.substr(i, 1) == "1") {
+                                you += "checked=true";
+                            }
+                        }
+                        if (qishi1 == "" || qishi1 == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishi1 > 0) {
+                            you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>";
+                        }
+                        if (qishi1 < 0) {
+                            if ((i + parseInt(qishi1)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishi1) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                    $("#sp").children().eq(1).html(you);
+                    var value = "";
+                    var text = "";
+                    if (rec.id == rowData.elevator_id) {
+                        $('input[name="lang"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                    }
+                    $('#floor').combo('setValue', value).combo('setText', text);
+                    $('#sp input').click(function () {
+                        var value = "";
+                        var text = "";
+                        $('input[name="lang"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                        $('#floor').combo('setValue', value).combo('setText', text);
+                    });
+                }
+            });
+            $('#elevatorid').combobox("setValue", rowData.elevator_id);
+
+            var recs = $.grep($('#elevatoridex').combobox("getData"), function (value) {
+                if (value.id == rowData.elevator_idex) {
+                    return value;
+                }
+            });
+            var you = "";
+            if (recs.length > 0) {
+                var rec = recs[0];
+                for (var i = 0; i < rec.floor_num; i++) {
+                    you += "<input type='checkbox' name='langex' value='" + (i + 1) + "' ";
+                    if (rowData.floorex.substr(i, 1) == "1") {
+                        you += "checked=true";
+                    }
+                    if (qishiex == "" || qishiex == null) {
+                        you += " /><span>" + (i + 1) + "楼</span>";
+                    }
+                    if (qishiex > 0) {
+                        you += " /><span>" + (i + parseInt(qishiex)) + "楼</span>";
+                    }
+                    if (qishiex < 0) {
+                        if ((i + parseInt(qishiex)) >= 0) {
+                            you += " /><span>" + (i + parseInt(qishiex) + 1) + "楼</span>";
+                        }
+                        else { you += " /><span>" + (i + parseInt(qishiex)) + "楼</span>"; }
+                    }
+                    if (i >= 56) {
+                        break;
+                    }
+                    if (i != rec.floor_num - 1) {
+                        you += "<br/>";
+                    }
+                }
+            }
+            $("#spex").children().eq(1).html(you);
+            var value = "";
+            var text = "";
+            $('input[name="langex"]:checked').each(function () {
+                if (value != "") {
+                    value += ",";
+                }
+                value += $(this).val();
+                if (text != "") {
+                    text += ",";
+                }
+                text += $(this).next('span').text();
+            });
+            $('#floorex').combo('setValue', value).combo('setText', text);
+            $('#spex input').click(function () {
+                var value = "";
+                var text = "";
+                $('input[name="langex"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floorex').combo('setValue', value).combo('setText', text);
+            });
+            $('#elevatoridex').combobox({
+                onSelect: function (rec) {
+                    var you = "";
+                    var qishiex1 = rec.start_floor;
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='langex' value='" + (i + 1) + "' ";
+                        if (rec.id == rowData.elevator_idex) {
+                            if (rowData.floor.substr(i, 1) == "1") {
+                                you += "checked=true";
+                            }
+                        }
+                        if (qishiex1 == "" || qishiex1 == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishiex1 > 0) {
+                            you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>";
+                        }
+                        if (qishiex1 < 0) {
+                            if ((i + parseInt(qishiex1)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishiex1) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishiex1)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                    $("#spex").children().eq(1).html(you);
+                    var value = "";
+                    var text = "";
+                    if (rec.id == rowData.elevator_idex) {
+                        $('input[name="langex"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                    }
+                    $('#floorex').combo('setValue', value).combo('setText', text);
+                    $('#spex input').click(function () {
+                        var value = "";
+                        var text = "";
+                        $('input[name="langex"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                        $('#floorex').combo('setValue', value).combo('setText', text);
+                    });
+                }
+            });
+            $('#elevatoridex').combobox("setValue", rowData.elevator_idex);
+
+            var recs = $.grep($('#elevatoridex2').combobox("getData"), function (value) {
+                if (value.id == rowData.elevator_id) {
+                    return value;
+                }
+            });
+            var you = "";
+            if (recs.length > 0) {
+                var rec = recs[0];
+                for (var i = 0; i < rec.floor_num; i++) {
+                    you += "<input type='checkbox' name='langex2' value='" + (i + 1) + "' ";
+                    if (rowData.floorex2.substr(i, 1) == "1") {
+                        you += "checked=true";
+                    }
+                    if (qishiex2 == "" || qishiex2 == null) {
+                        you += " /><span>" + (i + 1) + "楼</span>";
+                    }
+                    if (qishiex2 > 0) {
+                        you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>";
+                    }
+                    if (qishiex2 < 0) {
+                        if ((i + parseInt(qishiex2)) >= 0) {
+                            you += " /><span>" + (i + parseInt(qishiex2) + 1) + "楼</span>";
+                        }
+                        else { you += " /><span>" + (i + parseInt(qishiex2)) + "楼</span>"; }
+                    }
+                    if (i >= 56) {
+                        break;
+                    }
+                    if (i != rec.floor_num - 1) {
+                        you += "<br/>";
+                    }
+                }
+            }
+            $("#spex2").children().eq(1).html(you);
+            var value = "";
+            var text = "";
+            $('input[name="langex2"]:checked').each(function () {
+                if (value != "") {
+                    value += ",";
+                }
+                value += $(this).val();
+                if (text != "") {
+                    text += ",";
+                }
+                text += $(this).next('span').text();
+            });
+            $('#floorex2').combo('setValue', value).combo('setText', text);
+            $('#spex2 input').click(function () {
+                var value = "";
+                var text = "";
+                $('input[name="langex2"]:checked').each(function () {
+                    if (value != "") {
+                        value += ",";
+                    }
+                    value += $(this).val();
+                    if (text != "") {
+                        text += ",";
+                    }
+                    text += $(this).next('span').text();
+                });
+                $('#floorex2').combo('setValue', value).combo('setText', text);
+            });
+            $('#elevatoridex2').combobox({
+                onSelect: function (rec) {
+                    var you = "";
+                    var qishiex22 = rec.start_floor;
+                    for (var i = 0; i < rec.floor_num; i++) {
+                        you += "<input type='checkbox' name='langex2' value='" + (i + 1) + "' ";
+                        if (rec.id == rowData.elevator_idex2) {
+                            if (rowData.floor.substr(i, 1) == "1") {
+                                you += "checked=true";
+                            }
+                        }
+                        if (qishiex22 == "" || qishiex2 == null) {
+                            you += " /><span>" + (i + 1) + "楼</span>";
+                        }
+                        if (qishiex22 > 0) {
+                            you += " /><span>" + (i + parseInt(qishiex22)) + "楼</span>";
+                        }
+                        if (qishiex22 < 0) {
+                            if ((i + parseInt(qishiex22)) >= 0) {
+                                you += " /><span>" + (i + parseInt(qishiex22) + 1) + "楼</span>";
+                            }
+                            else { you += " /><span>" + (i + parseInt(qishiex22)) + "楼</span>"; }
+                        }
+                        if (i >= 56) {
+                            break;
+                        }
+                        if (i != rec.floor_num - 1) {
+                            you += "<br/>";
+                        }
+                    }
+                    $("#spex2").children().eq(1).html(you);
+                    var value = "";
+                    var text = "";
+                    if (rec.id == rowData.elevator_idex2) {
+                        $('input[name="langex2"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                    }
+                    $('#floorex2').combo('setValue', value).combo('setText', text);
+                    $('#spex2 input').click(function () {
+                        var value = "";
+                        var text = "";
+                        $('input[name="langex2"]:checked').each(function () {
+                            if (value != "") {
+                                value += ",";
+                            }
+                            value += $(this).val();
+                            if (text != "") {
+                                text += ",";
+                            }
+                            text += $(this).next('span').text();
+                        });
+                        $('#floorex2').combo('setValue', value).combo('setText', text);
+                    });
+                }
+            });
+            $('#elevatoridex2').combobox("setValue", rowData.elevator_idex2);
+
+            $('#rightname').val(rowData.group_name);
+            $('#rightname').select();
+        }
+    });
+    $("#search").click(function () {
+        loaddata($("#text").val(), $("#select").combo("getValue"), $("#combo").combo("getValue"));
+    });
+    $("#close").click(function () {
+        $('#win').window('close');
+    });
+    $("#save").click(function () {
+        if ($("#rightname").val() == "") {
+            $.messager.alert("提示", "权限名不能为空", "error", function () {
+                $('#elevatorname').select();
+            });
+            return;
+        }
+        if ($("#rightname").val().length > 15) {
+            $.messager.alert("提示", "权限名长度超出", "error", function () {
+                $('#rightname').select();
+            });
+            return;
+        }
+        if ($("#elevatorid").combobox("getValue") == "") {
+            $.messager.alert("提示", "电梯不能为空", "error", function () { });
+            return;
+        }
+        if ($("#timeid").val() == "") {
+            $.messager.alert("提示", "时段不能为空", "error", function () { });
+            return;
+        }
+        var floor = "";
+        $('input[name="lang"]:checked').each(function () {
+            for (var i = floor.length; i < parseFloat($(this).val()) - 1; i++) {
+                floor += "0";
+            }
+            floor += "1";
+        });
+        if (floor == "") {
+            $.messager.alert("提示", "不能没有楼层", "error", function () { });
+            return;
+        }
+        for (var i = floor.length; i < 56; i++) {
+            floor += "0";
+        }
+        var floorex = "";
+        $('input[name="langex"]:checked').each(function () {
+            for (var i = floorex.length; i < parseFloat($(this).val()) - 1; i++) {
+                floorex += "0";
+            }
+            floorex += "1";
+        });
+        for (var i = floorex.length; i < 56; i++) {
+            floorex += "0";
+        }
+        var floorex2 = "";
+        $('input[name="langex2"]:checked').each(function () {
+            for (var i = floorex2.length; i < parseFloat($(this).val()) - 1; i++) {
+                floorex2 += "0";
+            }
+            floorex2 += "1";
+        });
+        for (var i = floorex2.length; i < 56; i++) {
+            floorex2 += "0";
+        }
+        if ($("#elevatorid").combobox("getValue") == $("#elevatoridex").combobox("getValue")
+        && $("#elevatorid").combobox("getValue") != "" && $("#elevatoridex").combobox("getValue") != ""
+        && $("#elevatorid").combobox("getValue") != "0" && $("#elevatoridex").combobox("getValue") != "0") {
+            $.messager.alert("提示", "电梯1和电梯2重复", "info");
+            return;
+        }
+        else if ($("#elevatorid").combobox("getValue") == $("#elevatoridex2").combobox("getValue")
+            && $("#elevatorid").combobox("getValue") != "" && $("#elevatoridex2").combobox("getValue") != ""
+            && $("#elevatorid").combobox("getValue") != "0" && $("#elevatoridex2").combobox("getValue") != "0") {
+            $.messager.alert("提示", "电梯1和电梯3重复", "info");
+            return;
+        }
+        else if ($("#elevatoridex").combobox("getValue") == $("#elevatoridex2").combobox("getValue")
+       && $("#elevatoridex").combobox("getValue") != "" && $("#elevatoridex2").combobox("getValue") != ""
+       && $("#elevatoridex").combobox("getValue") != "0" && $("#elevatoridex2").combobox("getValue") != "0") {
+            $.messager.alert("提示", "电梯2和电梯3重复", "info");
+            return;
+        }
+        if (id == null) {//新增
+            Ajax(true, tk["NewTkRight"], { LoginID: LocalID, id: $("#id").val(), group_name: $("#rightname").val(),
+                elevator_id: $("#elevatorid").combobox("getValue"), time_id: $("#timeid").combobox("getValue"), floor: floor,
+                elevator_idex: $("#elevatoridex").combobox("getValue"), floorex: floorex,
+                elevator_idex2: $("#elevatoridex2").combobox("getValue"), floorex2: floorex2
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#rightname').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+                $('#win').window('close');
+                loaddata($("#text").val(), $("#select").combo("getValue"), $("#combo").combo("getValue"));
+            });
+        }
+        else {//修改
+            Ajax(true, tk["UpdateTkRight"], { LoginID: LocalID, id: $("#id").val(), group_name: $("#rightname").val(),
+                elevator_id: $("#elevatorid").combobox("getValue"), time_id: $("#timeid").combobox("getValue"), floor: floor,
+                elevator_idex: $("#elevatoridex").combobox("getValue"), floorex: floorex,
+                elevator_idex2: $("#elevatoridex2").combobox("getValue"), floorex2: floorex2
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#rightname').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+                $('#win').window('close');
+                loaddata($("#text").val(), $("#select").combo("getValue"), $("#combo").combo("getValue"));
+            });
+        }
+    });
+    $('#win').window('close');
+    Ajax(true, tk["GetTkTimeList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#select').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'time_name'
+        });
+        $('#timeid').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'time_name'
+        });
+    });
+    $("#sp").mouseleave(function () {
+        $("#floor").combo('hidePanel');
+    });
+    $("#spex").mouseleave(function () {
+        $("#floorex").combo('hidePanel');
+    });
+    $("#spex2").mouseleave(function () {
+        $("#floorex2").combo('hidePanel');
+    });
+    Ajax(true, tk["GetTkElevatorList"], { LoginID: LocalID }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            return;
+        }
+        $('#combo').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'elevator_name'
+        });
+        $('#elevatorid').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'elevator_name'
+        });
+        $('#elevatoridex').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'elevator_name'
+        });
+        $('#elevatoridex2').combobox({
+            data: data.Data,
+            valueField: 'id',
+            textField: 'elevator_name'
+        });
+    });
+    $('#floor').combo({
+        required: true,
+        editable: false
+    });
+    $('#floorex').combo({
+        editable: false
+    });
+    $('#floorex2').combo({
+        editable: false
+    });
+    $('#sp').appendTo($('#floor').combo('panel'));
+    $('#spex').appendTo($('#floorex').combo('panel'));
+    $('#spex2').appendTo($('#floorex2').combo('panel'));
+    loaddata($("#text").val(), $("#select").combo("getValue"), $("#combo").combo("getValue"));
+});
+function loaddata(rightname,timeid,elevatorid) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, tk["GetTkRightList"], { LoginID: LocalID, group_name: rightname, time_id: timeid, elevator_id: elevatorid }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            $('#text').select();
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+}
+</script>
+
+</head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:60px; padding:2px;">
+    权限名：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'Enter Room Name.'" style="width:80px;"/>
+    时段：<select id="select" class="easyui-combobox" style="width:100px"></select>
+    电梯：<select id="combo" class="easyui-combobox" style="width:100px"></select>
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div style="width:100%; height:800px;">
+		<table id="dg"> </table>  
+</div>	
+<div id="win" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'" style="width:280px;height:400px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>编号:</td>
+				<td><input id="id" class="easyui-numberbox textbox" readonly /></td>
+			</tr>
+			<tr>
+				<td>权限名:</td>
+				<td><input id="rightname" class="easyui-validatebox textbox" data-options="prompt:'请输入权限名',required:true,validType:'length[1,15]'" /></td>
+			</tr>
+			<tr>
+				<td>时段:</td>
+				<td><select id="timeid" class="easyui-combobox"  style="width:150px" data-options="prompt:'请选择时段',required:true"></select></td>
+			</tr>
+			<tr>
+				<td>电梯:</td>
+				<td><select id="elevatorid" class="easyui-combobox"  style="width:150px" data-options="prompt:'请选择电梯',required:true"></select></td>
+			</tr>
+			<tr>
+				<td>楼层:</td>
+				<td>
+                <select id="floor" style="width:150px"  data-options="prompt:'请选择楼层',required:true"></select>
+	                <div id="sp">
+		                <div style="color:#99BBE8;background:#fafafa;padding:5px;">选择楼层</div>
+		                <div style="padding:10px">
+			                <input type="checkbox" name="lang" value="01"/><span>C#</span><br/>
+		                </div>
+	                </div>
+                </td>
+			</tr>
+			<tr>
+				<td>电梯2:</td>
+				<td><select id="elevatoridex" class="easyui-combobox"  style="width:150px" data-options="prompt:'请选择电梯'"></select></td>
+			</tr>
+			<tr>
+				<td>楼层2:</td>
+				<td>
+                <select id="floorex" style="width:150px"  data-options="prompt:'请选择楼层'"></select>
+	                <div id="spex">
+		                <div style="color:#99BBE8;background:#fafafa;padding:5px;">选择楼层</div>
+		                <div style="padding:10px">
+		                </div>
+	                </div>
+                </td>
+			</tr>
+			<tr>
+				<td>电梯3:</td>
+				<td><select id="elevatoridex2" class="easyui-combobox"  style="width:150px" data-options="prompt:'请选择电梯'"></select></td>
+			</tr>
+			<tr>
+				<td>楼层3:</td>
+				<td>
+                <select id="floorex2" style="width:150px"  data-options="prompt:'请选择楼层'"></select>
+	                <div id="spex2">
+		                <div style="color:#99BBE8;background:#fafafa;padding:5px;">选择楼层</div>
+		                <div style="padding:10px">
+		                </div>
+	                </div>
+                </td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

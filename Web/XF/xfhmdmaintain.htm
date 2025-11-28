@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css" />
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+    <script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>
+</head>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var datagrid2;
+    var cc;
+    var jsondata2 = { "total": 0, "rows": [] };
+    $(function () {
+        datagrid2 = $("#dg2").datagrid({
+            idField: "id",
+            fitColumns: true,
+            striped: true,
+            title: "黑名单",
+            collapsible: true,
+            remotesort: false,
+            rownumbers: true,
+            singleSelect: true,
+            columns: [[{
+                field: 'card_id',
+                title: '黑名单',
+                //                sortable: true,
+                width: 80
+            }, {
+                field: 'kind_name',
+                title: '原因',
+                //                sortable: true,
+                width: 80
+            }]],
+            toolbar: [{
+                text: "删除", iconCls: "icon-remove", handler: function () {
+                    var rowData = datagrid2.datagrid('getSelections');
+                    var ids;
+                    if (rowData == null || rowData.length == 0) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $.messager.confirm("提示", "确定要删除所选项？", function (data) {
+                        if (data) {
+                            for (var i = 0; i < rowData.length; i++) {
+                                ids = rowData[i].id;
+                                Ajax(true, global.xf["RemoveXFHmd"], { LoginID: LocalID, id: ids }, function (data) {
+                                    if (!data.Success) {
+                                        alert(data.Message);
+                                        return;
+                                    }
+                                    loaddata2();
+                                });
+                            }
+                            $.messager.alert("提示", "删除成功", "info");
+                        }
+                    });
+                }
+            }, {
+                text: "修改", iconCls: "icon-edit", handler: function () {
+                    var rows = datagrid2.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    $('#win2').window('open');
+                    $('#card_id').val(rows.card_id);
+                    $('#reason').val(rows.reason);
+                    cc = 1;
+
+                }
+            }, {
+                text: "增加", iconCls: "icon-add", handler: function () {
+                    $('#win2').window('open');
+                    $('#card_id').val("");
+                    $('#reason').val("");
+                    cc = 0;
+                }
+            }]
+        });
+        loaddata2();
+        $('#win2').window('close');
+        $("#close2").click(function () {
+            $('#win2').window('close');
+        });
+        $("#save2").click(function () {
+            if (cc == 0) {
+                var card_id = $('#card_id').val("");
+                var reason = $('#reason').val("");
+                if (card_id == "") {
+                    alert("卡号不能为空");
+                    return;
+                }
+
+                Ajax(true, global.xf["NewXFHmd"], { LoginID: LocalID, card_id: card_id, reason: reason }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    $('#win2').window('close');
+                    loaddata2();
+                });
+            }
+            if (cc == 1) {
+                var rows = datagrid2.datagrid('getSelected');
+                var id = rows.id;
+                var card_id = $('#card_id').val(rows.card_id);
+                var reason = $('#reason').val(rows.reason);
+                if (card_id == "") {
+                    alert("卡号不能为空");
+                    return;
+                }
+
+                Ajax(true, global.xf["UpdateXFHmd"], { LoginID: LocalID, card_id: card_id, reason: reason, id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $.messager.alert("提示", "添加成功", "info");
+                    $('#win2').window('close');
+                    loaddata2();
+                });
+            }
+        });
+    });
+    function loaddata2() {
+        datagrid2.datagrid('unselectAll');
+        Ajax(true, global.xf["GetXFHmdList"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            jsondata2.rows = data.Data;
+            datagrid2.datagrid('loadData', jsondata2);
+        });
+    }
+    </script>
+<body>
+    <div class="easyui-layout" title="存款类型" data-options="fit:true">
+        <div>
+            <div data-options="region:'north',collapsible:false">
+                <table id="dg2" >
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="win2" class="easyui-window" title="存款类型" data-options="iconCls:'icon-save',minimizable:false,maximizable:false"
+        style="width: 250px; height: 200px; padding: 5px;">
+        <div class="easyui-layout" data-options="fit:true">
+            <div data-options="region:'center'" style="padding: 5px;">
+                <table cellpadding="5">
+                    <tr>
+                        <td>
+                            黑名单：
+                        </td>
+                        <td align="left">
+                            <input id="card_id" class="easyui-textbox" style="width: 100px" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            原因：
+                        </td>
+                        <td align="left">
+                            <input id="reason" class="easyui-textbox" style="width: 100px" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div data-options="region:'south',border:false" style="text-align: right; padding: 5px 0 0;">
+                <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)"
+                    id="close2" style="width: 80px">关闭</a> <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+                        href="javascript:void(0)" id="save2" style="width: 80px">提交</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

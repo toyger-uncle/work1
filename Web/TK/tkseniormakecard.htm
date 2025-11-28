@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 20px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+    var LocalID = $.cookie("LocalID");
+    var cardsnr = "";
+    var TKPlaintext = "";
+    var rooltime = 1000;
+    var cot = 0;
+    var maxcot = 12000;
+    var rool;
+    $(function () {
+        while (true) {
+            var ActiveX;
+            var ret;
+            try {
+                ActiveX = $("#ActiveX")[0];
+                ret = ActiveX.GetVersion();
+            }
+            catch (e) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请安装做卡插件，重试！");
+                return;
+                continue;
+            }
+            if (ret != "1.0") {
+                $("#info").css("color", "Red");
+                $("#info").html("做卡插件版本不匹配，请重新安装对应版本，重试！" + "(当前" + ret + "软件需要1.0)");
+                return;
+                continue;
+            }
+            ret = ActiveX.OpenCom();
+            if (ret != 0) {
+                $("#info").css("color", "Red");
+                $("#info").html("初始化失败，请插好读卡器，重试！");
+                return;
+                continue;
+            }
+            break;
+        }
+
+        $("#info").html("获取梯控密钥……");
+        Ajax(true, global.tk["GetTKPlaintext"], { LoginID: LocalID }, function (data) {
+            if (!data.Success) {
+                alert(data.Message);
+                return;
+            }
+            TKPlaintext = data.Data.variablechar;
+            $("#info").html("获取梯控密钥成功");
+            readcard();
+        });
+
+        $("#make").click(function () {
+            clearTimeout(rool);
+            var bl = true;
+            var newValue = $('#select').combobox("getValue");
+            if (newValue == "1") {
+                bl = make1();
+            }
+            else if (newValue == "2") {
+                bl = make2();
+            }
+            else if (newValue == "3") {
+                bl = make3();
+            }
+            if (bl) {
+                rool = setTimeout(function () { readcard() }, rooltime);
+            }
+        });
+    });
+    var ext = false;
+    function readcard() {
+        var currentcardsnr = ActiveX.RFMifare_GetSnr();
+        var cardtype;
+        if (currentcardsnr == "") {
+            if (cardsnr != "") {
+                $("#card").val("");
+            }
+            $("#info").css("color", "Blue");
+            $("#info").html("读卡中……");
+            cot++;
+            if (cot > maxcot) {
+                $("#info").css("color", "Red");
+                $("#info").html("长时间未读到卡，已停止工作，要继续请刷新页面");
+                return;
+            }
+        }
+        else {
+            cot = 0;
+        }
+        if (currentcardsnr == "" || currentcardsnr == cardsnr) {
+            cardsnr = currentcardsnr;
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        cardsnr = currentcardsnr;
+        var TKMadeCard = { "lonSecNo": 9, "strCdsnr": cardsnr, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_ReadCardInfo(JSON2.stringify(TKMadeCard));
+        var cardinfojson = JSON2.parse(cardinfo);
+        var ac = cardinfojson.Type;
+        if (ac == 42) {
+            $("#info").css("color", "Green");
+            $("#info").html("读卡成功，卡号为：" + cardsnr + "，加局号卡");
+            $("#card").val(cardsnr);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else if (ac == 43) {
+            $("#info").css("color", "Green");
+            $("#info").html("读卡成功，卡号为：" + cardsnr + "，减局号卡");
+            $("#card").val(cardsnr);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else if (ac == 20) {
+            $("#info").css("color", "Green");
+            $("#info").html("读卡成功，卡号为：" + cardsnr + "，清除内存卡");
+            $("#card").val(cardsnr);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+        else {
+            $("#info").css("color", "Green");
+            $("#info").html("读卡成功，卡号为：" + cardsnr);
+            $("#card").val(cardsnr);
+            rool = setTimeout(function () { readcard() }, rooltime);
+            return;
+        }
+    }
+    function make1() {
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        //做卡
+        var TKCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_SysPlusOfficeNoCard(JSON2.stringify(TKCard));
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+            return;
+        }
+        else {
+            if (ext) {
+                    $.messager.alert("提示", "卡已存在", "error", function () { });
+                    return;
+
+            }
+            else {
+                    $("#info").css("color", "Green");
+                    $("#info").html("制卡成功，卡号：" + card);
+                    ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                    rool = setTimeout(function () { readcard() }, rooltime);
+            }
+        }
+        return false;
+    } 
+    function make2() {
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        //做卡
+        var TKCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_SysMinusOfficeNoCard(JSON2.stringify(TKCard));
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+            return;
+        }
+        else {
+            if (ext) {
+                $.messager.alert("提示", "卡已存在", "error", function () { });
+                return;
+
+            }
+            else {
+                $("#info").css("color", "Green");
+                $("#info").html("制卡成功，卡号：" + card);
+                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                rool = setTimeout(function () { readcard() }, rooltime);
+            }
+        }
+        return false;
+    }
+    function make3() {
+        var card = $("#card").val();
+        if (card == "") {
+            $.messager.alert("提示", "请放好卡", "error", function () { });
+            return true;
+        }
+        //做卡
+        var TKCard = { "lonSecNo": 9, "strCdsnr": card, "card_key": TKPlaintext };
+        var cardinfo = ActiveX.RFMifare_SysClearMemoryCard(JSON2.stringify(TKCard));
+        var cardinfojson = JSON2.parse(cardinfo);
+        if (!cardinfojson.Success) {
+            $("#info").css("color", "Red");
+            $("#info").html("制卡失败，卡号：" + card + "，原因：错误信息：" + cardinfojson.Message);
+            return;
+        }
+        else {
+            if (ext) {
+                $.messager.alert("提示", "卡已存在", "error", function () { });
+                return;
+
+            }
+            else {
+                $("#info").css("color", "Green");
+                $("#info").html("制卡成功，卡号：" + card);
+                ActiveX.RFMifare_Alarm(4, 10, 0, 1);
+                rool = setTimeout(function () { readcard() }, rooltime);
+            }
+        }
+        return false;
+    }
+</script>
+</head>
+<body>
+<div class="easyui-panel" title="高级制卡" data-options="iconCls:'icon-search',collapsible:false,maximized:true" style="width:100%;">
+<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'north',collapsible:false" title="提示" style="padding:5px 0 0; height:120px;">
+        <div id="tou" style="width:600px;text-align:left; color:Blue; font-weight:bold; font-size:large;">手动操作中……</div>
+        <div id="info" style="width:800px;text-align:left; color:Blue; font-weight:bold; font-size:large;">请把卡片放到读卡器上</div>
+    </div>  
+    <div data-options="region:'center',collapsible:false, border:false" title="操作"style="padding:5px;width:300px; ">
+                    <div style="width:100%;height:30px;">
+                    卡号：<input id="card" class="easyui-validatebox textbox" data-options="prompt:'卡号'" style="width:80px;" readonly />
+                    卡种类：<select id="select" class="easyui-combobox" data-options="prompt:'卡类型'" style="width:110px"><option value="1">加局号卡</option><option value="2" >减局号卡</option><option value="3" >清内存卡</option></select>
+                    <!--<div style="display:inline" id="automakediv" ><input type="checkbox" id="automake" name="lg" value="0"/>自动制卡</div>-->
+                   <!-- <input type="checkbox" id="autorecy" name="lg" value="1"/>自动退卡-->
+                    </div>
+                    <div style="width:100%;height:30px;" >
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="make" style="width:60px;" >制卡</a>
+  	                <a href="javascript:void(0)" class="easyui-linkbutton" id="recy"style="width:60px;" >退卡</a>
+                    </div>
+        
+    </div>
+         </div>
+</div>
+    <object id="ActiveX" type="application/x-itst-activex" classid="clsid:A01FC1A7-E754-478C-979E-4EC8B8E31A06" style="width:0px; height:0px;" codebase="ActiveX.ActiveX#version=1,0,0,0">
+    </object>
+</body>
+</html>

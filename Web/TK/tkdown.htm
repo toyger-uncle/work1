@@ -1,0 +1,945 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/json2.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/global.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+    <style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+
+</style>
+    <script type="text/javascript">
+        var LocalID = $.cookie("LocalID");
+        var datagrid;
+        var jsondata = { "total": 0, "rows": [] };
+        var pp;
+        var cc = 10000;
+        $(function () {
+            //            Ajax(true, global.tk["GetTkElevatorList"], { LoginID: LocalID }, function (data) {
+            //                if (!data.Success) {
+            //                    alert(data.Message);
+            //                    return;
+            //                }
+            //                $('#diant').combobox({
+            //                    data: data.Data,
+            //                    valueField: 'id',
+            //                    textField: 'elevator_name'
+            //                });
+            //            });
+            //            $('#diant').combobox({
+            //                onSelect: function (rec) {
+            //                    var you = "";
+            //                    for (var i = 0; i < rec.floor_num; i++) {
+            //                        you += "<input type='checkbox' name='lang' value='" + (i + 1) + "'/><span>" + (i + 1) + "楼</span>";
+            //                        if (i >= 56) {
+            //                            break;
+            //                        }
+            //                        if (i != rec.floor_num - 1) {
+            //                            you += "<br/>";
+            //                        }
+            //                    }
+            //                    $("#sp").children().eq(1).html(you);
+            //                    $('#floor').combo('setText', '');
+            //                    $('#floor').combo('setValue', '');
+            //                    $('#sp input').click(function () {
+            //                        var value = "";
+            //                        var text = "";
+            //                        $('input[name="lang"]:checked').each(function () {
+            //                            if (value != "") {
+            //                                value += ",";
+            //                            }
+            //                            value += $(this).val();
+            //                            if (text != "") {
+            //                                text += ",";
+            //                            }
+            //                            text += $(this).next('span').text();
+            //                        });
+            //                        $('#floor').combo('setValue', value).combo('setText', text);
+            //                    });
+            //                }
+            //            });
+            Ajax(true, global.tk["GetTkRoomList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    return;
+                }
+                $('#fj').combobox({
+                    data: data.Data,
+                    valueField: 'id',
+                    textField: 'room_name'
+                });
+            });
+            datagrid = $("#dg").datagrid({
+                idField: "id",
+                //pagination: true, //显示分页  
+                //pageSize: 10, //分页大小  
+                //pageList: [10, 50, 100], //每页的个数  
+                //fit: true, //自动补全  
+                fitColumns: true,
+                striped: true,
+                iconCls: "icon-save", //图标  
+                title: "电梯状态",
+                collapsible: true,
+                remotesort: false,
+                checkbox: true,
+                //rownumbers: true,
+                //sortName:"id",
+                //sortOrder: 'desc',
+                columns: [[{
+                    field: 'ck',
+                    checkbox: true,
+                    width: 20
+                }, {
+                    field: 'id',
+                    title: '梯号',
+                    //sortable: true,
+                    width: 50
+                }, {
+                    field: 'elevator_name',
+                    title: '梯名',
+                    //sortable: true,
+                    width: 100
+                }, {
+                    field: 'floor_num',
+                    title: '层数',
+                    //sortable: true,
+                    width: 50
+                }, {
+                    field: 'comm_message',
+                    title: '通讯信息',
+                    //sortable: true,
+                    width: 150,
+                    formatter: function (value, row) {
+                        if (value == "脱网中") {
+                            return '<font color="red">' + value + '</font>';
+                        }
+                        else if (value == "联网中") {
+                            return '<font color="green">' + value + '</font>';
+                        }
+                        else { return value; }
+                    }
+                }, {
+                    field: 'last_time',
+                    title: '最后通讯时间',
+                    //sortable: true,
+                    width: 80
+                }]],
+                onSelect: function (rowIndex, rowData) {
+                    if ($("#dg").datagrid('getSelections').length > 1) {
+                        $("#dtsysd").hide();
+                        $("#room").hide();
+                        $("#yskcl").hide();
+                        $("#yckt").hide();
+                        $("#jydt").hide();
+                        $("#dkdt").hide();
+                        $("#ssjk").hide();
+                        $("#do").hide();
+                    }
+                    else {
+                        $("#dtsysd").show();
+                        $("#room").show();
+                        $("#yskcl").show();
+                        $("#yckt").show();
+                        $("#jydt").show();
+                        $("#dkdt").show();
+                        $("#ssjk").show();
+                        $("#do").show();
+                    }
+                },
+                onUnselect: function (rowIndex, rowData) {
+                    if ($("#dg").datagrid('getSelections').length > 1) {
+                        $("#dtsysd").hide();
+                        $("#room").hide();
+                        $("#yskcl").hide();
+                        $("#yckt").hide();
+                        $("#jydt").hide();
+                        $("#dkdt").hide();
+                        $("#ssjk").hide();
+                        $("#do").hide();
+                    }
+                    else {
+                        $("#dtsysd").show();
+                        $("#room").show();
+                        $("#yskcl").show();
+                        $("#yckt").show();
+                        $("#jydt").show();
+                        $("#dkdt").show();
+                        $("#ssjk").show();
+                        $("#do").show();
+                    }
+                }
+            });
+            $("#sp").mouseleave(function () {
+                $("#floor").combo('hidePanel');
+            });
+
+            $('#floor').combo({
+                required: true,
+                editable: false
+            });
+            $('#sp').appendTo($('#floor').combo('panel'));
+            loaddata();
+            $('#win1').window('close');
+            $('#win').window('close');
+            $('#win2').window('close');
+            $('#win3').window('close');
+            $('#win4').window('close');
+            $("#shezhi").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                if ($("#ansj").prop("checked")) {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+
+                    $('#win1').window('open');
+                    pp = 11;
+                    $("#ss").val("3");
+                }
+                if ($("#hxsz").prop("checked")) {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var id = rows.id;
+                    Ajax(true, global.tk["SetTime"], { LoginID: LocalID, mach_id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (data.Data == true) {
+                            $.messager.alert("提示", "设置内呼板时钟" + data.Ex + "秒成功", "info");
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "设置内呼板时钟失败", "error");
+                        }
+                    });
+                }
+            });
+            $("#duqu").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                if ($("#ansj").prop("checked")) {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var id = rows.id;
+                    Ajax(true, global.tk["ReadRespondTime"], { LoginID: LocalID, mach_id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (data.Data == true) {
+                            $.messager.alert("提示", data.Ex, "info");
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "读取失败", "error");
+                        }
+                    });
+                }
+                if ($("#hxsz").prop("checked")) {
+                    var rows = datagrid.datagrid('getSelected');
+                    if (rows == null) {
+                        $.messager.alert("提示", "未选择项", "error");
+                        return;
+                    }
+                    var id = rows.id;
+                    Ajax(true, global.tk["ReadTime"], { LoginID: LocalID, mach_id: id }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (data.Data == true) {
+                            $.messager.alert("提示", data.Ex, "info");
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "读取失败", "error");
+                        }
+                    });
+                }
+
+            });
+
+            $("#lsdt").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelections');
+                var name;
+                var ids;
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                for (var i = 0; i < rows.length; i++) {
+                    ids = rows[i].id;
+                         (function (ids) {
+                    Ajax(true, global.tk["ReadRecord"], { LoginID: LocalID, mach_id: ids }, function (data) {
+                        if (!data.Success) {
+                            $.messager.alert("提示", "电梯" + ids + " 采集失败", "error");
+                            return;
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "电梯" + ids + " 采集失败", "error");
+                        }
+                    });
+                })(ids);
+                }
+            });
+            $("#ssjk").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                var id = rows.id;
+                Ajax(true, global.tk["TestLine"], { LoginID: LocalID, mach_id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "连接成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "连接失败", "error");
+                    }
+                });
+            });
+            $("#hmd").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelections');
+                var name;
+                var ids;
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                for (var i = 0; i < rows.length; i++) {
+                         ids = rows[i].id;
+                         (function (ids) {
+                    Ajax(true, global.tk["DownHmdCard"], { LoginID: LocalID, mach_id: ids }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "电梯" + ids + " 下载黑名单失败", "error");
+                        }
+                    });
+                })(ids);
+                   
+                }
+            });
+            $("#dkdt").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                var id = rows.id;
+                Ajax(true, global.tk["Open"], { LoginID: LocalID, mach_id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "打开电梯成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "打开电梯失败", "error");
+                    }
+                });
+            });
+            $("#jydt").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                var id = rows.id;
+                Ajax(true, global.tk["Disable"], { LoginID: LocalID, mach_id: id }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "恢复自控成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "恢复自控失败", "error");
+                    }
+                });
+            });
+            //            $("#gei").click(function () {
+            //                var rows = datagrid.datagrid('getSelected');
+            //                if (rows == null) {
+            //                    $.messager.alert("提示", "未选择项", "error");
+            //                    return;
+            //                }
+            //                var id = rows.id;
+            //                Ajax(true, global.tk["GetElevatorID"], { LoginID: LocalID, mach_id: id }, function (data) {
+            //                    if (!data.Success) {
+            //                        alert(data.Message);
+            //                        return;
+            //                    }
+            //                });
+            //            });
+            $("#yckt").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rec = datagrid.datagrid('getSelected');
+                if (rec == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win4').window('open');
+                var you = "";
+                var qishi1 = rec.start_floor;
+                for (var i = 0; i < rec.floor_num; i++) {
+                    you += "<input type='checkbox' name='lang' value='" + (i + 1) + "' ";
+                    if (qishi1 == "" || qishi1 == null) {
+                        you += " /><span>" + (i + 1) + "楼</span>";
+                    }
+                    if (qishi1 > 0) {
+                        you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>";
+                    }
+                    if (qishi1 < 0) {
+                        if ((i + parseInt(qishi1)) >= 0) {
+                            you += " /><span>" + (i + parseInt(qishi1) + 1) + "楼</span>";
+                        }
+                        else { you += " /><span>" + (i + parseInt(qishi1)) + "楼</span>"; }
+                    }
+                    if (i >= 56) {
+                        break;
+                    }
+                    if (i != rec.floor_num - 1) {
+                        you += "<br/>";
+                    }
+                }
+                $("#sp").children().eq(1).html(you);
+                $('#floor').combo('setText', '');
+                $('#floor').combo('setValue', '');
+                $('#sp input').click(function () {
+                    var value = "";
+                    var text = "";
+                    $('input[name="lang"]:checked').each(function () {
+                        if (value != "") {
+                            value += ",";
+                        }
+                        value += $(this).val();
+                        if (text != "") {
+                            text += ",";
+                        }
+                        text += $(this).next('span').text();
+                    });
+                    $('#floor').combo('setValue', value).combo('setText', text);
+                });
+            });
+            $("#dtsysd").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+
+                $('#win3').window('open');
+            });
+            $("#yskcl").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+
+                $('#win').window('open');
+            });
+            $("#room").click(function () {
+                var rows = datagrid.datagrid('getSelected');
+                if (rows == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+
+                $('#win2').window('open');
+            });
+            $("#A2").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                var xlh = $("#xulie").val();
+                var ka = $("#ka").numberbox('getValue');
+                var id = rows.id;
+                var use = $("#use").combobox('getValue');
+                Ajax(true, global.tk["DownCard"], { LoginID: LocalID, mach_id: id, card:xlh , snr:ka , isused: use }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#win').window('close');
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "操作成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "操作失败", "error");
+                    }
+                });
+            });
+            $("#A4").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                var fj = $("#fj").combobox('getValue');
+                var id = rows.id;
+                var use = $("#use1").combobox('getValue');
+                if (fj == "") {
+                    alert("房间不能为空");
+                    return;
+                }
+                Ajax(true, global.tk["SetRoom"], { LoginID: LocalID, mach_id: id, room: fj, isused: use }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#win2').window('close');
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "操作成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "操作失败", "error");
+                    }
+                });
+            });
+            $("#A6").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                var id = rows.id;
+                for (var i = 1; i < 8; i++) {
+                    if ($("#sd" + i + "").is(':checked')) {
+                        var bt = $("#kaishi" + i + "").timespinner('getValue');
+                        var et = $("#jieshu" + i + "").timespinner('getValue');
+                        Ajax(true, global.tk["SetUsedTime"], { LoginID: LocalID, mach_id: id, num: i, begintime: bt, endtime: et }, function (data) {
+                            if (!data.Success) {
+                                alert(data.Message);
+                                return;
+                            }
+                            if (data.Data == true) {
+                                $.messager.alert("提示", "操作成功", "info");
+                            }
+                            if (data.Data == false) {
+                                $.messager.alert("提示", "操作失败", "error");
+                            }
+                        });
+                    }
+                }
+                $('#win3').window('close');
+
+            });
+
+            $("#A8").click(function () {
+                for (var i = 0; i < 10; i++) {
+                    if (i < 10) {
+                        cc = 2000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                    else {
+                        cc = 10000;
+                        rool = setTimeout(function () { loaddata(); }, cc);
+                    }
+                }
+                var rows = datagrid.datagrid('getSelected');
+                //                var fj = $("#diant").combobox('getValue');
+                var id = rows.id;
+                var floor = "";
+                $('input[name="lang"]:checked').each(function () {
+                    for (var i = floor.length; i < parseFloat($(this).val()) - 1; i++) {
+                        floor += "0";
+                    }
+                    floor += "1";
+                });
+                if (floor == "") {
+                    $.messager.alert("提示", "不能没有楼层", "error", function () { });
+                    return;
+                }
+                for (var i = floor.length; i < 56; i++) {
+                    floor += "0";
+                }
+                Ajax(true, global.tk["RemoteOpenFloor"], { LoginID: LocalID, mach_id: id, floor: floor }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    $('#win4').window('close');
+                    if (data.Data == true) {
+                        $.messager.alert("提示", "操作成功", "info");
+                    }
+                    if (data.Data == false) {
+                        $.messager.alert("提示", "操作失败", "error");
+                    }
+                });
+            });
+            $("#close").click(function () {
+                $('#win1').window('close');
+            });
+            $("#A1").click(function () {
+                $('#win').window('close');
+            });
+            $("#A3").click(function () {
+                $('#win2').window('close');
+            });
+            $("#A5").click(function () {
+                $('#win3').window('close');
+            });
+            $("#A7").click(function () {
+                $('#win4').window('close');
+            });
+            $("#save").click(function () {
+                if (pp == 11) {
+                    for (var i = 0; i < 10; i++) {
+                        if (i < 10) {
+                            cc = 2000;
+                            rool = setTimeout(function () { loaddata(); }, cc);
+                        }
+                        else {
+                            cc = 10000;
+                            rool = setTimeout(function () { loaddata(); }, cc);
+                        }
+                    }
+                    var rows = datagrid.datagrid('getSelected');
+                    var time = $('#ss').numberspinner('getValue');
+                    var id = rows.id;
+                    Ajax(true, global.tk["SetRespondTime"], { LoginID: LocalID, mach_id: id, time: time }, function (data) {
+                        if (!data.Success) {
+                            alert(data.Message);
+                            return;
+                        }
+                        $('#win1').window('close');
+                        if (data.Data == true) {
+                            $.messager.alert("提示", "设置按钮时间成功", "info");
+                        }
+                        if (data.Data == false) {
+                            $.messager.alert("提示", "设置按钮时间失败", "error");
+                        }
+                    });
+                }
+            });
+        });
+        var rool;
+        function loaddata() {
+            clearTimeout(rool);
+            Ajax(true, global.tk["GetTkElevatorList"], { LoginID: LocalID }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#text').select();
+                    return;
+                }
+                jsondata.total = data.Data.length;
+                jsondata.rows = data.Data;
+                datagrid.datagrid('loadData', jsondata);
+                rool = setTimeout(function () { loaddata(); }, cc);
+            });
+        }
+    </script>
+</head>
+<body>
+ <div class="easyui-panel" title="下载信息" data-options="collapsible:true" style="width:100%; padding:2px; ">
+<div class="easyui-layout" data-options="fit:true">
+<div style="width:100%; height:400px;">
+<div id ="do" style="padding:2px;"> 
+<input id="hxsz" name="zw"  value="false" type="radio"/>内呼板时钟
+<input id="ansj" name="zw"  value="false" type="radio"/>按钮时间
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:80px;" id="duqu" >读取</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="shezhi" >设置</a></div>
+<div style="padding:2px;">
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:80px;" id="ssjk" >测试连接</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="hmd" >下载黑名单</a>
+<a href="javascript:void(0)" class="easyui-linkbutton" style="width:80px;" id="dkdt" >打开电梯</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="jydt" >恢复自控</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="lsdt" >信息采集</a>
+</div>
+<div style="padding:2px;">
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="yckt" >远程开通</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="yskcl" >遗失卡处理</a>
+<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="room" >房间管理</a>
+<!--<a class="easyui-linkbutton" data-options="" href="javascript:void(0)"style="width:80px;" id="dtsysd" >电梯使用</a>-->
+</div>
+		<table id="dg"style="padding: 5px;"data-options=""> </table>  
+</div>
+
+</div>
+     </div>
+     <div id="win1" class="easyui-window" title="设置" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:200px;height:150px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+			<td>时间：</td>
+				<td><input id="ss" class="easyui-numberspinner" style="width:80px;"value="3"  required="required" data-options="min:1,max:100,editable:false"/>s  
+</td></tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+<div id="win" class="easyui-window" title="设置" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:250px;height:220px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="d1">
+              <table cellpadding="5">
+              <tr>
+				<td>卡号：</td>
+				<td><input id="xulie" class="easyui-validatebox textbox" data-options="required:true,prompt: '请输入卡号'" style="width:80px;height:20px;"maxlength="8"/></td>
+			
+			</tr>
+            <tr>
+				<td>梯卡号：</td>
+				<td><input id="ka" class="easyui-numberbox" data-options="required:true,prompt: '请输入梯卡号',min:1,max:16000" style="width:80px;height:20px;"/></td>
+			
+			</tr> 
+            <tr>
+<td>是否删除卡密码：</td><td><select id="use" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="1">是</option>
+        <option value="0">否</option> </select></td>
+			</tr>
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A1" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A2" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+<div id="win2" class="easyui-window" title="设置" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:230px;height:170px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="Div2">
+              <table cellpadding="5">
+              <tr>
+				<td>房间号：</td>
+				<td><select id="fj" class="easyui-combobox" data-options="required:true,prompt: '请输入房间号'" style="width:80px;height:20px">  </select></td>
+			
+			</tr>
+           
+            <tr>
+<td>是否使用：</td><td><select id="use1" class="easyui-combobox"  style="width:80px;height:20px"> 
+                <option value="1">使用</option>
+        <option value="0">禁用</option> </select></td>
+			</tr>
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A3" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A4" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+<div id="win3" class="easyui-window" title="设置" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:480px;height:330px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="Do">
+              <table cellpadding="5">
+              <tr>
+				<td>时段1：</td><td><input type="checkbox"id ="sd1" name="sd" value="1" /></td>
+			    <td>开始时间：</td><td><input id="kaishi1" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu1" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>时段2：</td><td><input type="checkbox"id ="sd2" name="sd" value="2" /></td>
+			    <td>开始时间：</td><td><input id="kaishi2" class="easyui-timespinner"  style="width:80px;"value="00:00"  required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu2" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>时段3：</td><td><input type="checkbox"id ="sd3" name="sd" value="3" /></td>
+			    <td>开始时间：</td><td><input id="kaishi3" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu3" class="easyui-timespinner"  style="width:80px;"value="00:00"  required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>时段4：</td><td><input type="checkbox"id ="sd4" name="sd" value="4" /></td>
+			    <td>开始时间：</td><td><input id="kaishi4" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu4" class="easyui-timespinner"  style="width:80px;"value="00:00"  required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>时段5：</td><td><input type="checkbox"id ="sd5" name="sd" value="5" /></td>
+			    <td>开始时间：</td><td><input id="kaishi5" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu5" class="easyui-timespinner"  style="width:80px;"value="00:00"  required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+          <tr>
+				<td>时段6：</td><td><input type="checkbox"id ="sd6" name="sd" value="6" /></td>
+			    <td>开始时间：</td><td><input id="kaishi6" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu6" class="easyui-timespinner"  style="width:80px;"value="00:00"  required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+                
+          <tr>
+				<td>时段7：</td><td><input type="checkbox"id ="sd7" name="sd" value="7" /></td>
+			    <td>开始时间：</td><td><input id="kaishi7" class="easyui-timespinner"  style="width:80px;"value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+			    <td>结束时间：</td><td><input id="jieshu7" class="easyui-timespinner"  style="width:80px;" value="00:00" required="required" data-options="min:'00:00',showSeconds:false" />  </td>
+                </tr>
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A5" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A6" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+<div id="win4" class="easyui-window" title="设置" data-options="iconCls:'icon-save',minimizable:false,maximizable:false" style="width:230px;height:170px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+    <div data-options="region:'center'" style="padding:5px;">
+			  <div id="Div4">
+              <table cellpadding="5">
+            <!--  <tr>
+              <td>层数：</td><td><select id="diant" class="easyui-combobox" data-options="prompt:'请选择电梯',required:true" style="width:120px;height:20px"> </select></td>
+              </tr>
+           -->
+            <tr>
+<td>层数：</td><td><select id="floor" class="easyui-combobox" data-options="prompt:'请选择楼层',required:true" style="width:120px;height:20px"> </select>
+<div id="sp">
+		                <div style="color:#99BBE8;background:#fafafa;padding:5px;">选择楼层</div>
+		                <div style="padding:10px">
+			                <input type="checkbox" name="lang" value="01"/><span>Java</span><br/>
+			                <input type="checkbox" name="lang" value="02"/><span>C#</span><br/>
+			                <input type="checkbox" name="lang" value="03"/><span>Ruby</span><br/>
+			                <input type="checkbox" name="lang" value="04"/><span>Basic</span><br/>
+			                <input type="checkbox" name="lang" value="05"/><span>Fortran</span>
+		                </div>
+	                </div>
+</td>
+			</tr>
+            </table>
+              </div>
+			
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="A7" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="A8" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>

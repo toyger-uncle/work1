@@ -1,0 +1,492 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title></title>	
+    <link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="../../Scripts/jquery-easyui/themes/icon.css" />
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.min.js"></script>
+	<script type="text/javascript" src="../../Scripts/jquery-easyui/jquery.easyui.min.js"></script>
+    <script src="../../Scripts/jquery-easyui/locale/easyui-lang-zh_CN.js" type="text/javascript"></script>
+    <script src="../../Scripts/jquery.cookie.js" type="text/javascript"></script>
+    <script src="../../Scripts/constant.js" type="text/javascript"></script>
+    <script src="../../Scripts/common.js" type="text/javascript"></script>	
+<style type="text/css" >
+body {
+font-family: verdana,helvetica,arial,sans-serif,宋体;
+font-size: 12px;
+margin: 0;
+padding: 2px;
+}
+h2 {
+font-size: 18px;
+font-weight: bold;
+margin: 0 0 15px;
+}
+.demo-info {
+padding: 0 0 12px;
+}
+.demo-tip {
+display: none;
+}
+.textbox{
+height:20px;
+margin:0;
+padding:0 2px;
+box-sizing:content-box;
+}
+</style>
+<script type="text/javascript">
+var LocalID = $.cookie("LocalID");
+var datagrid;
+var id = null; 
+var jsondata = {"total":0,"rows":[]};
+$(function () {
+    datagrid = $("#dg").datagrid({
+        idField: "id",
+        //pagination: true, //显示分页  
+        //pageSize: 10, //分页大小  
+        //pageList: [10, 50, 100], //每页的个数  
+        //fit: true, //自动补全  
+        fitColumns: true,
+        striped: true,
+        iconCls: "icon-save", //图标  
+        title: "时段管理",
+        collapsible: true,
+        remotesort: false,
+        singleSelect: true,
+        //rownumbers: true,
+        //sortName:"id",
+        //sortOrder: 'desc',
+        columns: [[{
+            field: 'id',
+            title: '时段号',
+            //sortable: true,
+            width: 50
+        }, {
+            field: 'time_name',
+            title: '时段名',
+            //sortable: true,
+            width: 100
+        }, {
+            field: 'begin_date',
+            title: '开始日期',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'end_date',
+            title: '截止日期',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'begin_time',
+            title: '开始时间',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'end_time',
+            title: '截止时间',
+            //sortable: true,
+            width: 80
+        }, {
+            field: 'week',
+            title: '星期几有效',
+            //sortable: true,
+            width: 120,
+            formatter: function (val, rec) {
+                if (val.length != 7) {
+                    return '出错';
+                } else {
+                    var you = "";
+                    if (val.substr(0, 1) == "1") {
+                        you += "一";
+                    }
+                    if (val.substr(1, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "二";
+                    }
+                    if (val.substr(2, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "三";
+                    }
+                    if (val.substr(3, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "四";
+                    }
+                    if (val.substr(4, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "五";
+                    }
+                    if (val.substr(5, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "六";
+                    }
+                    if (val.substr(6, 1) == "1") {
+                        if (you != "") {
+                            you += "、";
+                        }
+                        you += "日";
+                    }
+                    return you;
+                }
+            }
+        }]],
+        toolbar: [{
+            text: "修改", iconCls: "icon-edit", handler: function () {
+                var rowData = datagrid.datagrid('getSelected');
+                if (rowData == null) {
+                    $.messager.alert("提示", "未选择项", "error");
+                    return;
+                }
+                $('#win').window({
+                    title: '修改时段',
+                    iconCls: 'icon-edit',
+                    maximizable: false,
+                    minimizable: false
+                });
+                $('#win').window('open');
+                id = rowData.id;
+                $('#id').numberbox('setValue', parseFloat(rowData.id));
+                $("#begindate").datebox("setValue", rowData.begin_date);
+                $("#enddate").datebox("setValue", rowData.end_date);
+                $("#begintime").timespinner("setValue", rowData.begin_time);
+                $("#endtime").timespinner("setValue", rowData.end_time);
+                if (rowData.week.length == 7) {
+                    if (rowData.week.substr(0, 1) == "1") {
+                        $("#one").prop('checked', true);
+                    }
+                    else {
+                        $("#one").prop('checked', false);
+                    }
+                    if (rowData.week.substr(1, 1) == "1") {
+                        $("#two").prop('checked', true);
+                    }
+                    else {
+                        $("#two").prop('checked', false);
+                    }
+                    if (rowData.week.substr(2, 1) == "1") {
+                        $("#three").prop('checked', true);
+                    }
+                    else {
+                        $("#three").prop('checked', false);
+                    }
+                    if (rowData.week.substr(3, 1) == "1") {
+                        $("#four").prop('checked', true);
+                    }
+                    else {
+                        $("#four").prop('checked', false);
+                    }
+                    if (rowData.week.substr(4, 1) == "1") {
+                        $("#five").prop('checked', true);
+                    }
+                    else {
+                        $("#five").prop('checked', false);
+                    }
+                    if (rowData.week.substr(5, 1) == "1") {
+                        $("#six").prop('checked', true);
+                    }
+                    else {
+                        $("#six").prop('checked', false);
+                    }
+                    if (rowData.week.substr(6, 1) == "1") {
+                        $("#sun").prop('checked', true);
+                    }
+                    else {
+                        $("#sun").prop('checked', false);
+                    }
+                }
+                $('#timename').val(rowData.time_name);
+                $('#timename').select();
+            }
+        }, {
+            text: "增加", iconCls: "icon-add", handler: function () {
+                id = null;
+                var curr_time = new Date();
+                $("#begindate").datebox("setValue", myformatterx(curr_time));
+                $("#enddate").datebox("setValue", myformatter(curr_time));
+                $("#begintime").timespinner("setValue", "00:00");
+                $("#endtime").timespinner("setValue", "23:59");
+                $("#one").prop('checked', true);
+                $("#two").prop('checked', true);
+                $("#three").prop('checked', true);
+                $("#four").prop('checked', true);
+                $("#five").prop('checked', true);
+                $("#six").prop('checked', false);
+                $("#sun").prop('checked', false);
+                Ajax(true, tk["GetTkTimeMaxid"], { LoginID: LocalID }, function (data) {
+                    if (!data.Success) {
+                        alert(data.Message);
+                        return;
+                    }
+                    if (data.Data >= 99) {
+                        $.messager.alert("提示", "时段名已到最大", "error");
+                        return;
+                    }
+                    $('#id').numberbox('setValue', data.Data + 1);
+                    $('#win').window({
+                        title: '新增时段',
+                        iconCls: 'icon-add',
+                        maximizable: false,
+                        minimizable: false
+                    });
+                    $('#win').window('open');
+                    $('#timename').val('');
+                    $('#timename').select();
+                });
+            }
+        }, {
+            text: "查询", iconCls: "icon-search", handler: function () {
+                loaddata($("#text").val());
+            }
+        }],
+        onSortColumn: function (sort, order) {
+        },
+        onDblClickCell: function (rowIndex, field, value) {
+            var rowData = jsondata.rows[rowIndex];
+            if (rowData == null) {
+                $.messager.alert("提示", "未选择项", "error");
+                return;
+            }
+            $('#win').window({
+                title: '修改时段',
+                iconCls: 'icon-edit',
+                maximizable: false,
+                minimizable: false
+            });
+            $('#win').window('open');
+            id = rowData.id;
+            $('#id').numberbox('setValue', parseFloat(rowData.id));
+            $("#begindate").datebox("setValue", rowData.begin_date);
+            $("#enddate").datebox("setValue", rowData.end_date);
+            $("#begintime").timespinner("setValue", rowData.begin_time);
+            $("#endtime").timespinner("setValue", rowData.end_time);
+
+            if (rowData.week.length == 7) {
+                if (rowData.week.substr(0, 1) == "1") {
+                    $("#one").prop('checked', true);
+                }
+                else {
+                    $("#one").prop('checked', false);
+                }
+                if (rowData.week.substr(1, 1) == "1") {
+                    $("#two").prop('checked', true);
+                }
+                else {
+                    $("#two").prop('checked', false);
+                }
+                if (rowData.week.substr(2, 1) == "1") {
+                    $("#three").prop('checked', true);
+                }
+                else {
+                    $("#three").prop('checked', false);
+                }
+                if (rowData.week.substr(3, 1) == "1") {
+                    $("#four").prop('checked', true);
+                }
+                else {
+                    $("#four").prop('checked', false);
+                }
+                if (rowData.week.substr(4, 1) == "1") {
+                    $("#five").prop('checked', true);
+                }
+                else {
+                    $("#five").prop('checked', false);
+                }
+                if (rowData.week.substr(5, 1) == "1") {
+                    $("#six").prop('checked', true);
+                }
+                else {
+                    $("#six").prop('checked', false);
+                }
+                if (rowData.week.substr(6, 1) == "1") {
+                    $("#sun").prop('checked', true);
+                }
+                else {
+                    $("#sun").prop('checked', false);
+                }
+            }
+            $('#timename').val(rowData.time_name);
+            $('#timename').select();
+        }
+    });
+    $("#search").click(function () {
+        loaddata($("#text").val());
+    });
+    $("#close").click(function () {
+        $('#win').window('close');
+    });
+    $("#save").click(function () {
+        var week = "";
+        if ($("#timename").val() == "") {
+            $.messager.alert("提示", "时段名不能为空", "error", function () {
+                $('#timename').select();
+            });
+            return;
+        }
+        if ($("#one").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#two").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#three").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#four").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#five").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#six").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if ($("#sun").is(":checked")) {
+            week += "1";
+        }
+        else {
+            week += "0";
+        }
+        if (id == null) {//新增
+            Ajax(true, tk["NewTkTime"], { LoginID: LocalID, id: $("#id").val(), time_name: $("#timename").val(),
+                begin_date: $("#begindate").datebox('getValue'), end_date: $("#enddate").datebox('getValue'),
+                begin_time: $("#begintime").val(), end_time: $("#endtime").val(), week: week
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#timename').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+                $('#win').window('close');
+                loaddata($("#text").val());
+            });
+        }
+        else {//修改
+            Ajax(true, tk["UpdateTkTime"], { LoginID: LocalID, id: $("#id").val(), time_name: $("#timename").val(),
+                begin_date: $("#begindate").datebox('getValue'), end_date: $("#enddate").datebox('getValue'),
+                begin_time: $("#begintime").val(), end_time: $("#endtime").val(), week: week
+            }, function (data) {
+                if (!data.Success) {
+                    alert(data.Message);
+                    $('#timename').select();
+                    return;
+                }
+                $.messager.alert("提示", "保存成功", "info");
+                $('#win').window('close');
+                loaddata($("#text").val());
+            });
+        }
+    });
+    $('#win').window('close');
+    loaddata($("#text").val());
+});
+function loaddata(timename) {
+    datagrid.datagrid('unselectAll');
+    Ajax(true, tk["GetTkTimeList"], { LoginID: LocalID, time_name: timename }, function (data) {
+        if (!data.Success) {
+            alert(data.Message);
+            $('#text').select();
+            return;
+        }
+        jsondata.total = data.Data.length;
+        jsondata.rows = data.Data;
+        datagrid.datagrid('loadData', jsondata);
+    });
+}
+function myformatter(date) {
+    var y = date.getFullYear() + 3;
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}
+function myformatterx(date) {
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}
+</script>
+
+</head>
+<body>
+<div class="easyui-panel" title="条件搜索" data-options="iconCls:'icon-search',collapsible:true" style="width:100%;height:60px; padding:2px;">
+    时段名：<input id="text" class="easyui-validatebox textbox" data-options="prompt:'Enter Room Name.'" />
+  	<a href="javascript:void(0)" class="easyui-linkbutton" id="search" data-options="iconCls:'icon-search'">查询</a>
+</div>
+<div style="width:100%;height:2px;"></div>
+<div style="width:100%; height:800px;">
+		<table id="dg"> </table>  
+</div>	
+<div id="win" class="easyui-window" title="Window Layout" data-options="iconCls:'icon-save'" style="width:380px;height:340px;padding:5px;">
+	<div class="easyui-layout" data-options="fit:true">
+		<div data-options="region:'center'" style="padding:5px;">
+			  <table cellpadding="5">
+			<tr>
+				<td>时段号:</td>
+				<td><input id="id" class="easyui-numberbox textbox"  readonly /></td>
+			</tr>
+			<tr>
+				<td>时段名:</td>
+				<td><input id="timename" class="easyui-validatebox textbox" data-options="prompt:'请输入时段名',required:true,validType:'length[1,6]'" /></td>
+			</tr>
+			<tr>
+				<td>开始日期:</td>
+				<td><input id="begindate" class="easyui-datebox textbox" data-options="prompt:'请输入开始日期',required:true" /></td>
+			</tr>
+			<tr>
+				<td>截止日期:</td>
+				<td><input id="enddate" class="easyui-datebox textbox" data-options="prompt:'请输入截止日期',required:true" /></td>
+			</tr>
+			<tr>
+				<td>开始时间:</td>
+				<td><input id="begintime" class="easyui-timespinner" data-options="prompt:'请输入开始时间',required:true" /></td>
+			</tr>
+			<tr>
+				<td>截止时间:</td>
+				<td><input id="endtime" class="easyui-timespinner" data-options="prompt:'请输入截止时间',required:true" /></td>
+			</tr>
+			<tr>
+				<td>星期:</td>
+				<td><input type="checkbox" name="week" id="one" />一<input type="checkbox" name="week" id="two"/>二<input type="checkbox" name="week" id="three" />三
+                <input type="checkbox" name="week" id="four" />四<input type="checkbox" name="week" id="five"/>五<input type="checkbox" name="week" id="six" />六
+                <input type="checkbox" name="week" id="sun" />日</td>
+			</tr>
+		</table>
+		</div>
+		<div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-cancel'" href="javascript:void(0)" id="close" style="width:80px">关闭</a>
+			<a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" id="save" style="width:80px">提交</a>
+		</div>
+	</div>
+</div>
+</body>
+</html>
